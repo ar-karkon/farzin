@@ -188,3 +188,76 @@ fn reported_principal_variation_replays_legally() {
     writeln!(input, "quit").unwrap();
     child.wait().unwrap();
 }
+
+#[test]
+fn experimental_network_loads_and_can_be_disabled() {
+    use std::fs::OpenOptions;
+    let path = std::env::temp_dir().join(format!("farzin-uci-network-{}.pnn", std::process::id()));
+    let mut network = OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&path)
+        .unwrap();
+    network.set_len(75_703_872).unwrap();
+    network.write_all(&0x43534e4eu32.to_le_bytes()).unwrap();
+    network.write_all(&15u32.to_le_bytes()).unwrap();
+    drop(network);
+    let mut child = Command::new(env!("CARGO_BIN_EXE_farzin"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let mut input = child.stdin.take().unwrap();
+    let mut output = BufReader::new(child.stdout.take().unwrap());
+    writeln!(
+        input,
+        "setoption name EvalFile value {}\nisready\nposition startpos\ngo depth 1",
+        path.display()
+    )
+    .unwrap();
+    input.flush().unwrap();
+    let mut loaded = false;
+    let mut ready = false;
+    loop {
+        let mut line = String::new();
+        assert_ne!(output.read_line(&mut line).unwrap(), 0);
+        loaded |= line.contains("experimental network loaded");
+        ready |= line.trim() == "readyok";
+        if line.starts_with("bestmove ") {
+            assert!(!line.contains("0000"));
+            break;
+        }
+    }
+    assert!(loaded && ready);
+    writeln!(
+        input,
+        "setoption name EvalFile value /definitely/not/a/network\nisready"
+    )
+    .unwrap();
+    input.flush().unwrap();
+    let mut rejected = false;
+    loop {
+        let mut line = String::new();
+        assert_ne!(output.read_line(&mut line).unwrap(), 0);
+        rejected |= line.contains("failed to load network");
+        if line.trim() == "readyok" {
+            break;
+        }
+    }
+    assert!(rejected);
+    writeln!(input, "setoption name EvalFile value <empty>\nisready").unwrap();
+    input.flush().unwrap();
+    let mut disabled = false;
+    loop {
+        let mut line = String::new();
+        assert_ne!(output.read_line(&mut line).unwrap(), 0);
+        disabled |= line.contains("classical evaluator enabled");
+        if line.trim() == "readyok" {
+            break;
+        }
+    }
+    assert!(disabled);
+    writeln!(input, "quit").unwrap();
+    child.wait().unwrap();
+    std::fs::remove_file(path).unwrap();
+}

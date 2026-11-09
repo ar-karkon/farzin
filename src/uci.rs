@@ -32,6 +32,7 @@ fn start_search(
     overhead: u64,
     exchange_ordering: bool,
     pvs: bool,
+    network: Option<Arc<farzin::caissa::Network>>,
 ) -> Worker {
     let words: Vec<_> = args.split_whitespace().collect();
     let number = |key: &str| {
@@ -61,6 +62,7 @@ fn start_search(
         node_limit: number("nodes"),
         exchange_ordering,
         pvs,
+        network,
     };
     let handle = thread::spawn(move || {
         let mut best = MoveGen::new_legal(&game.board).next();
@@ -121,11 +123,12 @@ pub(crate) fn run() {
     let mut overhead = 20u64;
     let mut exchange_ordering = false;
     let mut pvs = false;
+    let mut network = None;
     for line in stdin.lock().lines() {
         let Ok(line) = line else { break };
         let line = line.trim();
         if line == "uci" {
-            println!("id name Farzin 0.1.0\nid author Farzin contributors\noption name Hash type spin default 16 min 1 max 256\noption name Clear Hash type button\noption name Move Overhead type spin default 20 min 0 max 5000\noption name Exchange Ordering type check default false\noption name PVS type check default false\nuciok");
+            println!("id name Farzin 0.1.0\nid author Farzin contributors\noption name Hash type spin default 16 min 1 max 256\noption name Clear Hash type button\noption name Move Overhead type spin default 20 min 0 max 5000\noption name Exchange Ordering type check default false\noption name PVS type check default false\noption name EvalFile type string default <empty>\nuciok");
         } else if line == "isready" {
             println!("readyok");
         } else if line == "ucinewgame" {
@@ -149,6 +152,20 @@ pub(crate) fn run() {
             if value == "true" || value == "false" {
                 pvs = value == "true";
             }
+        } else if let Some(value) = line.strip_prefix("setoption name EvalFile value ") {
+            stop_search(&mut worker, true);
+            if value.is_empty() || value == "<empty>" {
+                network = None;
+                println!("info string classical evaluator enabled");
+            } else {
+                match farzin::caissa::Network::from_file(value) {
+                    Ok(loaded) => {
+                        network = Some(Arc::new(loaded));
+                        println!("info string experimental network loaded");
+                    }
+                    Err(error) => println!("info string failed to load network: {error}"),
+                }
+            }
         } else if let Some(args) = line.strip_prefix("position ") {
             stop_search(&mut worker, true);
             match position(args) {
@@ -164,6 +181,7 @@ pub(crate) fn run() {
                 overhead,
                 exchange_ordering,
                 pvs,
+                network.clone(),
             ));
         } else if line == "stop" {
             stop_search(&mut worker, false);
@@ -263,6 +281,7 @@ mod tests {
             node_limit: None,
             exchange_ordering: false,
             pvs: false,
+            network: None,
         };
         let score = quiescence(&mut game, -MATE, MATE, 0, 0, &control, &mut 0).unwrap();
         assert!(
@@ -281,6 +300,7 @@ mod tests {
             node_limit: None,
             exchange_ordering: false,
             pvs: false,
+            network: None,
         };
         assert!(quiescence(&mut game, -MATE, MATE, 0, MAX_QPLY, &control, &mut 0).is_some());
         assert_eq!(game.board, original);
@@ -295,6 +315,7 @@ mod tests {
             node_limit: None,
             exchange_ordering: false,
             pvs: false,
+            network: None,
         };
         assert!(best_move(
             &mut board,

@@ -18,9 +18,15 @@ pub(crate) struct SearchControl {
     pub(crate) node_limit: Option<u64>,
     pub(crate) exchange_ordering: bool,
     pub(crate) pvs: bool,
+    pub(crate) network: Option<Arc<farzin::caissa::Network>>,
 }
 
 impl SearchControl {
+    fn evaluate(&self, board: &Board) -> i32 {
+        self.network
+            .as_ref()
+            .map_or_else(|| evaluate(board), |net| net.evaluate(board))
+    }
     fn stopped(&self, nodes: u64) -> bool {
         self.stop.load(Ordering::Relaxed)
             || self.deadline.is_some_and(|d| Instant::now() >= d)
@@ -55,7 +61,7 @@ pub(crate) fn quiescence(
     let in_check = board.checkers().popcnt() > 0;
     if qply >= MAX_QPLY {
         if !in_check {
-            return Some(evaluate(&board));
+            return Some(control.evaluate(&board));
         }
         // At the hard limit, examine every legal evasion once rather than
         // pretending that passing in check is legal or aborting the iteration.
@@ -70,7 +76,7 @@ pub(crate) fn quiescence(
                 BoardStatus::Checkmate => MATE - ply - 1,
                 BoardStatus::Stalemate => 0,
                 BoardStatus::Ongoing if game.draw() => 0,
-                BoardStatus::Ongoing => -evaluate(&game.board),
+                BoardStatus::Ongoing => -control.evaluate(&game.board),
             };
             game.unplay(board, halfmove);
             alpha = alpha.max(score);
@@ -81,7 +87,7 @@ pub(crate) fn quiescence(
         return Some(alpha);
     }
     if !in_check {
-        let stand_pat = evaluate(&board);
+        let stand_pat = control.evaluate(&board);
         if stand_pat >= beta {
             return Some(stand_pat);
         }
@@ -455,6 +461,7 @@ mod tests {
                 node_limit: None,
                 exchange_ordering: enabled,
                 pvs: false,
+                network: None,
             };
             scores.push(
                 best_move(
@@ -484,6 +491,7 @@ mod tests {
                     node_limit: None,
                     exchange_ordering: false,
                     pvs,
+                    network: None,
                 };
                 scores.push(
                     best_move(
@@ -511,6 +519,7 @@ mod tests {
             node_limit: None,
             exchange_ordering: false,
             pvs: false,
+            network: None,
         };
         let (best, _, pv) = best_move(
             &mut game,
@@ -566,6 +575,7 @@ mod tests {
                 node_limit: None,
                 exchange_ordering: false,
                 pvs: false,
+                network: None,
             };
             assert!(search(&mut game, 1, -50, 50, 0, &control, &mut state).is_some());
             assert_eq!(
@@ -599,6 +609,7 @@ mod tests {
             node_limit: Some(2),
             exchange_ordering: false,
             pvs: false,
+            network: None,
         };
         assert!(search(&mut game, 4, -MATE, MATE, 0, &control, &mut state).is_none());
         assert_eq!(game.board, original_board);
@@ -627,6 +638,7 @@ mod tests {
             node_limit: Some(1),
             exchange_ordering: false,
             pvs: false,
+            network: None,
         };
         assert!(search(&mut game, 0, -MATE, MATE, 0, &control, &mut state).is_some());
         assert_eq!(*state.nodes, 1);
@@ -651,6 +663,7 @@ mod tests {
                     node_limit: None,
                     exchange_ordering: false,
                     pvs: false,
+                    network: None,
                 };
                 let depth = if fen == "startpos" { 4 } else { 3 };
                 let score = best_move(
