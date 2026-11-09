@@ -17,6 +17,8 @@ const SUBNET_OFFSET: usize = BIAS_OFFSET + WIDTH * 2;
 const SUBNET_SIZE: usize = 25_408;
 
 pub struct Network {
+    weights: Vec<i16>,
+    bias: [i16; WIDTH],
     bytes: Vec<u8>,
 }
 
@@ -94,9 +96,8 @@ impl<'a> PerspectiveAccumulator<'a> {
     }
 
     fn apply(&mut self, feature: usize, add: bool) {
-        let row = HEADER + feature * WIDTH * 2;
-        for (i, value) in self.values.iter_mut().enumerate() {
-            let weight = self.network.i16_at(row + i * 2);
+        let row = &self.network.weights[feature * WIDTH..(feature + 1) * WIDTH];
+        for (value, &weight) in self.values.iter_mut().zip(row) {
             *value = if add {
                 value.wrapping_add(weight)
             } else {
@@ -126,7 +127,21 @@ impl Network {
         if u32::from_le_bytes(bytes[4..8].try_into().unwrap()) != VERSION {
             return Err("unsupported network version".into());
         }
-        Ok(Self { bytes })
+        let weights = bytes[HEADER..BIAS_OFFSET]
+            .as_chunks::<2>()
+            .0
+            .iter()
+            .map(|pair| i16::from_le_bytes([pair[0], pair[1]]))
+            .collect();
+        let bias = std::array::from_fn(|i| {
+            i16::from_le_bytes([bytes[BIAS_OFFSET + i * 2], bytes[BIAS_OFFSET + i * 2 + 1]])
+        });
+        let subnets = bytes[SUBNET_OFFSET..].to_vec();
+        Ok(Self {
+            weights,
+            bias,
+            bytes: subnets,
+        })
     }
 
     fn i16_at(&self, offset: usize) -> i16 {
@@ -137,14 +152,11 @@ impl Network {
     }
 
     pub fn accumulator(&self, board: &Board, perspective: Color) -> [i16; WIDTH] {
-        let mut result = [0i16; WIDTH];
-        for (i, value) in result.iter_mut().enumerate() {
-            *value = self.i16_at(BIAS_OFFSET + i * 2);
-        }
+        let mut result = self.bias;
         for feature in feature_indices(board, perspective) {
-            let row = HEADER + feature * WIDTH * 2;
-            for (i, value) in result.iter_mut().enumerate() {
-                *value = value.wrapping_add(self.i16_at(row + i * 2));
+            let row = &self.weights[feature * WIDTH..(feature + 1) * WIDTH];
+            for (value, &weight) in result.iter_mut().zip(row) {
+                *value = value.wrapping_add(weight);
             }
         }
         result
@@ -218,9 +230,8 @@ impl Network {
                 if other.binary_search(&feature).is_ok() {
                     continue;
                 }
-                let row = HEADER + feature * WIDTH * 2;
-                for (i, value) in values.iter_mut().enumerate() {
-                    let weight = self.i16_at(row + i * 2);
+                let row = &self.weights[feature * WIDTH..(feature + 1) * WIDTH];
+                for (value, &weight) in values.iter_mut().zip(row) {
                     *value = if add {
                         value.wrapping_add(weight)
                     } else {
@@ -232,7 +243,7 @@ impl Network {
     }
 
     fn raw_bucket(&self, inputs: &[u8; WIDTH], bucket: usize) -> i32 {
-        let offset = SUBNET_OFFSET + bucket * SUBNET_SIZE;
+        let offset = bucket * SUBNET_SIZE;
         let l1 = self.hidden::<16>(inputs, offset, offset + 24576);
         let l2 = self.hidden::<32>(&l1, offset + 24640, offset + 25152);
         let bias = self.i32_at(offset + 25344);
@@ -305,6 +316,20 @@ mod tests {
     #[test]
     fn validates_header_and_empty_network_output() {
         assert!(Network::from_bytes(vec![0; 64]).is_err());
+        let mut invalid = vec![0; FILE_SIZE];
+        assert_eq!(
+            Network::from_bytes(std::mem::take(&mut invalid))
+                .err()
+                .unwrap(),
+            "invalid network magic"
+        );
+        invalid = vec![0; FILE_SIZE];
+        invalid[0..4].copy_from_slice(&MAGIC.to_le_bytes());
+        invalid[4..8].copy_from_slice(&(VERSION - 1).to_le_bytes());
+        assert_eq!(
+            Network::from_bytes(invalid).err().unwrap(),
+            "unsupported network version"
+        );
         let mut bytes = vec![0; FILE_SIZE];
         bytes[0..4].copy_from_slice(&MAGIC.to_le_bytes());
         bytes[4..8].copy_from_slice(&VERSION.to_le_bytes());
@@ -332,7 +357,11 @@ mod tests {
         for (i, bias) in [-1000i32, 0, 3000, 9000].iter().enumerate() {
             bytes[64 + i * 4..68 + i * 4].copy_from_slice(&bias.to_le_bytes());
         }
-        let net = Network { bytes };
+        let net = Network {
+            weights: Vec::new(),
+            bias: [0; WIDTH],
+            bytes,
+        };
         let input = [0, 0, 0, 0, 4, 80, 127, 1, 2, 0, 64, 17];
         let actual = net.hidden::<4>(&input, 0, 64);
         let expected: [u8; 4] = std::array::from_fn(|out| {
