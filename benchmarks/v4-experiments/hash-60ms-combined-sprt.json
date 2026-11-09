@@ -1,0 +1,52 @@
+{
+  "pentanomial": [
+    1,
+    19,
+    137,
+    39,
+    4
+  ],
+  "pairs": 200,
+  "elo0": 0.0,
+  "elo1": 10.0,
+  "alpha": 0.05,
+  "beta": 0.05,
+  "lower_bound": -2.9444389791664403,
+  "upper_bound": 2.9444389791664403,
+  "llr": 3.122705559103946,
+  "decision": "accept H1",
+  "score": 0.5325,
+  "elo": 22.615198760895495,
+  "elo_95": [
+    7.878546747610512,
+    37.433608982848085
+  ],
+  "games": {
+    "wins": 119,
+    "draws": 188,
+    "losses": 93,
+    "unfinished": 0
+  },
+  "excluded_pairs": 0,
+  "unfinished_as_draw": true,
+  "reports": [
+    "match-hash-60ms-b1/m-shard0.json.gz",
+    "match-hash-60ms-b1/m-shard1.json.gz",
+    "match-hash-60ms-b1/m-shard2.json.gz",
+    "match-hash-60ms-b2/m-shard0.json.gz",
+    "match-hash-60ms-b2/m-shard1.json.gz",
+    "match-hash-60ms-b2/m-shard2.json.gz"
+  ],
+  "options": [
+    {
+      "Persistent Hash": "true"
+    },
+    {}
+  ],
+  "movetime_ms": 60,
+  "depth": null,
+  "engine_sha256": [
+    "061d697041749c1ab58a85f83ed038456dbe59e6ae14cb179dce7563f809119f",
+    "061d697041749c1ab58a85f83ed038456dbe59e6ae14cb179dce7563f809119f"
+  ]
+}
