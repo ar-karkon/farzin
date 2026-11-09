@@ -28,7 +28,15 @@ def main():
     parser.add_argument("--depth", type=int, default=4)
     parser.add_argument("--json", help="write results as JSON")
     parser.add_argument("--option", action="append", default=[], metavar="NAME=VALUE")
+    parser.add_argument("--positions", help="file of UCI positions or bare FENs")
     args = parser.parse_args()
+    positions = POSITIONS
+    if args.positions:
+        with open(args.positions, encoding="utf-8") as source:
+            positions = [line.strip() for line in source if line.strip() and not line.startswith("#")]
+        positions = [p if p == "startpos" or p.startswith(("fen ", "startpos moves ")) else "fen " + p for p in positions]
+        if not positions:
+            parser.error("positions file is empty")
     if not 1 <= args.depth <= 64:
         parser.error("depth must be between 1 and 64")
     options = []
@@ -77,7 +85,7 @@ def main():
             if "info string experimental network loaded" not in setup:
                 raise RuntimeError("Farzin did not confirm loading the requested EvalFile")
             report["network_sha256"] = sha256_file(network)
-        for position in POSITIONS:
+        for position in positions:
             send("ucinewgame")
             send("position " + position)
             start = time.monotonic()
