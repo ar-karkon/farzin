@@ -1,5 +1,5 @@
 use crate::tt::Table;
-use chess::{Board, Color, MoveGen};
+use chess::{Board, MoveGen};
 use std::collections::HashMap;
 use std::io::{self, BufRead, Write};
 use std::sync::{
@@ -25,7 +25,7 @@ fn stop_search(worker: &mut Option<Worker>, discard: bool) {
     }
 }
 
-fn start_search(mut game: Game, args: &str, hash_mb: usize) -> Worker {
+fn start_search(mut game: Game, args: &str, hash_mb: usize, overhead: u64) -> Worker {
     let words: Vec<_> = args.split_whitespace().collect();
     let number = |key: &str| {
         words
@@ -33,23 +33,7 @@ fn start_search(mut game: Game, args: &str, hash_mb: usize) -> Worker {
             .find(|w| w[0] == key)
             .and_then(|w| w[1].parse::<u64>().ok())
     };
-    let (clock, increment) = if game.board.side_to_move() == Color::White {
-        (number("wtime"), number("winc"))
-    } else {
-        (number("btime"), number("binc"))
-    };
-    let clock_budget = clock.map(|remaining| {
-        let moves = number("movestogo").unwrap_or(30).clamp(1, 100);
-        (remaining / moves)
-            .saturating_add(increment.unwrap_or(0) / 2)
-            .min(remaining.saturating_sub(20))
-            .max(1)
-    });
-    let millis = if words.contains(&"infinite") {
-        None
-    } else {
-        number("movetime").or(clock_budget)
-    };
+    let millis = crate::time::budget_ms(&words, game.board.side_to_move(), overhead);
     let depth = number("depth")
         .unwrap_or(
             if words.contains(&"infinite") || millis.is_some() || number("nodes").is_some() {
@@ -120,11 +104,12 @@ pub(crate) fn run() {
     let mut game = Game::new(Board::default(), 0);
     let mut worker = None;
     let mut hash_mb = 16usize;
+    let mut overhead = 20u64;
     for line in stdin.lock().lines() {
         let Ok(line) = line else { break };
         let line = line.trim();
         if line == "uci" {
-            println!("id name Farzin 0.1.0\nid author Farzin contributors\noption name Hash type spin default 16 min 1 max 256\noption name Clear Hash type button\nuciok");
+            println!("id name Farzin 0.1.0\nid author Farzin contributors\noption name Hash type spin default 16 min 1 max 256\noption name Clear Hash type button\noption name Move Overhead type spin default 20 min 0 max 5000\nuciok");
         } else if line == "isready" {
             println!("readyok");
         } else if line == "ucinewgame" {
@@ -136,6 +121,10 @@ pub(crate) fn run() {
             }
         } else if line == "setoption name Clear Hash" {
             // Tables are per-search, so no state survives a completed search.
+        } else if let Some(value) = line.strip_prefix("setoption name Move Overhead value ") {
+            if let Ok(value) = value.parse::<u64>() {
+                overhead = value.min(5000);
+            }
         } else if let Some(args) = line.strip_prefix("position ") {
             stop_search(&mut worker, true);
             match position(args) {
@@ -144,7 +133,7 @@ pub(crate) fn run() {
             }
         } else if line == "go" || line.starts_with("go ") {
             stop_search(&mut worker, true);
-            worker = Some(start_search(game.clone(), line, hash_mb));
+            worker = Some(start_search(game.clone(), line, hash_mb, overhead));
         } else if line == "stop" {
             stop_search(&mut worker, false);
         } else if line == "quit" {
