@@ -1,0 +1,55 @@
+{
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "engine": "target/release/farzin",
+  "engine_sha256": "cf616d1b032ed00d8499720108e99ba29bb0d751d1d7f6bba452d7588f739511",
+  "depth": 3,
+  "options": [
+    [
+      "Threads",
+      "2"
+    ],
+    [
+      "EvalFile",
+      "/tmp/farzin-caissa-v15.pnn"
+    ]
+  ],
+  "positions": [
+    {
+      "position": "startpos",
+      "bestmove": "e2e4",
+      "elapsed_ms": 9.661372998380102,
+      "info": [
+        "info depth 1 score cp 74 nodes 46 nps 15333 time 3 hashfull 0 pv d2d4",
+        "info depth 2 score cp 38 nodes 205 nps 68333 time 3 hashfull 0 pv e2e4 e7e5",
+        "info depth 3 score cp 43 nodes 1763 nps 220375 time 8 hashfull 0 pv e2e4 g8f6 b1c3",
+        "info string parallel workers 2 nodes 1802",
+        "info string tt probes 192 hits 32 cutoffs 0"
+      ]
+    },
+    {
+      "position": "fen r1bq1rk1/ppp2ppp/2n2n2/3pp3/3PP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 6",
+      "bestmove": "d4e5",
+      "elapsed_ms": 32.23994799918728,
+      "info": [
+        "info depth 1 score cp 154 nodes 915 nps 152500 time 6 hashfull 0 pv d4e5",
+        "info depth 2 score cp 154 nodes 1752 nps 175200 time 10 hashfull 0 pv d4e5 f6e4",
+        "info depth 3 score cp 154 nodes 4495 nps 187291 time 24 hashfull 0 pv d4e5 f6e4 c3d5",
+        "info string parallel workers 2 nodes 5195",
+        "info string tt probes 256 hits 24 cutoffs 0"
+      ]
+    },
+    {
+      "position": "fen 8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1",
+      "bestmove": "e2e3",
+      "elapsed_ms": 7.859470999392215,
+      "info": [
+        "info depth 1 score cp 47 nodes 70 nps 70000 time 1 hashfull 0 pv b4f4",
+        "info depth 2 score cp 103 nodes 494 nps 164666 time 3 hashfull 0 pv e2e3 h5c5",
+        "info depth 3 score cp 103 nodes 1316 nps 188000 time 7 hashfull 0 pv e2e3 h5c5 e3f4",
+        "info string parallel workers 2 nodes 1316",
+        "info string tt probes 116 hits 10 cutoffs 0"
+      ]
+    }
+  ],
+  "network_sha256": "bc3df8d32b584f01e21f0f3f9515b3fc0f97fa0ca59b9b5991f333ed5b437b6b"
+}

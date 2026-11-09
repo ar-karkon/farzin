@@ -1,0 +1,56 @@
+{
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "engine": "target/release/farzin",
+  "engine_sha256": "cf616d1b032ed00d8499720108e99ba29bb0d751d1d7f6bba452d7588f739511",
+  "depth": 5,
+  "options": [
+    [
+      "Threads",
+      "2"
+    ]
+  ],
+  "positions": [
+    {
+      "position": "startpos",
+      "bestmove": "a2a4",
+      "elapsed_ms": 11.188284999661846,
+      "info": [
+        "info depth 1 score cp 0 nodes 54 nps 18000 time 3 hashfull 0 pv a2a4",
+        "info depth 2 score cp 0 nodes 109 nps 36333 time 3 hashfull 0 pv a2a4 g8h6",
+        "info depth 3 score cp 0 nodes 671 nps 223666 time 3 hashfull 0 pv a2a4 g8h6 a1a3",
+        "info depth 4 score cp 0 nodes 3124 nps 781000 time 4 hashfull 0 pv a2a4 g8h6 a1a3 h8g8",
+        "info depth 5 score cp 0 nodes 22648 nps 2831000 time 8 hashfull 1 pv a2a4 g8h6 a1a3 h8g8 a3h3",
+        "info string parallel workers 2 nodes 25258",
+        "info string tt probes 3802 hits 1312 cutoffs 640"
+      ]
+    },
+    {
+      "position": "fen r1bq1rk1/ppp2ppp/2n2n2/3pp3/3PP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 6",
+      "bestmove": "d4e5",
+      "elapsed_ms": 27.474956998048583,
+      "info": [
+        "info depth 1 score cp 100 nodes 13614 nps 2722800 time 5 hashfull 0 pv d4e5",
+        "info depth 2 score cp 100 nodes 14888 nps 2977600 time 5 hashfull 0 pv d4e5 d5e4",
+        "info depth 3 score cp 100 nodes 18056 nps 3009333 time 6 hashfull 0 pv d4e5 d5e4 e5f6",
+        "info depth 4 score cp 100 nodes 33946 nps 3771777 time 9 hashfull 1 pv d4e5 d5e4 e5f6 d8d1",
+        "info depth 5 score cp 100 nodes 130292 nps 5428833 time 24 hashfull 4 pv d4e5 d5e4 e5f6 d8d1 c3d1",
+        "info string parallel workers 2 nodes 137748",
+        "info string tt probes 9354 hits 2350 cutoffs 934"
+      ]
+    },
+    {
+      "position": "fen 8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1",
+      "bestmove": "b4f4",
+      "elapsed_ms": 3.010663000168279,
+      "info": [
+        "info depth 1 score cp 100 nodes 44 nps 44000 time 0 hashfull 0 pv b4f4",
+        "info depth 2 score cp 100 nodes 266 nps 266000 time 0 hashfull 0 pv b4f4 h4g5",
+        "info depth 3 score cp 100 nodes 980 nps 980000 time 1 hashfull 0 pv b4f4 h4g5 e2e3",
+        "info depth 4 score cp 100 nodes 2341 nps 2341000 time 1 hashfull 0 pv b4f4 h4g5 e2e3 g5h6",
+        "info depth 5 score cp 100 nodes 9919 nps 4959500 time 2 hashfull 0 pv b4f4 h4g5 e2e3 g5h6 a5a6",
+        "info string parallel workers 2 nodes 10735",
+        "info string tt probes 1710 hits 282 cutoffs 82"
+      ]
+    }
+  ]
+}
