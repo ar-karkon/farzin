@@ -3,7 +3,7 @@ use crate::{
     game::Game,
     tt::{self, Bound, Entry, Table},
 };
-use chess::{Board, BoardStatus, ChessMove, MoveGen, Piece};
+use chess::{BitBoard, Board, BoardStatus, ChessMove, MoveGen, Piece, Square};
 use std::collections::HashMap;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
@@ -16,6 +16,7 @@ pub(crate) struct SearchControl {
     pub(crate) stop: Arc<AtomicBool>,
     pub(crate) deadline: Option<Instant>,
     pub(crate) node_limit: Option<u64>,
+    pub(crate) exchange_ordering: bool,
 }
 
 impl SearchControl {
@@ -132,18 +133,73 @@ fn capture_value(board: &Board, mv: ChessMove) -> Option<i32> {
     Some(value(victim) * 10 - value(board.piece_on(mv.get_source()).unwrap()))
 }
 
+fn piece_value(piece: Piece) -> i32 {
+    match piece {
+        Piece::Pawn => 100,
+        Piece::Knight => 320,
+        Piece::Bishop => 330,
+        Piece::Rook => 500,
+        Piece::Queen => 900,
+        Piece::King => 20_000,
+    }
+}
+
+// Local, bounded exchange minimax. Only legal recaptures on the target square
+// are considered. It is an ordering heuristic, not a pruning or evaluation proof.
+fn recapture_gain(board: &Board, target: Square, depth: u8) -> i32 {
+    if depth == 0 {
+        return 0;
+    }
+    let Some(victim) = board.piece_on(target) else {
+        return 0;
+    };
+    let mut moves = MoveGen::new_legal(board);
+    moves.set_iterator_mask(BitBoard::from_square(target));
+    let mut best = 0;
+    for mv in moves {
+        let promotion = mv
+            .get_promotion()
+            .map_or(0, |p| piece_value(p) - piece_value(Piece::Pawn));
+        let gain = piece_value(victim) + promotion
+            - recapture_gain(&board.make_move_new(mv), target, depth - 1);
+        best = best.max(gain);
+    }
+    best
+}
+
+fn exchange_value(board: &Board, mv: ChessMove) -> Option<i32> {
+    capture_value(board, mv)?;
+    let victim = board.piece_on(mv.get_dest()).unwrap_or(Piece::Pawn);
+    let promotion = mv
+        .get_promotion()
+        .map_or(0, |p| piece_value(p) - piece_value(Piece::Pawn));
+    Some(
+        piece_value(victim) + promotion
+            - recapture_gain(&board.make_move_new(mv), mv.get_dest(), 7),
+    )
+}
+
 fn move_score(
     board: &Board,
     mv: ChessMove,
     hint: Option<ChessMove>,
     killers: [Option<ChessMove>; 2],
     history: &[[i32; 64]; 64],
+    exchange_ordering: bool,
 ) -> i32 {
     if Some(mv) == hint {
         return 1_000_000;
     }
     if let Some(value) = capture_value(board, mv) {
-        return 100_000 + value;
+        if !exchange_ordering {
+            return 100_000 + value;
+        }
+        let value = exchange_value(board, mv).unwrap();
+        return if value >= 0 {
+            100_000 + value
+        } else {
+            -10_000 + value
+        };
     }
     if mv.get_promotion().is_some() {
         return 90_000;
@@ -215,14 +271,24 @@ fn search(
     let hint = entry
         .and_then(|e| e.best)
         .or_else(|| state.hints.get(&board.get_hash()).copied());
+    let killers = state.killers[(ply as usize).min(127)];
+    let mut scores = [0; 256];
+    for index in 0..move_count {
+        scores[index] = move_score(
+            &board,
+            moves[index],
+            hint,
+            killers,
+            &state.history,
+            control.exchange_ordering,
+        );
+    }
     let mut best = None;
     let mut best_score = -MATE;
     for index in 0..move_count {
-        let killers = state.killers[(ply as usize).min(127)];
-        let best_index = (index..move_count)
-            .max_by_key(|&i| move_score(&board, moves[i], hint, killers, &state.history))
-            .unwrap();
+        let best_index = (index..move_count).max_by_key(|&i| scores[i]).unwrap();
         moves.swap(index, best_index);
+        scores.swap(index, best_index);
         let mv = moves[index];
         let halfmove = game.halfmove;
         game.play(mv);
@@ -346,13 +412,53 @@ mod tests {
         let history = [[0; 64]; 64];
         assert!(capture_value(&game.board, capture).is_some());
         assert!(
-            move_score(&game.board, capture, None, [None; 2], &history)
-                > move_score(&game.board, quiet, None, [None; 2], &history)
+            move_score(&game.board, capture, None, [None; 2], &history, false)
+                > move_score(&game.board, quiet, None, [None; 2], &history, false)
         );
         assert!(
-            move_score(&game.board, quiet, Some(quiet), [None; 2], &history)
-                > move_score(&game.board, capture, None, [None; 2], &history)
+            move_score(&game.board, quiet, Some(quiet), [None; 2], &history, false)
+                > move_score(&game.board, capture, None, [None; 2], &history, false)
         );
+    }
+
+    #[test]
+    fn exchange_ordering_accounts_for_legal_recaptures() {
+        let game = crate::game::position("fen 3q3k/8/8/8/8/8/3r4/K2Q4 w - - 0 1").unwrap();
+        let capture = ChessMove::from_str("d1d2").unwrap();
+        assert_eq!(exchange_value(&game.board, capture), Some(-400));
+        let game = crate::game::position("fen 7k/8/8/3pP3/8/8/8/K7 w - d6 0 1").unwrap();
+        assert_eq!(
+            exchange_value(&game.board, ChessMove::from_str("e5d6").unwrap()),
+            Some(100)
+        );
+    }
+
+    #[test]
+    fn experimental_exchange_ordering_preserves_score() {
+        let fen = "fen 3q3k/8/8/8/8/8/3r4/K2Q4 w - - 0 1";
+        let mut scores = Vec::new();
+        for enabled in [false, true] {
+            let mut game = crate::game::position(fen).unwrap();
+            let control = SearchControl {
+                stop: Arc::new(AtomicBool::new(false)),
+                deadline: None,
+                node_limit: None,
+                exchange_ordering: enabled,
+            };
+            scores.push(
+                best_move(
+                    &mut game,
+                    3,
+                    &control,
+                    &mut HashMap::new(),
+                    &mut Table::new(1024),
+                    &mut 0,
+                )
+                .unwrap()
+                .1,
+            );
+        }
+        assert_eq!(scores[0], scores[1]);
     }
 
     #[test]
@@ -362,6 +468,7 @@ mod tests {
             stop: Arc::new(AtomicBool::new(false)),
             deadline: None,
             node_limit: None,
+            exchange_ordering: false,
         };
         let (best, _, pv) = best_move(
             &mut game,
@@ -415,6 +522,7 @@ mod tests {
                 stop: Arc::new(AtomicBool::new(false)),
                 deadline: None,
                 node_limit: None,
+                exchange_ordering: false,
             };
             assert!(search(&mut game, 1, -50, 50, 0, &control, &mut state).is_some());
             assert_eq!(
@@ -446,6 +554,7 @@ mod tests {
             stop: Arc::new(AtomicBool::new(false)),
             deadline: None,
             node_limit: Some(2),
+            exchange_ordering: false,
         };
         assert!(search(&mut game, 4, -MATE, MATE, 0, &control, &mut state).is_none());
         assert_eq!(game.board, original_board);
@@ -472,6 +581,7 @@ mod tests {
             stop: Arc::new(AtomicBool::new(false)),
             deadline: None,
             node_limit: Some(1),
+            exchange_ordering: false,
         };
         assert!(search(&mut game, 0, -MATE, MATE, 0, &control, &mut state).is_some());
         assert_eq!(*state.nodes, 1);
@@ -494,6 +604,7 @@ mod tests {
                     stop: Arc::new(AtomicBool::new(false)),
                     deadline: None,
                     node_limit: None,
+                    exchange_ordering: false,
                 };
                 let depth = if fen == "startpos" { 4 } else { 3 };
                 let score = best_move(
