@@ -1,0 +1,1543 @@
+{
+  "commit": "db2a4c9f651553b354cd27731d511820aa29cb8b",
+  "timestamp_utc": "2026-11-09T21:16:19.214113+00:00",
+  "benchmark_tool_sha256": "e685fb306514f26570bde4410d05dd8bc50f0320a964620818029fa9a1e4fa72",
+  "uci_driver_sha256": "ef1b10f3c9c78e5a72d1c2a26c76728626d61b1777549fc521ef926f8aed58f3",
+  "rustc": "rustc 1.97.0 (2d8144b78 2026-07-07)\nbinary: rustc\ncommit-hash: 2d8144b7880597b6e6d3dfd63a9a9efae3f533d3\ncommit-date: 2026-07-07\nhost: x86_64-unknown-linux-gnu\nrelease: 1.97.0\nLLVM version: 22.1.6\n",
+  "build_profile": "release",
+  "build_features": "",
+  "build_flags": "",
+  "evaluator": "classical",
+  "network_sha256": null,
+  "threads": 1,
+  "hash_mb": 16,
+  "binary_sha256": "061d697041749c1ab58a85f83ed038456dbe59e6ae14cb179dce7563f809119f",
+  "engine": "/tmp/claude-0/-home-user-farzin/6772a6de-ee05-53e7-a2de-4788485ca880/scratchpad/bin/farzin-v4",
+  "os": "Linux-6.18.44-fc-v310-x86_64-with-glibc2.39",
+  "hardware": {
+    "model name": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+    "flags": "fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology nonstop_tsc cpuid tsc_known_freq pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch cpuid_fault ssbd ibrs ibpb stibp ibrs_enhanced fsgsbase tsc_adjust bmi1 hle avx2 smep bmi2 erms invpcid rtm avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves avx_vnni avx512_bf16 wbnoinvd arat avx512vbmi umip avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid cldemote movdiri movdir64b fsrm md_clear serialize tsxldtrk amx_bf16 avx512_fp16 amx_tile amx_int8 arch_capabilities"
+  },
+  "logical_cpus": 4,
+  "affinity": [
+    2
+  ],
+  "cpu_quota": null,
+  "depth": 5,
+  "repeats": 3,
+  "network_kind": "none",
+  "time_control": {
+    "type": "fixed_depth",
+    "depth": 5
+  },
+  "positions_sha256": "641f7b2b5fb78348a7dc5ddc60fe8e1dd304ee806170e3080d9a635b1cb771f5",
+  "options": [
+    "PVS=true",
+    "LMR=true"
+  ],
+  "cycles_per_node": null,
+  "perf_status": "hardware counters not collected",
+  "perf_available": false,
+  "runs": [
+    {
+      "platform": "Linux-6.18.44-fc-v310-x86_64-with-glibc2.39",
+      "engine": "/tmp/claude-0/-home-user-farzin/6772a6de-ee05-53e7-a2de-4788485ca880/scratchpad/bin/farzin-v4",
+      "engine_sha256": "061d697041749c1ab58a85f83ed038456dbe59e6ae14cb179dce7563f809119f",
+      "depth": 5,
+      "options": [
+        [
+          "Threads",
+          "1"
+        ],
+        [
+          "Hash",
+          "16"
+        ],
+        [
+          "PVS",
+          "true"
+        ],
+        [
+          "LMR",
+          "true"
+        ]
+      ],
+      "positions": [
+        {
+          "position": "fen r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
+          "bestmove": "d7d6",
+          "elapsed_ms": 30.52784800001973,
+          "info": [
+            "info depth 1 score cp 0 nodes 177 nps 25285 time 7 hashfull 0 pv d7d6",
+            "info depth 2 score cp 0 nodes 2264 nps 323428 time 7 hashfull 0 pv d7d6 e1e2",
+            "info depth 3 score cp 0 nodes 3564 nps 445500 time 8 hashfull 0 pv d7d6 e1e2 e8e7",
+            "info depth 4 score cp 0 nodes 20028 nps 1335200 time 15 hashfull 0 pv d7d6 e1e2 e8e7 e2e3",
+            "info depth 5 score cp 0 nodes 65070 nps 2169000 time 30 hashfull 1 pv d7d6 e1e2 e8e7 e2e3 e7e8",
+            "info string tt probes 3249 hits 677 cutoffs 197",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 65070,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2131496.461852075
+        },
+        {
+          "position": "fen r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
+          "bestmove": "a7a5",
+          "elapsed_ms": 37.41398399984064,
+          "info": [
+            "info depth 1 score cp 0 nodes 48 nps 8000 time 6 hashfull 0 pv a7a5",
+            "info depth 2 score cp 0 nodes 2623 nps 374714 time 7 hashfull 0 pv a7a5 e1e2",
+            "info depth 3 score cp 0 nodes 4139 nps 517375 time 8 hashfull 0 pv a7a5 e1e2 e8e7",
+            "info depth 4 score cp 0 nodes 20344 nps 1271500 time 16 hashfull 0 pv a7a5 e1e2 e8e7 e2e3",
+            "info depth 5 score cp 0 nodes 81034 nps 2250944 time 36 hashfull 1 pv a7a5 e1e2 e8e7 e2e3 e7e8",
+            "info string tt probes 3742 hits 661 cutoffs 133",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 81034,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2165874.663343662
+        },
+        {
+          "position": "fen rnbqkbnr/pp2pppp/3p4/8/3NP3/8/PPP2PPP/RNBQKB1R b KQkq - 0 4",
+          "bestmove": "a7a5",
+          "elapsed_ms": 23.011632999896392,
+          "info": [
+            "info depth 1 score cp 0 nodes 57 nps 28500 time 2 hashfull 0 pv d6d5",
+            "info depth 2 score cp 0 nodes 510 nps 255000 time 2 hashfull 0 pv a7a5 e1e2",
+            "info depth 3 score cp 0 nodes 2119 nps 706333 time 3 hashfull 0 pv a7a5 e1e2 e8d7",
+            "info depth 4 score cp 0 nodes 9362 nps 1560333 time 6 hashfull 0 pv a7a5 e1e2 e8d7 e2f3",
+            "info depth 5 score cp 0 nodes 58684 nps 2667454 time 22 hashfull 1 pv a7a5 e1e2 e8d7 e2f3 d7e8",
+            "info string tt probes 3355 hits 613 cutoffs 145",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 58684,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2550188.419929356
+        },
+        {
+          "position": "fen rnbqkbnr/ppp2ppp/4p3/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 3",
+          "bestmove": "e4d5",
+          "elapsed_ms": 21.139203000075213,
+          "info": [
+            "info depth 1 score cp 0 nodes 71 nps 35500 time 2 hashfull 0 pv f2f3",
+            "info depth 2 score cp 0 nodes 281 nps 140500 time 2 hashfull 0 pv f2f3 d5e4",
+            "info depth 3 score cp 0 nodes 2157 nps 719000 time 3 hashfull 0 pv f2f3 d5e4 f3e4",
+            "info depth 4 score cp 0 nodes 13509 nps 1688625 time 8 hashfull 0 pv e4d5 e6d5 g2g3 e8e7",
+            "info depth 5 score cp 0 nodes 56817 nps 2840850 time 20 hashfull 1 pv e4d5 e6d5 g2g3 e8e7 e1e2",
+            "info string tt probes 4935 hits 1175 cutoffs 419",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 56817,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2687755.068145088
+        },
+        {
+          "position": "fen rnbqkbnr/pp2pppp/2p5/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 3",
+          "bestmove": "f2f3",
+          "elapsed_ms": 20.387147000064942,
+          "info": [
+            "info depth 1 score cp 0 nodes 57 nps 28500 time 2 hashfull 0 pv f2f3",
+            "info depth 2 score cp 0 nodes 250 nps 125000 time 2 hashfull 0 pv f2f3 d5e4",
+            "info depth 3 score cp 0 nodes 1870 nps 935000 time 2 hashfull 0 pv f2f3 d5e4 f3e4",
+            "info depth 4 score cp 0 nodes 10857 nps 1809500 time 6 hashfull 0 pv f2f3 d5e4 f3e4 e8d7",
+            "info depth 5 score cp 0 nodes 55460 nps 2773000 time 20 hashfull 1 pv f2f3 d5e4 f3e4 e8d7 e1f2",
+            "info string tt probes 4721 hits 1155 cutoffs 372",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 55460,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2720341.399403425
+        },
+        {
+          "position": "fen rnbqkbnr/ppp1pppp/8/3p4/2PP4/8/PP2PPPP/RNBQKBNR b KQkq - 0 2",
+          "bestmove": "d5c4",
+          "elapsed_ms": 19.642279999970924,
+          "info": [
+            "info depth 1 score cp 100 nodes 28 nps 9333 time 3 hashfull 0 pv d5c4",
+            "info depth 2 score cp 100 nodes 347 nps 115666 time 3 hashfull 0 pv d5c4 a2a3",
+            "info depth 3 score cp 100 nodes 1675 nps 558333 time 3 hashfull 0 pv d5c4 a2a3 e8d7",
+            "info depth 4 score cp 100 nodes 8041 nps 1340166 time 6 hashfull 0 pv d5c4 a2a3 a7a6 d1a4",
+            "info depth 5 score cp 0 nodes 32795 nps 1726052 time 19 hashfull 1 pv d5c4 d1a4 b8c6 e2e3 a7a6",
+            "info string tt probes 3270 hits 959 cutoffs 339",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 32795,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 1669612.6926226765
+        },
+        {
+          "position": "fen rnbqk2r/pppp1ppp/4pn2/8/1bPP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 2 4",
+          "bestmove": "a2a3",
+          "elapsed_ms": 19.982418999916263,
+          "info": [
+            "info depth 1 score cp 0 nodes 31 nps 15500 time 2 hashfull 0 pv a2a3",
+            "info depth 2 score cp 0 nodes 355 nps 118333 time 3 hashfull 0 pv a2a3 b4a5",
+            "info depth 3 score cp 0 nodes 1213 nps 404333 time 3 hashfull 0 pv a2a3 b4a5 e1d2",
+            "info depth 4 score cp 0 nodes 9176 nps 1147000 time 8 hashfull 0 pv a2a3 b4a5 b2b4 a5b6",
+            "info depth 5 score cp 0 nodes 29851 nps 1571105 time 19 hashfull 1 pv a2a3 b4a5 b2b4 a5b6 e2e3",
+            "info string tt probes 2761 hits 621 cutoffs 145",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 29851,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 1493863.180435016
+        },
+        {
+          "position": "fen rnbqk2r/ppppppbp/5np1/8/2PP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 2 4",
+          "bestmove": "a2a3",
+          "elapsed_ms": 20.287161999931413,
+          "info": [
+            "info depth 1 score cp 0 nodes 33 nps 16500 time 2 hashfull 0 pv a2a3",
+            "info depth 2 score cp 0 nodes 155 nps 77500 time 2 hashfull 0 pv a2a3 e8g8",
+            "info depth 3 score cp 0 nodes 1428 nps 476000 time 3 hashfull 0 pv a2a3 e8g8 e1d2",
+            "info depth 4 score cp 0 nodes 14159 nps 1769875 time 8 hashfull 0 pv a2a3 e8g8 e1d2 g8h8",
+            "info depth 5 score cp 0 nodes 56150 nps 2807500 time 20 hashfull 1 pv a2a3 e8g8 e1d2 g8h8 d2e3",
+            "info string tt probes 3865 hits 863 cutoffs 197",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 56150,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2767760.221966475
+        },
+        {
+          "position": "fen rnbqkb1r/pppp1ppp/5n2/4p3/2P5/2N5/PP1PPPPP/R1BQKBNR w KQkq - 2 3",
+          "bestmove": "a2a3",
+          "elapsed_ms": 13.620484999819382,
+          "info": [
+            "info depth 1 score cp 0 nodes 28 nps 14000 time 2 hashfull 0 pv a2a3",
+            "info depth 2 score cp 0 nodes 134 nps 44666 time 3 hashfull 0 pv a2a3 e8e7",
+            "info depth 3 score cp 0 nodes 1130 nps 376666 time 3 hashfull 0 pv a2a3 e8e7 d1a4",
+            "info depth 4 score cp 0 nodes 5501 nps 1100200 time 5 hashfull 0 pv a2a3 e8e7 d1a4 e7e8",
+            "info depth 5 score cp 0 nodes 33425 nps 2571153 time 13 hashfull 1 pv a2a3 e8e7 d1a4 e7e8 e1d1",
+            "info string tt probes 2733 hits 669 cutoffs 156",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 33425,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2454024.214295103
+        },
+        {
+          "position": "fen rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/5N2/PPP1PPPP/RN1QKB1R b KQkq - 2 3",
+          "bestmove": "a7a5",
+          "elapsed_ms": 27.208770000015647,
+          "info": [
+            "info depth 1 score cp 0 nodes 31 nps 15500 time 2 hashfull 0 pv a7a5",
+            "info depth 2 score cp 0 nodes 393 nps 196500 time 2 hashfull 0 pv a7a5 e1d2",
+            "info depth 3 score cp 0 nodes 1918 nps 639333 time 3 hashfull 0 pv a7a5 e1d2 e8d7",
+            "info depth 4 score cp 0 nodes 12475 nps 1782142 time 7 hashfull 0 pv a7a5 e1d2 e8d7 d2e3",
+            "info depth 5 score cp 0 nodes 72836 nps 2697629 time 27 hashfull 1 pv a7a5 e1d2 e8d7 a2a3 f6e4",
+            "info string tt probes 3773 hits 540 cutoffs 114",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 72836,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2676931.0042298166
+        },
+        {
+          "position": "fen rnbqkb1r/pppp1ppp/5n2/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+          "bestmove": "a2a3",
+          "elapsed_ms": 30.012023999915982,
+          "info": [
+            "info depth 1 score cp 0 nodes 236 nps 118000 time 2 hashfull 0 pv a2a3",
+            "info depth 2 score cp 0 nodes 1497 nps 499000 time 3 hashfull 0 pv a2a3 f6e4",
+            "info depth 3 score cp 0 nodes 3294 nps 1098000 time 3 hashfull 0 pv a2a3 f6e4 f3e5",
+            "info depth 4 score cp 0 nodes 25667 nps 2138916 time 12 hashfull 0 pv a2a3 f6e4 f3e5 e8e7",
+            "info depth 5 score cp 0 nodes 82157 nps 2833000 time 29 hashfull 1 pv a2a3 f6e4 f3e5 e8e7 e1e2",
+            "info string tt probes 2989 hits 722 cutoffs 208",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 82157,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2737469.4889031807
+        },
+        {
+          "position": "fen r1bqkbnr/pppp1ppp/2n5/8/3pP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 4",
+          "bestmove": "f3d4",
+          "elapsed_ms": 18.46073400020032,
+          "info": [
+            "info depth 1 score cp 0 nodes 41 nps 20500 time 2 hashfull 0 pv f3d4",
+            "info depth 2 score cp 0 nodes 323 nps 161500 time 2 hashfull 0 pv f3d4 c6d4",
+            "info depth 3 score cp 0 nodes 2523 nps 841000 time 3 hashfull 0 pv f3d4 c6d4 d1d4",
+            "info depth 4 score cp 0 nodes 11887 nps 1698142 time 7 hashfull 0 pv f3d4 c6d4 d1d4 e8e7",
+            "info depth 5 score cp 0 nodes 52835 nps 2935277 time 18 hashfull 1 pv f3d4 c6d4 d1d4 a7a5 e1e2",
+            "info string tt probes 4501 hits 894 cutoffs 258",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 52835,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2862020.545847564
+        },
+        {
+          "position": "startpos",
+          "bestmove": "a2a3",
+          "elapsed_ms": 5.884965999939595,
+          "info": [
+            "info depth 1 score cp 0 nodes 20 nps 10000 time 2 hashfull 0 pv a2a3",
+            "info depth 2 score cp 0 nodes 83 nps 41500 time 2 hashfull 0 pv a2a3 g8h6",
+            "info depth 3 score cp 0 nodes 612 nps 306000 time 2 hashfull 0 pv a2a3 g8h6 a1a2",
+            "info depth 4 score cp 0 nodes 2267 nps 755666 time 3 hashfull 0 pv a2a3 g8h6 a1a2 h8g8",
+            "info depth 5 score cp 0 nodes 12259 nps 2451800 time 5 hashfull 0 pv a2a3 g8h6 a1a2 h8g8 a2a1",
+            "info string tt probes 1774 hits 635 cutoffs 303",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 12259,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2083104.6432767545
+        },
+        {
+          "position": "fen r1bq1rk1/ppp2ppp/2n2n2/3pp3/3PP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 6",
+          "bestmove": "d4e5",
+          "elapsed_ms": 16.946331000099235,
+          "info": [
+            "info depth 1 score cp 100 nodes 6900 nps 1725000 time 4 hashfull 0 pv d4e5",
+            "info depth 2 score cp 100 nodes 7571 nps 1514200 time 5 hashfull 0 pv d4e5 d5e4",
+            "info depth 3 score cp 100 nodes 9407 nps 1881400 time 5 hashfull 0 pv d4e5 d5e4 e5f6",
+            "info depth 4 score cp 100 nodes 16615 nps 2076875 time 8 hashfull 0 pv d4e5 d5e4 e5f6 d8d1",
+            "info depth 5 score cp 100 nodes 50334 nps 3145875 time 16 hashfull 1 pv d4e5 d5e4 e5f6 d8d1 c3d1",
+            "info string tt probes 3943 hits 1059 cutoffs 397",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 50334,
+          "depth": 5,
+          "score": "cp 100",
+          "wall_nps": 2970200.4522220916
+        },
+        {
+          "position": "fen 8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1",
+          "bestmove": "b4f4",
+          "elapsed_ms": 4.1751149999527115,
+          "info": [
+            "info depth 1 score cp 100 nodes 21 nps 10500 time 2 hashfull 0 pv b4f4",
+            "info depth 2 score cp 100 nodes 157 nps 78500 time 2 hashfull 0 pv b4f4 h4g5",
+            "info depth 3 score cp 100 nodes 480 nps 240000 time 2 hashfull 0 pv b4f4 h4g5 e2e3",
+            "info depth 4 score cp 100 nodes 1269 nps 634500 time 2 hashfull 0 pv b4f4 h4g5 e2e3 g5h6",
+            "info depth 5 score cp 100 nodes 5270 nps 1317500 time 4 hashfull 0 pv b4f4 h4g5 e2e3 g5h6 a5a6",
+            "info string tt probes 836 hits 141 cutoffs 41",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 5270,
+          "depth": 5,
+          "score": "cp 100",
+          "wall_nps": 1262240.6808099153
+        },
+        {
+          "position": "fen r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
+          "bestmove": "e2a6",
+          "elapsed_ms": 2054.363321999972,
+          "info": [
+            "info depth 1 score cp 10 nodes 5718079 nps 3567111 time 1603 hashfull 0 pv e2a6",
+            "info depth 2 score cp 10 nodes 5824718 nps 3569067 time 1632 hashfull 0 pv e2a6 b4c3",
+            "info depth 3 score cp 10 nodes 6073897 nps 3572880 time 1700 hashfull 0 pv e2a6 b4c3 b2c3",
+            "info depth 4 score cp 10 nodes 6382555 nps 3583691 time 1781 hashfull 1 pv e2a6 b4c3 b2c3 e6d5",
+            "info depth 5 score cp 10 nodes 7359833 nps 3583170 time 2054 hashfull 3 pv e2a6 b4c3 d2c3 e6d5 e4d5",
+            "info string tt probes 6915 hits 1558 cutoffs 468",
+            "info string tt reused false hashfull 3"
+          ],
+          "nodes": 7359833,
+          "depth": 5,
+          "score": "cp 10",
+          "wall_nps": 3582537.1886191126
+        },
+        {
+          "position": "fen 4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1",
+          "bestmove": "e5d6",
+          "elapsed_ms": 2.790819999972882,
+          "info": [
+            "info depth 1 score cp 100 nodes 7 nps 3500 time 2 hashfull 0 pv e5d6",
+            "info depth 2 score cp 100 nodes 24 nps 12000 time 2 hashfull 0 pv e5d6 e8f8",
+            "info depth 3 score cp 0 nodes 116 nps 58000 time 2 hashfull 0 pv e5d6 e8d7 e1f2",
+            "info depth 4 score cp 0 nodes 255 nps 127500 time 2 hashfull 0 pv e5d6 e8d7 e1f2 d7d6",
+            "info depth 5 score cp 0 nodes 757 nps 378500 time 2 hashfull 0 pv e5d6 e8d7 e1f2 d7d6",
+            "info string tt probes 229 hits 17 cutoffs 0",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 757,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 271246.4437001869
+        },
+        {
+          "position": "fen 4k3/P7/8/8/8/8/8/4K3 w - - 0 1",
+          "bestmove": "a7a8q",
+          "elapsed_ms": 4.145493000123679,
+          "info": [
+            "info depth 1 score cp 900 nodes 13 nps 6500 time 2 hashfull 0 pv a7a8q",
+            "info depth 2 score cp 900 nodes 51 nps 25500 time 2 hashfull 0 pv a7a8q e8f7",
+            "info depth 3 score cp 900 nodes 180 nps 60000 time 3 hashfull 0 pv a7a8q e8f7 e1f2",
+            "info depth 4 score cp 900 nodes 605 nps 201666 time 3 hashfull 0 pv a7a8q e8f7 e1f2 f7g7",
+            "info depth 5 score cp 900 nodes 2685 nps 671250 time 4 hashfull 0 pv a7a8q e8f7 e1f2 f7g7 f2g3",
+            "info string tt probes 333 hits 26 cutoffs 0",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 2685,
+          "depth": 5,
+          "score": "cp 900",
+          "wall_nps": 647691.3602121375
+        },
+        {
+          "position": "fen 3q3k/8/8/8/8/8/3r4/K2Q4 w - - 0 1",
+          "bestmove": "d1h1",
+          "elapsed_ms": 2.859621000197876,
+          "info": [
+            "info depth 1 score cp -500 nodes 30 nps 30000 time 1 hashfull 0 pv d1b1",
+            "info depth 2 score cp -500 nodes 174 nps 174000 time 1 hashfull 0 pv d1c1 h8g8",
+            "info depth 3 score cp -500 nodes 815 nps 815000 time 1 hashfull 0 pv d1h1 h8g8 a1b1",
+            "info depth 4 score cp -500 nodes 1578 nps 789000 time 2 hashfull 0 pv d1h1 h8g8 h1c1 d8d4",
+            "info depth 5 score cp -500 nodes 4671 nps 2335500 time 2 hashfull 0 pv d1h1 h8g8 h1g1 g8h8 a1b1",
+            "info string tt probes 709 hits 39 cutoffs 25",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 4671,
+          "depth": 5,
+          "score": "cp -500",
+          "wall_nps": 1633433.2415648026
+        },
+        {
+          "position": "fen 4k3/8/2p2p2/3p4/3P4/2P2P2/8/4K3 w - - 0 1",
+          "bestmove": "f3f4",
+          "elapsed_ms": 1.3270399999782967,
+          "info": [
+            "info depth 1 score cp 0 nodes 8 nps 8000 time 0 hashfull 0 pv f3f4",
+            "info depth 2 score cp 0 nodes 28 nps 28000 time 0 hashfull 0 pv f3f4 e8f8",
+            "info depth 3 score cp 0 nodes 109 nps 109000 time 0 hashfull 0 pv f3f4 e8f8 e1f2",
+            "info depth 4 score cp 0 nodes 298 nps 298000 time 1 hashfull 0 pv f3f4 e8f8 e1f2 f8g8",
+            "info depth 5 score cp 0 nodes 973 nps 973000 time 1 hashfull 0 pv f3f4 e8f8 e1f2 f8g8 f2g3",
+            "info string tt probes 297 hits 34 cutoffs 0",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 973,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 733210.7547744703
+        },
+        {
+          "position": "fen 4k3/8/8/8/8/8/4P3/4K3 w - - 0 1",
+          "bestmove": "e2e3",
+          "elapsed_ms": 1.1289050000868883,
+          "info": [
+            "info depth 1 score cp 100 nodes 6 nps 6000 time 0 hashfull 0 pv e2e3",
+            "info depth 2 score cp 100 nodes 22 nps 22000 time 0 hashfull 0 pv e2e3 e8f8",
+            "info depth 3 score cp 100 nodes 84 nps 84000 time 0 hashfull 0 pv e2e3 e8f8 e1f2",
+            "info depth 4 score cp 100 nodes 221 nps 221000 time 0 hashfull 0 pv e2e3 e8f8 e1f2 f8g8",
+            "info depth 5 score cp 100 nodes 710 nps 710000 time 1 hashfull 0 pv e2e3 e8f8 e1f2 f8g8 f2g3",
+            "info string tt probes 221 hits 24 cutoffs 0",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 710,
+          "depth": 5,
+          "score": "cp 100",
+          "wall_nps": 628928.0319826322
+        },
+        {
+          "position": "fen r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1",
+          "bestmove": "a1a8",
+          "elapsed_ms": 2.4138740000125836,
+          "info": [
+            "info depth 1 score cp 1000 nodes 107 nps 107000 time 0 hashfull 0 pv a1a8",
+            "info depth 2 score cp 1000 nodes 229 nps 229000 time 1 hashfull 0 pv a1a8 e8f7",
+            "info depth 3 score cp 1000 nodes 580 nps 580000 time 1 hashfull 0 pv a1a8 e8f7 a8h8",
+            "info depth 4 score cp 1000 nodes 1339 nps 1339000 time 1 hashfull 0 pv a1a8 e8f7 a8h8 f7g7",
+            "info depth 5 score cp 1000 nodes 4139 nps 2069500 time 2 hashfull 0 pv a1a8 e8f7 a8h8 f7g7 e1f2",
+            "info string tt probes 992 hits 119 cutoffs 42",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 4139,
+          "depth": 5,
+          "score": "cp 1000",
+          "wall_nps": 1714671.1054422988
+        }
+      ],
+      "engine_id": [
+        "id name Farzin 0.1.0",
+        "id author Farzin contributors"
+      ],
+      "advertised_options": [
+        "option name Hash type spin default 16 min 1 max 256",
+        "option name Clear Hash type button",
+        "option name Threads type spin default 1 min 1 max 8",
+        "option name Move Overhead type spin default 20 min 0 max 5000",
+        "option name Exchange Ordering type check default false",
+        "option name PVS type check default false",
+        "option name Aspiration type check default false",
+        "option name Positional type check default false",
+        "option name NNUE SIMD type check default false",
+        "option name LMR type check default false",
+        "option name Null Move type check default false",
+        "option name Persistent History type check default false",
+        "option name Persistent Hash type check default false",
+        "option name EvalFile type string default <empty>"
+      ],
+      "nnue_backend": null,
+      "setup_info": [
+        "readyok"
+      ]
+    },
+    {
+      "platform": "Linux-6.18.44-fc-v310-x86_64-with-glibc2.39",
+      "engine": "/tmp/claude-0/-home-user-farzin/6772a6de-ee05-53e7-a2de-4788485ca880/scratchpad/bin/farzin-v4",
+      "engine_sha256": "061d697041749c1ab58a85f83ed038456dbe59e6ae14cb179dce7563f809119f",
+      "depth": 5,
+      "options": [
+        [
+          "Threads",
+          "1"
+        ],
+        [
+          "Hash",
+          "16"
+        ],
+        [
+          "PVS",
+          "true"
+        ],
+        [
+          "LMR",
+          "true"
+        ]
+      ],
+      "positions": [
+        {
+          "position": "fen r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
+          "bestmove": "d7d6",
+          "elapsed_ms": 30.30490300011479,
+          "info": [
+            "info depth 1 score cp 0 nodes 177 nps 29500 time 6 hashfull 0 pv d7d6",
+            "info depth 2 score cp 0 nodes 2264 nps 323428 time 7 hashfull 0 pv d7d6 e1e2",
+            "info depth 3 score cp 0 nodes 3564 nps 445500 time 8 hashfull 0 pv d7d6 e1e2 e8e7",
+            "info depth 4 score cp 0 nodes 20028 nps 1430571 time 14 hashfull 0 pv d7d6 e1e2 e8e7 e2e3",
+            "info depth 5 score cp 0 nodes 65070 nps 2169000 time 30 hashfull 1 pv d7d6 e1e2 e8e7 e2e3 e7e8",
+            "info string tt probes 3249 hits 677 cutoffs 197",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 65070,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2147177.3065814967
+        },
+        {
+          "position": "fen r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
+          "bestmove": "a7a5",
+          "elapsed_ms": 35.08859800012942,
+          "info": [
+            "info depth 1 score cp 0 nodes 48 nps 8000 time 6 hashfull 0 pv a7a5",
+            "info depth 2 score cp 0 nodes 2623 nps 374714 time 7 hashfull 0 pv a7a5 e1e2",
+            "info depth 3 score cp 0 nodes 4139 nps 517375 time 8 hashfull 0 pv a7a5 e1e2 e8e7",
+            "info depth 4 score cp 0 nodes 20344 nps 1356266 time 15 hashfull 0 pv a7a5 e1e2 e8e7 e2e3",
+            "info depth 5 score cp 0 nodes 81034 nps 2383352 time 34 hashfull 1 pv a7a5 e1e2 e8e7 e2e3 e7e8",
+            "info string tt probes 3742 hits 661 cutoffs 133",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 81034,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2309411.1654076665
+        },
+        {
+          "position": "fen rnbqkbnr/pp2pppp/3p4/8/3NP3/8/PPP2PPP/RNBQKB1R b KQkq - 0 4",
+          "bestmove": "a7a5",
+          "elapsed_ms": 22.674535000078322,
+          "info": [
+            "info depth 1 score cp 0 nodes 57 nps 19000 time 3 hashfull 0 pv d6d5",
+            "info depth 2 score cp 0 nodes 510 nps 170000 time 3 hashfull 0 pv a7a5 e1e2",
+            "info depth 3 score cp 0 nodes 2119 nps 706333 time 3 hashfull 0 pv a7a5 e1e2 e8d7",
+            "info depth 4 score cp 0 nodes 9362 nps 1337428 time 7 hashfull 0 pv a7a5 e1e2 e8d7 e2f3",
+            "info depth 5 score cp 0 nodes 58684 nps 2667454 time 22 hashfull 1 pv a7a5 e1e2 e8d7 e2f3 d7e8",
+            "info string tt probes 3355 hits 613 cutoffs 145",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 58684,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2588101.5861977893
+        },
+        {
+          "position": "fen rnbqkbnr/ppp2ppp/4p3/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 3",
+          "bestmove": "e4d5",
+          "elapsed_ms": 20.679598000015176,
+          "info": [
+            "info depth 1 score cp 0 nodes 71 nps 35500 time 2 hashfull 0 pv f2f3",
+            "info depth 2 score cp 0 nodes 281 nps 140500 time 2 hashfull 0 pv f2f3 d5e4",
+            "info depth 3 score cp 0 nodes 2157 nps 719000 time 3 hashfull 0 pv f2f3 d5e4 f3e4",
+            "info depth 4 score cp 0 nodes 13509 nps 1688625 time 8 hashfull 0 pv e4d5 e6d5 g2g3 e8e7",
+            "info depth 5 score cp 0 nodes 56817 nps 2840850 time 20 hashfull 1 pv e4d5 e6d5 g2g3 e8e7 e1e2",
+            "info string tt probes 4935 hits 1175 cutoffs 419",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 56817,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2747490.545994091
+        },
+        {
+          "position": "fen rnbqkbnr/pp2pppp/2p5/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 3",
+          "bestmove": "f2f3",
+          "elapsed_ms": 20.152892999931282,
+          "info": [
+            "info depth 1 score cp 0 nodes 57 nps 28500 time 2 hashfull 0 pv f2f3",
+            "info depth 2 score cp 0 nodes 250 nps 125000 time 2 hashfull 0 pv f2f3 d5e4",
+            "info depth 3 score cp 0 nodes 1870 nps 623333 time 3 hashfull 0 pv f2f3 d5e4 f3e4",
+            "info depth 4 score cp 0 nodes 10857 nps 1551000 time 7 hashfull 0 pv f2f3 d5e4 f3e4 e8d7",
+            "info depth 5 score cp 0 nodes 55460 nps 2773000 time 20 hashfull 1 pv f2f3 d5e4 f3e4 e8d7 e1f2",
+            "info string tt probes 4721 hits 1155 cutoffs 372",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 55460,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2751962.212084841
+        },
+        {
+          "position": "fen rnbqkbnr/ppp1pppp/8/3p4/2PP4/8/PP2PPPP/RNBQKBNR b KQkq - 0 2",
+          "bestmove": "d5c4",
+          "elapsed_ms": 13.17457100003594,
+          "info": [
+            "info depth 1 score cp 100 nodes 28 nps 14000 time 2 hashfull 0 pv d5c4",
+            "info depth 2 score cp 100 nodes 347 nps 173500 time 2 hashfull 0 pv d5c4 a2a3",
+            "info depth 3 score cp 100 nodes 1675 nps 558333 time 3 hashfull 0 pv d5c4 a2a3 e8d7",
+            "info depth 4 score cp 100 nodes 8041 nps 1608200 time 5 hashfull 0 pv d5c4 a2a3 a7a6 d1a4",
+            "info depth 5 score cp 0 nodes 32795 nps 2522692 time 13 hashfull 1 pv d5c4 d1a4 b8c6 e2e3 a7a6",
+            "info string tt probes 3270 hits 959 cutoffs 339",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 32795,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2489265.1153430752
+        },
+        {
+          "position": "fen rnbqk2r/pppp1ppp/4pn2/8/1bPP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 2 4",
+          "bestmove": "a2a3",
+          "elapsed_ms": 12.509211999940817,
+          "info": [
+            "info depth 1 score cp 0 nodes 31 nps 15500 time 2 hashfull 0 pv a2a3",
+            "info depth 2 score cp 0 nodes 355 nps 118333 time 3 hashfull 0 pv a2a3 b4a5",
+            "info depth 3 score cp 0 nodes 1213 nps 404333 time 3 hashfull 0 pv a2a3 b4a5 e1d2",
+            "info depth 4 score cp 0 nodes 9176 nps 1529333 time 6 hashfull 0 pv a2a3 b4a5 b2b4 a5b6",
+            "info depth 5 score cp 0 nodes 29851 nps 2487583 time 12 hashfull 1 pv a2a3 b4a5 b2b4 a5b6 e2e3",
+            "info string tt probes 2761 hits 621 cutoffs 145",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 29851,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2386321.3766095922
+        },
+        {
+          "position": "fen rnbqk2r/ppppppbp/5np1/8/2PP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 2 4",
+          "bestmove": "a2a3",
+          "elapsed_ms": 18.83410499999627,
+          "info": [
+            "info depth 1 score cp 0 nodes 33 nps 16500 time 2 hashfull 0 pv a2a3",
+            "info depth 2 score cp 0 nodes 155 nps 77500 time 2 hashfull 0 pv a2a3 e8g8",
+            "info depth 3 score cp 0 nodes 1428 nps 714000 time 2 hashfull 0 pv a2a3 e8g8 e1d2",
+            "info depth 4 score cp 0 nodes 14159 nps 2022714 time 7 hashfull 0 pv a2a3 e8g8 e1d2 g8h8",
+            "info depth 5 score cp 0 nodes 56150 nps 3119444 time 18 hashfull 1 pv a2a3 e8g8 e1d2 g8h8 d2e3",
+            "info string tt probes 3865 hits 863 cutoffs 197",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 56150,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2981293.7753087347
+        },
+        {
+          "position": "fen rnbqkb1r/pppp1ppp/5n2/4p3/2P5/2N5/PP1PPPPP/R1BQKBNR w KQkq - 2 3",
+          "bestmove": "a2a3",
+          "elapsed_ms": 12.985253999886481,
+          "info": [
+            "info depth 1 score cp 0 nodes 28 nps 14000 time 2 hashfull 0 pv a2a3",
+            "info depth 2 score cp 0 nodes 134 nps 67000 time 2 hashfull 0 pv a2a3 e8e7",
+            "info depth 3 score cp 0 nodes 1130 nps 565000 time 2 hashfull 0 pv a2a3 e8e7 d1a4",
+            "info depth 4 score cp 0 nodes 5501 nps 1375250 time 4 hashfull 0 pv a2a3 e8e7 d1a4 e7e8",
+            "info depth 5 score cp 0 nodes 33425 nps 2785416 time 12 hashfull 1 pv a2a3 e8e7 d1a4 e7e8 e1d1",
+            "info string tt probes 2733 hits 669 cutoffs 156",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 33425,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2574073.6377041377
+        },
+        {
+          "position": "fen rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/5N2/PPP1PPPP/RN1QKB1R b KQkq - 2 3",
+          "bestmove": "a7a5",
+          "elapsed_ms": 26.574052999876585,
+          "info": [
+            "info depth 1 score cp 0 nodes 31 nps 15500 time 2 hashfull 0 pv a7a5",
+            "info depth 2 score cp 0 nodes 393 nps 131000 time 3 hashfull 0 pv a7a5 e1d2",
+            "info depth 3 score cp 0 nodes 1918 nps 639333 time 3 hashfull 0 pv a7a5 e1d2 e8d7",
+            "info depth 4 score cp 0 nodes 12475 nps 1782142 time 7 hashfull 0 pv a7a5 e1d2 e8d7 d2e3",
+            "info depth 5 score cp 0 nodes 72836 nps 2801384 time 26 hashfull 1 pv a7a5 e1d2 e8d7 a2a3 f6e4",
+            "info string tt probes 3773 hits 540 cutoffs 114",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 72836,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2740869.072562558
+        },
+        {
+          "position": "fen rnbqkb1r/pppp1ppp/5n2/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+          "bestmove": "a2a3",
+          "elapsed_ms": 29.293599000084214,
+          "info": [
+            "info depth 1 score cp 0 nodes 236 nps 118000 time 2 hashfull 0 pv a2a3",
+            "info depth 2 score cp 0 nodes 1497 nps 499000 time 3 hashfull 0 pv a2a3 f6e4",
+            "info depth 3 score cp 0 nodes 3294 nps 823500 time 4 hashfull 0 pv a2a3 f6e4 f3e5",
+            "info depth 4 score cp 0 nodes 25667 nps 2138916 time 12 hashfull 0 pv a2a3 f6e4 f3e5 e8e7",
+            "info depth 5 score cp 0 nodes 82157 nps 2833000 time 29 hashfull 1 pv a2a3 f6e4 f3e5 e8e7 e1e2",
+            "info string tt probes 2989 hits 722 cutoffs 208",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 82157,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2804605.8799317833
+        },
+        {
+          "position": "fen r1bqkbnr/pppp1ppp/2n5/8/3pP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 4",
+          "bestmove": "f3d4",
+          "elapsed_ms": 18.45019699999284,
+          "info": [
+            "info depth 1 score cp 0 nodes 41 nps 20500 time 2 hashfull 0 pv f3d4",
+            "info depth 2 score cp 0 nodes 323 nps 161500 time 2 hashfull 0 pv f3d4 c6d4",
+            "info depth 3 score cp 0 nodes 2523 nps 841000 time 3 hashfull 0 pv f3d4 c6d4 d1d4",
+            "info depth 4 score cp 0 nodes 11887 nps 1698142 time 7 hashfull 0 pv f3d4 c6d4 d1d4 e8e7",
+            "info depth 5 score cp 0 nodes 52835 nps 2935277 time 18 hashfull 1 pv f3d4 c6d4 d1d4 a7a5 e1e2",
+            "info string tt probes 4501 hits 894 cutoffs 258",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 52835,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2863655.0601611733
+        },
+        {
+          "position": "startpos",
+          "bestmove": "a2a3",
+          "elapsed_ms": 5.635001999962697,
+          "info": [
+            "info depth 1 score cp 0 nodes 20 nps 10000 time 2 hashfull 0 pv a2a3",
+            "info depth 2 score cp 0 nodes 83 nps 41500 time 2 hashfull 0 pv a2a3 g8h6",
+            "info depth 3 score cp 0 nodes 612 nps 306000 time 2 hashfull 0 pv a2a3 g8h6 a1a2",
+            "info depth 4 score cp 0 nodes 2267 nps 755666 time 3 hashfull 0 pv a2a3 g8h6 a1a2 h8g8",
+            "info depth 5 score cp 0 nodes 12259 nps 2451800 time 5 hashfull 0 pv a2a3 g8h6 a1a2 h8g8 a2a1",
+            "info string tt probes 1774 hits 635 cutoffs 303",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 12259,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2175509.431954266
+        },
+        {
+          "position": "fen r1bq1rk1/ppp2ppp/2n2n2/3pp3/3PP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 6",
+          "bestmove": "d4e5",
+          "elapsed_ms": 16.517122000095696,
+          "info": [
+            "info depth 1 score cp 100 nodes 6900 nps 1725000 time 4 hashfull 0 pv d4e5",
+            "info depth 2 score cp 100 nodes 7571 nps 1892750 time 4 hashfull 0 pv d4e5 d5e4",
+            "info depth 3 score cp 100 nodes 9407 nps 1881400 time 5 hashfull 0 pv d4e5 d5e4 e5f6",
+            "info depth 4 score cp 100 nodes 16615 nps 2373571 time 7 hashfull 0 pv d4e5 d5e4 e5f6 d8d1",
+            "info depth 5 score cp 100 nodes 50334 nps 3145875 time 16 hashfull 1 pv d4e5 d5e4 e5f6 d8d1 c3d1",
+            "info string tt probes 3943 hits 1059 cutoffs 397",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 50334,
+          "depth": 5,
+          "score": "cp 100",
+          "wall_nps": 3047383.194221631
+        },
+        {
+          "position": "fen 8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1",
+          "bestmove": "b4f4",
+          "elapsed_ms": 3.5590009999850736,
+          "info": [
+            "info depth 1 score cp 100 nodes 21 nps 21000 time 1 hashfull 0 pv b4f4",
+            "info depth 2 score cp 100 nodes 157 nps 157000 time 1 hashfull 0 pv b4f4 h4g5",
+            "info depth 3 score cp 100 nodes 480 nps 240000 time 2 hashfull 0 pv b4f4 h4g5 e2e3",
+            "info depth 4 score cp 100 nodes 1269 nps 634500 time 2 hashfull 0 pv b4f4 h4g5 e2e3 g5h6",
+            "info depth 5 score cp 100 nodes 5270 nps 1756666 time 3 hashfull 0 pv b4f4 h4g5 e2e3 g5h6 a5a6",
+            "info string tt probes 836 hits 141 cutoffs 41",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 5270,
+          "depth": 5,
+          "score": "cp 100",
+          "wall_nps": 1480752.6044589765
+        },
+        {
+          "position": "fen r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
+          "bestmove": "e2a6",
+          "elapsed_ms": 2129.281249999849,
+          "info": [
+            "info depth 1 score cp 10 nodes 5718079 nps 3465502 time 1650 hashfull 0 pv e2a6",
+            "info depth 2 score cp 10 nodes 5824718 nps 3469159 time 1679 hashfull 0 pv e2a6 b4c3",
+            "info depth 3 score cp 10 nodes 6073897 nps 3474769 time 1748 hashfull 0 pv e2a6 b4c3 b2c3",
+            "info depth 4 score cp 10 nodes 6382555 nps 3438876 time 1856 hashfull 1 pv e2a6 b4c3 b2c3 e6d5",
+            "info depth 5 score cp 10 nodes 7359833 nps 3456943 time 2129 hashfull 3 pv e2a6 b4c3 d2c3 e6d5 e4d5",
+            "info string tt probes 6915 hits 1558 cutoffs 468",
+            "info string tt reused false hashfull 3"
+          ],
+          "nodes": 7359833,
+          "depth": 5,
+          "score": "cp 10",
+          "wall_nps": 3456487.018800603
+        },
+        {
+          "position": "fen 4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1",
+          "bestmove": "e5d6",
+          "elapsed_ms": 2.955487000008361,
+          "info": [
+            "info depth 1 score cp 100 nodes 7 nps 3500 time 2 hashfull 0 pv e5d6",
+            "info depth 2 score cp 100 nodes 24 nps 12000 time 2 hashfull 0 pv e5d6 e8f8",
+            "info depth 3 score cp 0 nodes 116 nps 58000 time 2 hashfull 0 pv e5d6 e8d7 e1f2",
+            "info depth 4 score cp 0 nodes 255 nps 127500 time 2 hashfull 0 pv e5d6 e8d7 e1f2 d7d6",
+            "info depth 5 score cp 0 nodes 757 nps 378500 time 2 hashfull 0 pv e5d6 e8d7 e1f2 d7d6",
+            "info string tt probes 229 hits 17 cutoffs 0",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 757,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 256133.7606959051
+        },
+        {
+          "position": "fen 4k3/P7/8/8/8/8/8/4K3 w - - 0 1",
+          "bestmove": "a7a8q",
+          "elapsed_ms": 3.448265999850264,
+          "info": [
+            "info depth 1 score cp 900 nodes 13 nps 6500 time 2 hashfull 0 pv a7a8q",
+            "info depth 2 score cp 900 nodes 51 nps 25500 time 2 hashfull 0 pv a7a8q e8f7",
+            "info depth 3 score cp 900 nodes 180 nps 90000 time 2 hashfull 0 pv a7a8q e8f7 e1f2",
+            "info depth 4 score cp 900 nodes 605 nps 302500 time 2 hashfull 0 pv a7a8q e8f7 e1f2 f7g7",
+            "info depth 5 score cp 900 nodes 2685 nps 895000 time 3 hashfull 0 pv a7a8q e8f7 e1f2 f7g7 f2g3",
+            "info string tt probes 333 hits 26 cutoffs 0",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 2685,
+          "depth": 5,
+          "score": "cp 900",
+          "wall_nps": 778652.2269791809
+        },
+        {
+          "position": "fen 3q3k/8/8/8/8/8/3r4/K2Q4 w - - 0 1",
+          "bestmove": "d1h1",
+          "elapsed_ms": 2.641626000013275,
+          "info": [
+            "info depth 1 score cp -500 nodes 30 nps 30000 time 1 hashfull 0 pv d1b1",
+            "info depth 2 score cp -500 nodes 174 nps 174000 time 1 hashfull 0 pv d1c1 h8g8",
+            "info depth 3 score cp -500 nodes 815 nps 815000 time 1 hashfull 0 pv d1h1 h8g8 a1b1",
+            "info depth 4 score cp -500 nodes 1578 nps 1578000 time 1 hashfull 0 pv d1h1 h8g8 h1c1 d8d4",
+            "info depth 5 score cp -500 nodes 4671 nps 2335500 time 2 hashfull 0 pv d1h1 h8g8 h1g1 g8h8 a1b1",
+            "info string tt probes 709 hits 39 cutoffs 25",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 4671,
+          "depth": 5,
+          "score": "cp -500",
+          "wall_nps": 1768229.1134235226
+        },
+        {
+          "position": "fen 4k3/8/2p2p2/3p4/3P4/2P2P2/8/4K3 w - - 0 1",
+          "bestmove": "f3f4",
+          "elapsed_ms": 1.3187519998609787,
+          "info": [
+            "info depth 1 score cp 0 nodes 8 nps 8000 time 0 hashfull 0 pv f3f4",
+            "info depth 2 score cp 0 nodes 28 nps 28000 time 0 hashfull 0 pv f3f4 e8f8",
+            "info depth 3 score cp 0 nodes 109 nps 109000 time 0 hashfull 0 pv f3f4 e8f8 e1f2",
+            "info depth 4 score cp 0 nodes 298 nps 298000 time 1 hashfull 0 pv f3f4 e8f8 e1f2 f8g8",
+            "info depth 5 score cp 0 nodes 973 nps 973000 time 1 hashfull 0 pv f3f4 e8f8 e1f2 f8g8 f2g3",
+            "info string tt probes 297 hits 34 cutoffs 0",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 973,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 737818.7863241705
+        },
+        {
+          "position": "fen 4k3/8/8/8/8/8/4P3/4K3 w - - 0 1",
+          "bestmove": "e2e3",
+          "elapsed_ms": 1.1521569999786152,
+          "info": [
+            "info depth 1 score cp 100 nodes 6 nps 6000 time 0 hashfull 0 pv e2e3",
+            "info depth 2 score cp 100 nodes 22 nps 22000 time 0 hashfull 0 pv e2e3 e8f8",
+            "info depth 3 score cp 100 nodes 84 nps 84000 time 0 hashfull 0 pv e2e3 e8f8 e1f2",
+            "info depth 4 score cp 100 nodes 221 nps 221000 time 0 hashfull 0 pv e2e3 e8f8 e1f2 f8g8",
+            "info depth 5 score cp 100 nodes 710 nps 710000 time 1 hashfull 0 pv e2e3 e8f8 e1f2 f8g8 f2g3",
+            "info string tt probes 221 hits 24 cutoffs 0",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 710,
+          "depth": 5,
+          "score": "cp 100",
+          "wall_nps": 616235.460977261
+        },
+        {
+          "position": "fen r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1",
+          "bestmove": "a1a8",
+          "elapsed_ms": 2.081018999888329,
+          "info": [
+            "info depth 1 score cp 1000 nodes 107 nps 107000 time 0 hashfull 0 pv a1a8",
+            "info depth 2 score cp 1000 nodes 229 nps 229000 time 0 hashfull 0 pv a1a8 e8f7",
+            "info depth 3 score cp 1000 nodes 580 nps 580000 time 0 hashfull 0 pv a1a8 e8f7 a8h8",
+            "info depth 4 score cp 1000 nodes 1339 nps 1339000 time 1 hashfull 0 pv a1a8 e8f7 a8h8 f7g7",
+            "info depth 5 score cp 1000 nodes 4139 nps 2069500 time 2 hashfull 0 pv a1a8 e8f7 a8h8 f7g7 e1f2",
+            "info string tt probes 992 hits 119 cutoffs 42",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 4139,
+          "depth": 5,
+          "score": "cp 1000",
+          "wall_nps": 1988929.4620674325
+        }
+      ],
+      "engine_id": [
+        "id name Farzin 0.1.0",
+        "id author Farzin contributors"
+      ],
+      "advertised_options": [
+        "option name Hash type spin default 16 min 1 max 256",
+        "option name Clear Hash type button",
+        "option name Threads type spin default 1 min 1 max 8",
+        "option name Move Overhead type spin default 20 min 0 max 5000",
+        "option name Exchange Ordering type check default false",
+        "option name PVS type check default false",
+        "option name Aspiration type check default false",
+        "option name Positional type check default false",
+        "option name NNUE SIMD type check default false",
+        "option name LMR type check default false",
+        "option name Null Move type check default false",
+        "option name Persistent History type check default false",
+        "option name Persistent Hash type check default false",
+        "option name EvalFile type string default <empty>"
+      ],
+      "nnue_backend": null,
+      "setup_info": [
+        "readyok"
+      ]
+    },
+    {
+      "platform": "Linux-6.18.44-fc-v310-x86_64-with-glibc2.39",
+      "engine": "/tmp/claude-0/-home-user-farzin/6772a6de-ee05-53e7-a2de-4788485ca880/scratchpad/bin/farzin-v4",
+      "engine_sha256": "061d697041749c1ab58a85f83ed038456dbe59e6ae14cb179dce7563f809119f",
+      "depth": 5,
+      "options": [
+        [
+          "Threads",
+          "1"
+        ],
+        [
+          "Hash",
+          "16"
+        ],
+        [
+          "PVS",
+          "true"
+        ],
+        [
+          "LMR",
+          "true"
+        ]
+      ],
+      "positions": [
+        {
+          "position": "fen r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
+          "bestmove": "d7d6",
+          "elapsed_ms": 34.02624800014564,
+          "info": [
+            "info depth 1 score cp 0 nodes 177 nps 25285 time 7 hashfull 0 pv d7d6",
+            "info depth 2 score cp 0 nodes 2264 nps 283000 time 8 hashfull 0 pv d7d6 e1e2",
+            "info depth 3 score cp 0 nodes 3564 nps 396000 time 9 hashfull 0 pv d7d6 e1e2 e8e7",
+            "info depth 4 score cp 0 nodes 20028 nps 1251750 time 16 hashfull 0 pv d7d6 e1e2 e8e7 e2e3",
+            "info depth 5 score cp 0 nodes 65070 nps 1971818 time 33 hashfull 1 pv d7d6 e1e2 e8e7 e2e3 e7e8",
+            "info string tt probes 3249 hits 677 cutoffs 197",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 65070,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 1912347.1973672055
+        },
+        {
+          "position": "fen r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
+          "bestmove": "a7a5",
+          "elapsed_ms": 43.37889300018105,
+          "info": [
+            "info depth 1 score cp 0 nodes 48 nps 6857 time 7 hashfull 0 pv a7a5",
+            "info depth 2 score cp 0 nodes 2623 nps 327875 time 8 hashfull 0 pv a7a5 e1e2",
+            "info depth 3 score cp 0 nodes 4139 nps 459888 time 9 hashfull 0 pv a7a5 e1e2 e8e7",
+            "info depth 4 score cp 0 nodes 20344 nps 1271500 time 16 hashfull 0 pv a7a5 e1e2 e8e7 e2e3",
+            "info depth 5 score cp 0 nodes 81034 nps 1929380 time 42 hashfull 1 pv a7a5 e1e2 e8e7 e2e3 e7e8",
+            "info string tt probes 3742 hits 661 cutoffs 133",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 81034,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 1868051.3585181113
+        },
+        {
+          "position": "fen rnbqkbnr/pp2pppp/3p4/8/3NP3/8/PPP2PPP/RNBQKB1R b KQkq - 0 4",
+          "bestmove": "a7a5",
+          "elapsed_ms": 26.500610999846685,
+          "info": [
+            "info depth 1 score cp 0 nodes 57 nps 19000 time 3 hashfull 0 pv d6d5",
+            "info depth 2 score cp 0 nodes 510 nps 170000 time 3 hashfull 0 pv a7a5 e1e2",
+            "info depth 3 score cp 0 nodes 2119 nps 529750 time 4 hashfull 0 pv a7a5 e1e2 e8d7",
+            "info depth 4 score cp 0 nodes 9362 nps 1170250 time 8 hashfull 0 pv a7a5 e1e2 e8d7 e2f3",
+            "info depth 5 score cp 0 nodes 58684 nps 2257076 time 26 hashfull 1 pv a7a5 e1e2 e8d7 e2f3 d7e8",
+            "info string tt probes 3355 hits 613 cutoffs 145",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 58684,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2214439.5085962173
+        },
+        {
+          "position": "fen rnbqkbnr/ppp2ppp/4p3/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 3",
+          "bestmove": "e4d5",
+          "elapsed_ms": 22.424746000069717,
+          "info": [
+            "info depth 1 score cp 0 nodes 71 nps 23666 time 3 hashfull 0 pv f2f3",
+            "info depth 2 score cp 0 nodes 281 nps 93666 time 3 hashfull 0 pv f2f3 d5e4",
+            "info depth 3 score cp 0 nodes 2157 nps 719000 time 3 hashfull 0 pv f2f3 d5e4 f3e4",
+            "info depth 4 score cp 0 nodes 13509 nps 1688625 time 8 hashfull 0 pv e4d5 e6d5 g2g3 e8e7",
+            "info depth 5 score cp 0 nodes 56817 nps 2582590 time 22 hashfull 1 pv e4d5 e6d5 g2g3 e8e7 e1e2",
+            "info string tt probes 4935 hits 1175 cutoffs 419",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 56817,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2533674.182968376
+        },
+        {
+          "position": "fen rnbqkbnr/pp2pppp/2p5/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 3",
+          "bestmove": "f2f3",
+          "elapsed_ms": 20.852457000046343,
+          "info": [
+            "info depth 1 score cp 0 nodes 57 nps 28500 time 2 hashfull 0 pv f2f3",
+            "info depth 2 score cp 0 nodes 250 nps 125000 time 2 hashfull 0 pv f2f3 d5e4",
+            "info depth 3 score cp 0 nodes 1870 nps 623333 time 3 hashfull 0 pv f2f3 d5e4 f3e4",
+            "info depth 4 score cp 0 nodes 10857 nps 1551000 time 7 hashfull 0 pv f2f3 d5e4 f3e4 e8d7",
+            "info depth 5 score cp 0 nodes 55460 nps 2773000 time 20 hashfull 1 pv f2f3 d5e4 f3e4 e8d7 e1f2",
+            "info string tt probes 4721 hits 1155 cutoffs 372",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 55460,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2659638.621956
+        },
+        {
+          "position": "fen rnbqkbnr/ppp1pppp/8/3p4/2PP4/8/PP2PPPP/RNBQKBNR b KQkq - 0 2",
+          "bestmove": "d5c4",
+          "elapsed_ms": 13.77887700004976,
+          "info": [
+            "info depth 1 score cp 100 nodes 28 nps 14000 time 2 hashfull 0 pv d5c4",
+            "info depth 2 score cp 100 nodes 347 nps 173500 time 2 hashfull 0 pv d5c4 a2a3",
+            "info depth 3 score cp 100 nodes 1675 nps 558333 time 3 hashfull 0 pv d5c4 a2a3 e8d7",
+            "info depth 4 score cp 100 nodes 8041 nps 1608200 time 5 hashfull 0 pv d5c4 a2a3 a7a6 d1a4",
+            "info depth 5 score cp 0 nodes 32795 nps 2522692 time 13 hashfull 1 pv d5c4 d1a4 b8c6 e2e3 a7a6",
+            "info string tt probes 3270 hits 959 cutoffs 339",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 32795,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2380092.368912326
+        },
+        {
+          "position": "fen rnbqk2r/pppp1ppp/4pn2/8/1bPP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 2 4",
+          "bestmove": "a2a3",
+          "elapsed_ms": 12.932868999996572,
+          "info": [
+            "info depth 1 score cp 0 nodes 31 nps 15500 time 2 hashfull 0 pv a2a3",
+            "info depth 2 score cp 0 nodes 355 nps 118333 time 3 hashfull 0 pv a2a3 b4a5",
+            "info depth 3 score cp 0 nodes 1213 nps 404333 time 3 hashfull 0 pv a2a3 b4a5 e1d2",
+            "info depth 4 score cp 0 nodes 9176 nps 1529333 time 6 hashfull 0 pv a2a3 b4a5 b2b4 a5b6",
+            "info depth 5 score cp 0 nodes 29851 nps 2487583 time 12 hashfull 1 pv a2a3 b4a5 b2b4 a5b6 e2e3",
+            "info string tt probes 2761 hits 621 cutoffs 145",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 29851,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2308149.87764957
+        },
+        {
+          "position": "fen rnbqk2r/ppppppbp/5np1/8/2PP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 2 4",
+          "bestmove": "a2a3",
+          "elapsed_ms": 20.52514499996505,
+          "info": [
+            "info depth 1 score cp 0 nodes 33 nps 16500 time 2 hashfull 0 pv a2a3",
+            "info depth 2 score cp 0 nodes 155 nps 77500 time 2 hashfull 0 pv a2a3 e8g8",
+            "info depth 3 score cp 0 nodes 1428 nps 714000 time 2 hashfull 0 pv a2a3 e8g8 e1d2",
+            "info depth 4 score cp 0 nodes 14159 nps 1769875 time 8 hashfull 0 pv a2a3 e8g8 e1d2 g8h8",
+            "info depth 5 score cp 0 nodes 56150 nps 2807500 time 20 hashfull 1 pv a2a3 e8g8 e1d2 g8h8 d2e3",
+            "info string tt probes 3865 hits 863 cutoffs 197",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 56150,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2735668.8588604666
+        },
+        {
+          "position": "fen rnbqkb1r/pppp1ppp/5n2/4p3/2P5/2N5/PP1PPPPP/R1BQKBNR w KQkq - 2 3",
+          "bestmove": "a2a3",
+          "elapsed_ms": 13.500553000085347,
+          "info": [
+            "info depth 1 score cp 0 nodes 28 nps 14000 time 2 hashfull 0 pv a2a3",
+            "info depth 2 score cp 0 nodes 134 nps 67000 time 2 hashfull 0 pv a2a3 e8e7",
+            "info depth 3 score cp 0 nodes 1130 nps 565000 time 2 hashfull 0 pv a2a3 e8e7 d1a4",
+            "info depth 4 score cp 0 nodes 5501 nps 1100200 time 5 hashfull 0 pv a2a3 e8e7 d1a4 e7e8",
+            "info depth 5 score cp 0 nodes 33425 nps 2571153 time 13 hashfull 1 pv a2a3 e8e7 d1a4 e7e8 e1d1",
+            "info string tt probes 2733 hits 669 cutoffs 156",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 33425,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2475824.508802617
+        },
+        {
+          "position": "fen rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/5N2/PPP1PPPP/RN1QKB1R b KQkq - 2 3",
+          "bestmove": "a7a5",
+          "elapsed_ms": 27.818130000014207,
+          "info": [
+            "info depth 1 score cp 0 nodes 31 nps 10333 time 3 hashfull 0 pv a7a5",
+            "info depth 2 score cp 0 nodes 393 nps 131000 time 3 hashfull 0 pv a7a5 e1d2",
+            "info depth 3 score cp 0 nodes 1918 nps 639333 time 3 hashfull 0 pv a7a5 e1d2 e8d7",
+            "info depth 4 score cp 0 nodes 12475 nps 1559375 time 8 hashfull 0 pv a7a5 e1d2 e8d7 d2e3",
+            "info depth 5 score cp 0 nodes 72836 nps 2697629 time 27 hashfull 1 pv a7a5 e1d2 e8d7 a2a3 f6e4",
+            "info string tt probes 3773 hits 540 cutoffs 114",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 72836,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2618292.4589094524
+        },
+        {
+          "position": "fen rnbqkb1r/pppp1ppp/5n2/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+          "bestmove": "a2a3",
+          "elapsed_ms": 29.697358000021268,
+          "info": [
+            "info depth 1 score cp 0 nodes 236 nps 118000 time 2 hashfull 0 pv a2a3",
+            "info depth 2 score cp 0 nodes 1497 nps 499000 time 3 hashfull 0 pv a2a3 f6e4",
+            "info depth 3 score cp 0 nodes 3294 nps 1098000 time 3 hashfull 0 pv a2a3 f6e4 f3e5",
+            "info depth 4 score cp 0 nodes 25667 nps 2138916 time 12 hashfull 0 pv a2a3 f6e4 f3e5 e8e7",
+            "info depth 5 score cp 0 nodes 82157 nps 2833000 time 29 hashfull 1 pv a2a3 f6e4 f3e5 e8e7 e1e2",
+            "info string tt probes 2989 hits 722 cutoffs 208",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 82157,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2766475.0514150504
+        },
+        {
+          "position": "fen r1bqkbnr/pppp1ppp/2n5/8/3pP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 4",
+          "bestmove": "f3d4",
+          "elapsed_ms": 19.913247999966188,
+          "info": [
+            "info depth 1 score cp 0 nodes 41 nps 13666 time 3 hashfull 0 pv f3d4",
+            "info depth 2 score cp 0 nodes 323 nps 107666 time 3 hashfull 0 pv f3d4 c6d4",
+            "info depth 3 score cp 0 nodes 2523 nps 841000 time 3 hashfull 0 pv f3d4 c6d4 d1d4",
+            "info depth 4 score cp 0 nodes 11887 nps 1698142 time 7 hashfull 0 pv f3d4 c6d4 d1d4 e8e7",
+            "info depth 5 score cp 0 nodes 52835 nps 2780789 time 19 hashfull 1 pv f3d4 c6d4 d1d4 a7a5 e1e2",
+            "info string tt probes 4501 hits 894 cutoffs 258",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 52835,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 2653258.7752680886
+        },
+        {
+          "position": "startpos",
+          "bestmove": "a2a3",
+          "elapsed_ms": 6.322911999859571,
+          "info": [
+            "info depth 1 score cp 0 nodes 20 nps 10000 time 2 hashfull 0 pv a2a3",
+            "info depth 2 score cp 0 nodes 83 nps 41500 time 2 hashfull 0 pv a2a3 g8h6",
+            "info depth 3 score cp 0 nodes 612 nps 306000 time 2 hashfull 0 pv a2a3 g8h6 a1a2",
+            "info depth 4 score cp 0 nodes 2267 nps 755666 time 3 hashfull 0 pv a2a3 g8h6 a1a2 h8g8",
+            "info depth 5 score cp 0 nodes 12259 nps 2043166 time 6 hashfull 0 pv a2a3 g8h6 a1a2 h8g8 a2a1",
+            "info string tt probes 1774 hits 635 cutoffs 303",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 12259,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 1938821.8593382712
+        },
+        {
+          "position": "fen r1bq1rk1/ppp2ppp/2n2n2/3pp3/3PP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 6",
+          "bestmove": "d4e5",
+          "elapsed_ms": 20.130938999955106,
+          "info": [
+            "info depth 1 score cp 100 nodes 6900 nps 1380000 time 5 hashfull 0 pv d4e5",
+            "info depth 2 score cp 100 nodes 7571 nps 1514200 time 5 hashfull 0 pv d4e5 d5e4",
+            "info depth 3 score cp 100 nodes 9407 nps 1567833 time 6 hashfull 0 pv d4e5 d5e4 e5f6",
+            "info depth 4 score cp 100 nodes 16615 nps 1846111 time 9 hashfull 0 pv d4e5 d5e4 e5f6 d8d1",
+            "info depth 5 score cp 100 nodes 50334 nps 2649157 time 19 hashfull 1 pv d4e5 d5e4 e5f6 d8d1 c3d1",
+            "info string tt probes 3943 hits 1059 cutoffs 397",
+            "info string tt reused false hashfull 1"
+          ],
+          "nodes": 50334,
+          "depth": 5,
+          "score": "cp 100",
+          "wall_nps": 2500330.4614907554
+        },
+        {
+          "position": "fen 8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1",
+          "bestmove": "b4f4",
+          "elapsed_ms": 4.3049850000898005,
+          "info": [
+            "info depth 1 score cp 100 nodes 21 nps 10500 time 2 hashfull 0 pv b4f4",
+            "info depth 2 score cp 100 nodes 157 nps 78500 time 2 hashfull 0 pv b4f4 h4g5",
+            "info depth 3 score cp 100 nodes 480 nps 240000 time 2 hashfull 0 pv b4f4 h4g5 e2e3",
+            "info depth 4 score cp 100 nodes 1269 nps 634500 time 2 hashfull 0 pv b4f4 h4g5 e2e3 g5h6",
+            "info depth 5 score cp 100 nodes 5270 nps 1317500 time 4 hashfull 0 pv b4f4 h4g5 e2e3 g5h6 a5a6",
+            "info string tt probes 836 hits 141 cutoffs 41",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 5270,
+          "depth": 5,
+          "score": "cp 100",
+          "wall_nps": 1224162.2212133305
+        },
+        {
+          "position": "fen r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
+          "bestmove": "e2a6",
+          "elapsed_ms": 2170.1231070001086,
+          "info": [
+            "info depth 1 score cp 10 nodes 5718079 nps 3303338 time 1731 hashfull 0 pv e2a6",
+            "info depth 2 score cp 10 nodes 5824718 nps 3309498 time 1760 hashfull 0 pv e2a6 b4c3",
+            "info depth 3 score cp 10 nodes 6073897 nps 3322700 time 1828 hashfull 0 pv e2a6 b4c3 b2c3",
+            "info depth 4 score cp 10 nodes 6382555 nps 3345154 time 1908 hashfull 1 pv e2a6 b4c3 b2c3 e6d5",
+            "info depth 5 score cp 10 nodes 7359833 nps 3393191 time 2169 hashfull 3 pv e2a6 b4c3 d2c3 e6d5 e4d5",
+            "info string tt probes 6915 hits 1558 cutoffs 468",
+            "info string tt reused false hashfull 3"
+          ],
+          "nodes": 7359833,
+          "depth": 5,
+          "score": "cp 10",
+          "wall_nps": 3391435.7099187514
+        },
+        {
+          "position": "fen 4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1",
+          "bestmove": "e5d6",
+          "elapsed_ms": 3.3833380000487523,
+          "info": [
+            "info depth 1 score cp 100 nodes 7 nps 3500 time 2 hashfull 0 pv e5d6",
+            "info depth 2 score cp 100 nodes 24 nps 8000 time 3 hashfull 0 pv e5d6 e8f8",
+            "info depth 3 score cp 0 nodes 116 nps 38666 time 3 hashfull 0 pv e5d6 e8d7 e1f2",
+            "info depth 4 score cp 0 nodes 255 nps 85000 time 3 hashfull 0 pv e5d6 e8d7 e1f2 d7d6",
+            "info depth 5 score cp 0 nodes 757 nps 252333 time 3 hashfull 0 pv e5d6 e8d7 e1f2 d7d6",
+            "info string tt probes 229 hits 17 cutoffs 0",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 757,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 223743.53374953728
+        },
+        {
+          "position": "fen 4k3/P7/8/8/8/8/8/4K3 w - - 0 1",
+          "bestmove": "a7a8q",
+          "elapsed_ms": 3.5610190000170405,
+          "info": [
+            "info depth 1 score cp 900 nodes 13 nps 6500 time 2 hashfull 0 pv a7a8q",
+            "info depth 2 score cp 900 nodes 51 nps 25500 time 2 hashfull 0 pv a7a8q e8f7",
+            "info depth 3 score cp 900 nodes 180 nps 90000 time 2 hashfull 0 pv a7a8q e8f7 e1f2",
+            "info depth 4 score cp 900 nodes 605 nps 201666 time 3 hashfull 0 pv a7a8q e8f7 e1f2 f7g7",
+            "info depth 5 score cp 900 nodes 2685 nps 895000 time 3 hashfull 0 pv a7a8q e8f7 e1f2 f7g7 f2g3",
+            "info string tt probes 333 hits 26 cutoffs 0",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 2685,
+          "depth": 5,
+          "score": "cp 900",
+          "wall_nps": 753997.6619015938
+        },
+        {
+          "position": "fen 3q3k/8/8/8/8/8/3r4/K2Q4 w - - 0 1",
+          "bestmove": "d1h1",
+          "elapsed_ms": 2.4368950000734912,
+          "info": [
+            "info depth 1 score cp -500 nodes 30 nps 30000 time 1 hashfull 0 pv d1b1",
+            "info depth 2 score cp -500 nodes 174 nps 174000 time 1 hashfull 0 pv d1c1 h8g8",
+            "info depth 3 score cp -500 nodes 815 nps 815000 time 1 hashfull 0 pv d1h1 h8g8 a1b1",
+            "info depth 4 score cp -500 nodes 1578 nps 1578000 time 1 hashfull 0 pv d1h1 h8g8 h1c1 d8d4",
+            "info depth 5 score cp -500 nodes 4671 nps 2335500 time 2 hashfull 0 pv d1h1 h8g8 h1g1 g8h8 a1b1",
+            "info string tt probes 709 hits 39 cutoffs 25",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 4671,
+          "depth": 5,
+          "score": "cp -500",
+          "wall_nps": 1916783.4477312865
+        },
+        {
+          "position": "fen 4k3/8/2p2p2/3p4/3P4/2P2P2/8/4K3 w - - 0 1",
+          "bestmove": "f3f4",
+          "elapsed_ms": 1.2624739999864687,
+          "info": [
+            "info depth 1 score cp 0 nodes 8 nps 8000 time 0 hashfull 0 pv f3f4",
+            "info depth 2 score cp 0 nodes 28 nps 28000 time 0 hashfull 0 pv f3f4 e8f8",
+            "info depth 3 score cp 0 nodes 109 nps 109000 time 0 hashfull 0 pv f3f4 e8f8 e1f2",
+            "info depth 4 score cp 0 nodes 298 nps 298000 time 0 hashfull 0 pv f3f4 e8f8 e1f2 f8g8",
+            "info depth 5 score cp 0 nodes 973 nps 973000 time 1 hashfull 0 pv f3f4 e8f8 e1f2 f8g8 f2g3",
+            "info string tt probes 297 hits 34 cutoffs 0",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 973,
+          "depth": 5,
+          "score": "cp 0",
+          "wall_nps": 770708.9413409138
+        },
+        {
+          "position": "fen 4k3/8/8/8/8/8/4P3/4K3 w - - 0 1",
+          "bestmove": "e2e3",
+          "elapsed_ms": 1.13156399993386,
+          "info": [
+            "info depth 1 score cp 100 nodes 6 nps 6000 time 0 hashfull 0 pv e2e3",
+            "info depth 2 score cp 100 nodes 22 nps 22000 time 0 hashfull 0 pv e2e3 e8f8",
+            "info depth 3 score cp 100 nodes 84 nps 84000 time 0 hashfull 0 pv e2e3 e8f8 e1f2",
+            "info depth 4 score cp 100 nodes 221 nps 221000 time 0 hashfull 0 pv e2e3 e8f8 e1f2 f8g8",
+            "info depth 5 score cp 100 nodes 710 nps 710000 time 1 hashfull 0 pv e2e3 e8f8 e1f2 f8g8 f2g3",
+            "info string tt probes 221 hits 24 cutoffs 0",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 710,
+          "depth": 5,
+          "score": "cp 100",
+          "wall_nps": 627450.1486804985
+        },
+        {
+          "position": "fen r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1",
+          "bestmove": "a1a8",
+          "elapsed_ms": 2.303461000110474,
+          "info": [
+            "info depth 1 score cp 1000 nodes 107 nps 107000 time 1 hashfull 0 pv a1a8",
+            "info depth 2 score cp 1000 nodes 229 nps 229000 time 1 hashfull 0 pv a1a8 e8f7",
+            "info depth 3 score cp 1000 nodes 580 nps 580000 time 1 hashfull 0 pv a1a8 e8f7 a8h8",
+            "info depth 4 score cp 1000 nodes 1339 nps 1339000 time 1 hashfull 0 pv a1a8 e8f7 a8h8 f7g7",
+            "info depth 5 score cp 1000 nodes 4139 nps 2069500 time 2 hashfull 0 pv a1a8 e8f7 a8h8 f7g7 e1f2",
+            "info string tt probes 992 hits 119 cutoffs 42",
+            "info string tt reused false hashfull 0"
+          ],
+          "nodes": 4139,
+          "depth": 5,
+          "score": "cp 1000",
+          "wall_nps": 1796861.3316229335
+        }
+      ],
+      "engine_id": [
+        "id name Farzin 0.1.0",
+        "id author Farzin contributors"
+      ],
+      "advertised_options": [
+        "option name Hash type spin default 16 min 1 max 256",
+        "option name Clear Hash type button",
+        "option name Threads type spin default 1 min 1 max 8",
+        "option name Move Overhead type spin default 20 min 0 max 5000",
+        "option name Exchange Ordering type check default false",
+        "option name PVS type check default false",
+        "option name Aspiration type check default false",
+        "option name Positional type check default false",
+        "option name NNUE SIMD type check default false",
+        "option name LMR type check default false",
+        "option name Null Move type check default false",
+        "option name Persistent History type check default false",
+        "option name Persistent Hash type check default false",
+        "option name EvalFile type string default <empty>"
+      ],
+      "nnue_backend": null,
+      "setup_info": [
+        "readyok"
+      ]
+    }
+  ],
+  "summary": {
+    "total_wall_ms_median": 2429.3111999995745,
+    "total_wall_ms_min": 2377.7291760000026,
+    "total_wall_ms_max": 2500.309829000571,
+    "total_wall_ms_stdev": 61.546089789088576,
+    "positions": [
+      {
+        "position": "fen r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
+        "wall_ms_median": 30.52784800001973,
+        "wall_ms_min": 30.30490300011479,
+        "wall_ms_max": 34.02624800014564,
+        "deterministic": true
+      },
+      {
+        "position": "fen r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
+        "wall_ms_median": 37.41398399984064,
+        "wall_ms_min": 35.08859800012942,
+        "wall_ms_max": 43.37889300018105,
+        "deterministic": true
+      },
+      {
+        "position": "fen rnbqkbnr/pp2pppp/3p4/8/3NP3/8/PPP2PPP/RNBQKB1R b KQkq - 0 4",
+        "wall_ms_median": 23.011632999896392,
+        "wall_ms_min": 22.674535000078322,
+        "wall_ms_max": 26.500610999846685,
+        "deterministic": true
+      },
+      {
+        "position": "fen rnbqkbnr/ppp2ppp/4p3/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 3",
+        "wall_ms_median": 21.139203000075213,
+        "wall_ms_min": 20.679598000015176,
+        "wall_ms_max": 22.424746000069717,
+        "deterministic": true
+      },
+      {
+        "position": "fen rnbqkbnr/pp2pppp/2p5/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 3",
+        "wall_ms_median": 20.387147000064942,
+        "wall_ms_min": 20.152892999931282,
+        "wall_ms_max": 20.852457000046343,
+        "deterministic": true
+      },
+      {
+        "position": "fen rnbqkbnr/ppp1pppp/8/3p4/2PP4/8/PP2PPPP/RNBQKBNR b KQkq - 0 2",
+        "wall_ms_median": 13.77887700004976,
+        "wall_ms_min": 13.17457100003594,
+        "wall_ms_max": 19.642279999970924,
+        "deterministic": true
+      },
+      {
+        "position": "fen rnbqk2r/pppp1ppp/4pn2/8/1bPP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 2 4",
+        "wall_ms_median": 12.932868999996572,
+        "wall_ms_min": 12.509211999940817,
+        "wall_ms_max": 19.982418999916263,
+        "deterministic": true
+      },
+      {
+        "position": "fen rnbqk2r/ppppppbp/5np1/8/2PP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 2 4",
+        "wall_ms_median": 20.287161999931413,
+        "wall_ms_min": 18.83410499999627,
+        "wall_ms_max": 20.52514499996505,
+        "deterministic": true
+      },
+      {
+        "position": "fen rnbqkb1r/pppp1ppp/5n2/4p3/2P5/2N5/PP1PPPPP/R1BQKBNR w KQkq - 2 3",
+        "wall_ms_median": 13.500553000085347,
+        "wall_ms_min": 12.985253999886481,
+        "wall_ms_max": 13.620484999819382,
+        "deterministic": true
+      },
+      {
+        "position": "fen rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/5N2/PPP1PPPP/RN1QKB1R b KQkq - 2 3",
+        "wall_ms_median": 27.208770000015647,
+        "wall_ms_min": 26.574052999876585,
+        "wall_ms_max": 27.818130000014207,
+        "deterministic": true
+      },
+      {
+        "position": "fen rnbqkb1r/pppp1ppp/5n2/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+        "wall_ms_median": 29.697358000021268,
+        "wall_ms_min": 29.293599000084214,
+        "wall_ms_max": 30.012023999915982,
+        "deterministic": true
+      },
+      {
+        "position": "fen r1bqkbnr/pppp1ppp/2n5/8/3pP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 4",
+        "wall_ms_median": 18.46073400020032,
+        "wall_ms_min": 18.45019699999284,
+        "wall_ms_max": 19.913247999966188,
+        "deterministic": true
+      },
+      {
+        "position": "startpos",
+        "wall_ms_median": 5.884965999939595,
+        "wall_ms_min": 5.635001999962697,
+        "wall_ms_max": 6.322911999859571,
+        "deterministic": true
+      },
+      {
+        "position": "fen r1bq1rk1/ppp2ppp/2n2n2/3pp3/3PP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 6",
+        "wall_ms_median": 16.946331000099235,
+        "wall_ms_min": 16.517122000095696,
+        "wall_ms_max": 20.130938999955106,
+        "deterministic": true
+      },
+      {
+        "position": "fen 8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1",
+        "wall_ms_median": 4.1751149999527115,
+        "wall_ms_min": 3.5590009999850736,
+        "wall_ms_max": 4.3049850000898005,
+        "deterministic": true
+      },
+      {
+        "position": "fen r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
+        "wall_ms_median": 2129.281249999849,
+        "wall_ms_min": 2054.363321999972,
+        "wall_ms_max": 2170.1231070001086,
+        "deterministic": true
+      },
+      {
+        "position": "fen 4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1",
+        "wall_ms_median": 2.955487000008361,
+        "wall_ms_min": 2.790819999972882,
+        "wall_ms_max": 3.3833380000487523,
+        "deterministic": true
+      },
+      {
+        "position": "fen 4k3/P7/8/8/8/8/8/4K3 w - - 0 1",
+        "wall_ms_median": 3.5610190000170405,
+        "wall_ms_min": 3.448265999850264,
+        "wall_ms_max": 4.145493000123679,
+        "deterministic": true
+      },
+      {
+        "position": "fen 3q3k/8/8/8/8/8/3r4/K2Q4 w - - 0 1",
+        "wall_ms_median": 2.641626000013275,
+        "wall_ms_min": 2.4368950000734912,
+        "wall_ms_max": 2.859621000197876,
+        "deterministic": true
+      },
+      {
+        "position": "fen 4k3/8/2p2p2/3p4/3P4/2P2P2/8/4K3 w - - 0 1",
+        "wall_ms_median": 1.3187519998609787,
+        "wall_ms_min": 1.2624739999864687,
+        "wall_ms_max": 1.3270399999782967,
+        "deterministic": true
+      },
+      {
+        "position": "fen 4k3/8/8/8/8/8/4P3/4K3 w - - 0 1",
+        "wall_ms_median": 1.13156399993386,
+        "wall_ms_min": 1.1289050000868883,
+        "wall_ms_max": 1.1521569999786152,
+        "deterministic": true
+      },
+      {
+        "position": "fen r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1",
+        "wall_ms_median": 2.303461000110474,
+        "wall_ms_min": 2.081018999888329,
+        "wall_ms_max": 2.4138740000125836,
+        "deterministic": true
+      }
+    ]
+  }
+}
