@@ -1,5 +1,6 @@
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Command, Stdio};
+use std::str::FromStr;
 use std::time::{Duration, Instant};
 
 #[test]
@@ -138,6 +139,43 @@ fn replacing_search_does_not_emit_stale_bestmove() {
             break;
         }
     }
+    writeln!(input, "quit").unwrap();
+    child.wait().unwrap();
+}
+
+#[test]
+fn reported_principal_variation_replays_legally() {
+    let mut child = Command::new(env!("CARGO_BIN_EXE_farzin"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let mut input = child.stdin.take().unwrap();
+    let mut output = BufReader::new(child.stdout.take().unwrap());
+    writeln!(input, "position startpos\ngo depth 3").unwrap();
+    input.flush().unwrap();
+    let mut deepest = 0;
+    loop {
+        let mut line = String::new();
+        assert_ne!(output.read_line(&mut line).unwrap(), 0);
+        if line.starts_with("info depth ") {
+            let words: Vec<_> = line.split_whitespace().collect();
+            let depth: u32 = words[2].parse().unwrap();
+            let pv_index = words.iter().position(|word| *word == "pv").unwrap();
+            let mut board = chess::Board::default();
+            assert!(pv_index + 1 < words.len());
+            for token in &words[pv_index + 1..] {
+                let mv = chess::ChessMove::from_str(token).unwrap();
+                assert!(chess::MoveGen::new_legal(&board).any(|legal| legal == mv));
+                board = board.make_move_new(mv);
+            }
+            deepest = deepest.max(depth);
+        }
+        if line.starts_with("bestmove ") {
+            break;
+        }
+    }
+    assert_eq!(deepest, 3);
     writeln!(input, "quit").unwrap();
     child.wait().unwrap();
 }
