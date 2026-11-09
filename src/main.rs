@@ -37,6 +37,7 @@ fn evaluate(board: &Board) -> i32 {
 struct SearchControl {
     stop: Arc<AtomicBool>,
     deadline: Option<Instant>,
+    node_limit: Option<u64>,
 }
 
 #[derive(Clone)]
@@ -83,8 +84,10 @@ impl Game {
 }
 
 impl SearchControl {
-    fn stopped(&self) -> bool {
-        self.stop.load(Ordering::Relaxed) || self.deadline.is_some_and(|d| Instant::now() >= d)
+    fn stopped(&self, nodes: u64) -> bool {
+        self.stop.load(Ordering::Relaxed)
+            || self.deadline.is_some_and(|d| Instant::now() >= d)
+            || self.node_limit.is_some_and(|limit| nodes >= limit)
     }
 }
 
@@ -99,7 +102,7 @@ fn quiescence(
     control: &SearchControl,
     nodes: &mut u64,
 ) -> Option<i32> {
-    if control.stopped() {
+    if control.stopped(*nodes) {
         return None;
     }
     *nodes += 1;
@@ -158,7 +161,7 @@ fn search(
     control: &SearchControl,
     state: &mut SearchState<'_>,
 ) -> Option<i32> {
-    if control.stopped() {
+    if control.stopped(*state.nodes) {
         return None;
     }
     *state.nodes += 1;
@@ -280,14 +283,19 @@ fn best_move(
     best.map(|mv| (mv, alpha))
 }
 
-fn stop_search(worker: &mut Option<(Arc<AtomicBool>, JoinHandle<()>)>) {
-    if let Some((stop, handle)) = worker.take() {
+type Worker = (Arc<AtomicBool>, Arc<AtomicBool>, JoinHandle<()>);
+
+fn stop_search(worker: &mut Option<Worker>, discard: bool) {
+    if let Some((stop, suppress, handle)) = worker.take() {
+        if discard {
+            suppress.store(true, Ordering::Relaxed);
+        }
         stop.store(true, Ordering::Relaxed);
         let _ = handle.join();
     }
 }
 
-fn start_search(mut game: Game, args: &str) -> (Arc<AtomicBool>, JoinHandle<()>) {
+fn start_search(mut game: Game, args: &str) -> Worker {
     let words: Vec<_> = args.split_whitespace().collect();
     let number = |key: &str| {
         words
@@ -313,17 +321,23 @@ fn start_search(mut game: Game, args: &str) -> (Arc<AtomicBool>, JoinHandle<()>)
         number("movetime").or(clock_budget)
     };
     let depth = number("depth")
-        .unwrap_or(if words.contains(&"infinite") || millis.is_some() {
-            64
-        } else {
-            3
-        })
+        .unwrap_or(
+            if words.contains(&"infinite") || millis.is_some() || number("nodes").is_some() {
+                64
+            } else {
+                3
+            },
+        )
         .clamp(1, 64) as u8;
     let time = millis.map(Duration::from_millis);
     let stop = Arc::new(AtomicBool::new(false));
+    let suppress = Arc::new(AtomicBool::new(false));
+    let suppress_worker = Arc::clone(&suppress);
+    let started = Instant::now();
     let control = SearchControl {
         stop: Arc::clone(&stop),
         deadline: time.and_then(|t| Instant::now().checked_add(t)),
+        node_limit: number("nodes"),
     };
     let handle = thread::spawn(move || {
         let mut best = MoveGen::new_legal(&game.board).next();
@@ -346,18 +360,24 @@ fn start_search(mut game: Game, args: &str) -> (Arc<AtomicBool>, JoinHandle<()>)
                 } else {
                     format!("cp {score}")
                 };
-                println!("info depth {current_depth} score {uci_score} nodes {nodes} pv {mv}");
+                let elapsed = started.elapsed().as_millis();
+                let nps = (nodes as u128 * 1000) / elapsed.max(1);
+                if !suppress_worker.load(Ordering::Relaxed) {
+                    println!("info depth {current_depth} score {uci_score} nodes {nodes} nps {nps} time {elapsed} pv {mv}");
+                }
             } else {
                 break;
             }
         }
-        println!(
-            "bestmove {}",
-            best.map(|m| m.to_string()).unwrap_or_else(|| "0000".into())
-        );
+        if !suppress_worker.load(Ordering::Relaxed) {
+            println!(
+                "bestmove {}",
+                best.map(|m| m.to_string()).unwrap_or_else(|| "0000".into())
+            );
+        }
         let _ = io::stdout().flush();
     });
-    (stop, handle)
+    (stop, suppress, handle)
 }
 
 fn position(command: &str) -> Result<Game, String> {
@@ -402,26 +422,26 @@ fn main() {
         } else if line == "isready" {
             println!("readyok");
         } else if line == "ucinewgame" {
-            stop_search(&mut worker);
+            stop_search(&mut worker, true);
             game = Game::new(Board::default(), 0);
         } else if let Some(args) = line.strip_prefix("position ") {
-            stop_search(&mut worker);
+            stop_search(&mut worker, true);
             match position(args) {
                 Ok(next) => game = next,
                 Err(e) => println!("info string {e}"),
             }
         } else if line == "go" || line.starts_with("go ") {
-            stop_search(&mut worker);
+            stop_search(&mut worker, true);
             worker = Some(start_search(game.clone(), line));
         } else if line == "stop" {
-            stop_search(&mut worker);
+            stop_search(&mut worker, false);
         } else if line == "quit" {
-            stop_search(&mut worker);
+            stop_search(&mut worker, true);
             break;
         }
         let _ = io::stdout().flush();
     }
-    stop_search(&mut worker);
+    stop_search(&mut worker, true);
 }
 
 #[cfg(test)]
@@ -490,6 +510,7 @@ mod tests {
         let control = SearchControl {
             stop: Arc::new(AtomicBool::new(false)),
             deadline: None,
+            node_limit: None,
         };
         let score = quiescence(&mut game, -MATE, MATE, 0, 0, &control, &mut 0).unwrap();
         assert!(
@@ -505,6 +526,7 @@ mod tests {
         let control = SearchControl {
             stop: Arc::new(AtomicBool::new(false)),
             deadline: None,
+            node_limit: None,
         };
         assert!(best_move(
             &mut board,
