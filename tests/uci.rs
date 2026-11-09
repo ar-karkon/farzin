@@ -1,5 +1,6 @@
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Command, Stdio};
+use std::time::{Duration, Instant};
 
 #[test]
 fn handshake_and_node_limited_search() {
@@ -82,6 +83,61 @@ fn stop_infinite_search_produces_one_bestmove() {
         }
     }
     assert_eq!(bestmoves, 1);
+    writeln!(input, "quit").unwrap();
+    child.wait().unwrap();
+}
+
+#[test]
+fn clock_limited_search_finishes_promptly() {
+    let mut child = Command::new(env!("CARGO_BIN_EXE_farzin"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let mut input = child.stdin.take().unwrap();
+    let mut output = BufReader::new(child.stdout.take().unwrap());
+    let started = Instant::now();
+    writeln!(
+        input,
+        "position startpos\ngo wtime 1000 btime 1000 movestogo 10"
+    )
+    .unwrap();
+    input.flush().unwrap();
+    loop {
+        let mut line = String::new();
+        assert_ne!(output.read_line(&mut line).unwrap(), 0);
+        if line.starts_with("bestmove ") {
+            break;
+        }
+    }
+    assert!(started.elapsed() < Duration::from_secs(3));
+    writeln!(input, "quit").unwrap();
+    child.wait().unwrap();
+}
+
+#[test]
+fn replacing_search_does_not_emit_stale_bestmove() {
+    let mut child = Command::new(env!("CARGO_BIN_EXE_farzin"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let mut input = child.stdin.take().unwrap();
+    let mut output = BufReader::new(child.stdout.take().unwrap());
+    writeln!(
+        input,
+        "position startpos\ngo infinite\nposition startpos moves e2e4\nisready"
+    )
+    .unwrap();
+    input.flush().unwrap();
+    loop {
+        let mut line = String::new();
+        assert_ne!(output.read_line(&mut line).unwrap(), 0);
+        assert!(!line.starts_with("bestmove "), "stale result: {line}");
+        if line.trim() == "readyok" {
+            break;
+        }
+    }
     writeln!(input, "quit").unwrap();
     child.wait().unwrap();
 }
