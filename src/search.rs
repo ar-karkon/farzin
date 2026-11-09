@@ -22,10 +22,24 @@ pub(crate) struct SearchControl {
     pub(crate) pvs: bool,
     pub(crate) positional: bool,
     pub(crate) cache: RefCell<Option<farzin::caissa::CachedEvaluator>>,
+    pub(crate) stack: RefCell<Option<farzin::caissa::SearchEvaluator>>,
 }
 
 impl SearchControl {
+    fn push(&self, board: &Board) {
+        if let Some(stack) = self.stack.borrow_mut().as_mut() {
+            stack.push(board);
+        }
+    }
+    fn pop(&self) {
+        if let Some(stack) = self.stack.borrow_mut().as_mut() {
+            stack.pop();
+        }
+    }
     fn evaluate(&self, board: &Board) -> i32 {
+        if let Some(stack) = self.stack.borrow_mut().as_mut() {
+            return stack.evaluate(board);
+        }
         self.cache.borrow_mut().as_mut().map_or_else(
             || {
                 if self.positional {
@@ -113,12 +127,14 @@ pub(crate) fn quiescence(
             }
             let halfmove = game.halfmove;
             game.play(mv);
+            control.push(&game.board);
             let score = match game.board.status() {
                 BoardStatus::Checkmate => MATE - ply - 1,
                 BoardStatus::Stalemate => 0,
                 BoardStatus::Ongoing if game.draw() => 0,
                 BoardStatus::Ongoing => -control.evaluate(&game.board),
             };
+            control.pop();
             game.unplay(board, halfmove);
             alpha = alpha.max(score);
             if alpha >= beta {
@@ -143,7 +159,9 @@ pub(crate) fn quiescence(
         }
         let halfmove = game.halfmove;
         game.play(mv);
+        control.push(&game.board);
         let result = quiescence(game, -beta, -alpha, ply + 1, qply + 1, control, nodes);
+        control.pop();
         game.unplay(board, halfmove);
         let score = -result?;
         if score >= beta {
@@ -342,6 +360,7 @@ fn search(
         let mv = moves[index];
         let halfmove = game.halfmove;
         game.play(mv);
+        control.push(&game.board);
         let result = if control.pvs && index > 0 && alpha + 1 < beta {
             match search(game, depth - 1, -alpha - 1, -alpha, ply + 1, control, state) {
                 Some(probe) if -probe > alpha && -probe < beta => {
@@ -352,6 +371,7 @@ fn search(
         } else {
             search(game, depth - 1, -beta, -alpha, ply + 1, control, state)
         };
+        control.pop();
         game.unplay(board, halfmove);
         let score = -result?;
         if best.is_none() || score > best_score {
@@ -454,6 +474,7 @@ pub(crate) fn best_move_window(
     for mv in moves {
         let halfmove = game.halfmove;
         game.play(mv);
+        control.push(&game.board);
         let result = search(
             game,
             depth.saturating_sub(1),
@@ -463,6 +484,7 @@ pub(crate) fn best_move_window(
             control,
             &mut state,
         );
+        control.pop();
         game.unplay(board, halfmove);
         let score = -result?;
         if best.is_none() || score > alpha {
@@ -489,6 +511,53 @@ mod tests {
     use super::*;
     use chess::Board;
     use std::str::FromStr;
+
+    #[test]
+    fn nnue_stack_search_cutoffs_and_interruption_restore_root() {
+        let mut bytes = vec![0; 75_703_872];
+        bytes[..4].copy_from_slice(&0x43534e4eu32.to_le_bytes());
+        bytes[4..8].copy_from_slice(&15u32.to_le_bytes());
+        for (i, byte) in bytes[64..].iter_mut().enumerate() {
+            *byte = (i * 13 + 17) as u8;
+        }
+        let net = Arc::new(farzin::caissa::Network::from_bytes(bytes).unwrap());
+        for limit in [None, Some(1), Some(25), Some(300)] {
+            let mut signatures = Vec::new();
+            for stack_enabled in [false, true] {
+                let mut game = Game::new(Board::default(), 0);
+                let original = game.history.clone();
+                let control = SearchControl {
+                    stop: Arc::new(AtomicBool::new(false)),
+                    deadline: None,
+                    node_limit: limit,
+                    shared_nodes: None,
+                    exchange_ordering: false,
+                    pvs: true,
+                    positional: false,
+                    cache: RefCell::new((!stack_enabled).then(|| {
+                        farzin::caissa::CachedEvaluator::new(Arc::clone(&net), &game.board)
+                    })),
+                    stack: RefCell::new(stack_enabled.then(|| {
+                        farzin::caissa::SearchEvaluator::new(Arc::clone(&net), &game.board)
+                    })),
+                };
+                let mut nodes = 0;
+                let result = best_move(
+                    &mut game,
+                    3,
+                    &control,
+                    &mut HashMap::new(),
+                    &mut Table::new(1024),
+                    &mut nodes,
+                );
+                assert_eq!(game.board, Board::default());
+                assert_eq!(game.history, original);
+                assert_eq!(control.evaluate(&game.board), net.evaluate(&game.board));
+                signatures.push((result, nodes));
+            }
+            assert_eq!(signatures[0], signatures[1]);
+        }
+    }
 
     #[test]
     fn ordering_recognizes_en_passant_and_hash_move() {
@@ -534,6 +603,7 @@ mod tests {
                 pvs: false,
                 positional: false,
                 cache: RefCell::new(None),
+                stack: RefCell::new(None),
             };
             scores.push(
                 best_move(
@@ -566,6 +636,7 @@ mod tests {
                     pvs,
                     positional: false,
                     cache: RefCell::new(None),
+                    stack: RefCell::new(None),
                 };
                 scores.push(
                     best_move(
@@ -596,6 +667,7 @@ mod tests {
             pvs: false,
             positional: false,
             cache: RefCell::new(None),
+            stack: RefCell::new(None),
         };
         let (best, _, pv) = best_move(
             &mut game,
@@ -626,6 +698,7 @@ mod tests {
             pvs: false,
             positional: false,
             cache: RefCell::new(None),
+            stack: RefCell::new(None),
         };
         let hint = ChessMove::from_str("h2h4").unwrap();
         let mut hints = HashMap::new();
@@ -695,6 +768,7 @@ mod tests {
                 pvs: false,
                 positional: false,
                 cache: RefCell::new(None),
+                stack: RefCell::new(None),
             };
             assert!(search(&mut game, 1, -50, 50, 0, &control, &mut state).is_some());
             assert_eq!(
@@ -731,6 +805,7 @@ mod tests {
             pvs: false,
             positional: false,
             cache: RefCell::new(None),
+            stack: RefCell::new(None),
         };
         assert!(search(&mut game, 4, -MATE, MATE, 0, &control, &mut state).is_none());
         assert_eq!(game.board, original_board);
@@ -762,6 +837,7 @@ mod tests {
             pvs: false,
             positional: false,
             cache: RefCell::new(None),
+            stack: RefCell::new(None),
         };
         assert!(search(&mut game, 0, -MATE, MATE, 0, &control, &mut state).is_some());
         assert_eq!(*state.nodes, 1);
@@ -783,6 +859,7 @@ mod tests {
                     pvs: false,
                     positional: false,
                     cache: RefCell::new(None),
+                    stack: RefCell::new(None),
                 };
                 let mut nodes = 0;
                 while control.visit_node(&mut nodes) {}
@@ -819,6 +896,7 @@ mod tests {
                     pvs: false,
                     positional: false,
                     cache: RefCell::new(None),
+                    stack: RefCell::new(None),
                 };
                 let depth = if fen == "startpos" { 4 } else { 3 };
                 let score = best_move(
@@ -868,6 +946,7 @@ mod tests {
             pvs: false,
             positional: false,
             cache: RefCell::new(None),
+            stack: RefCell::new(None),
         };
         let score = search(&mut game, 1, -MATE, MATE, 0, &control, &mut state).unwrap();
         assert_ne!(score, 12_345);
@@ -893,6 +972,7 @@ mod tests {
                     pvs,
                     positional: false,
                     cache: RefCell::new(None),
+                    stack: RefCell::new(None),
                 };
                 let mut position = game.clone();
                 scores.push(
@@ -928,6 +1008,7 @@ mod tests {
                     pvs,
                     positional: false,
                     cache: RefCell::new(None),
+                    stack: RefCell::new(None),
                 };
                 let mut table = Table::new(4096);
                 let mut hints = HashMap::new();
@@ -974,6 +1055,7 @@ mod tests {
             pvs: true,
             positional: false,
             cache: RefCell::new(None),
+            stack: RefCell::new(None),
         };
         assert!(best_move_window(
             &mut game,

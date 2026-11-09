@@ -56,6 +56,83 @@ impl CachedEvaluator {
     }
 }
 
+/// Lazy per-ply state. Storage is allocated once, never while making moves.
+/// Board deltas include castling, en passant and promotions without move decoding.
+struct Frame {
+    board: Board,
+    white: [i16; WIDTH],
+    black: [i16; WIDTH],
+    valid: bool,
+}
+
+pub struct SearchEvaluator {
+    network: Arc<Network>,
+    frames: Vec<Frame>,
+    ply: usize,
+}
+
+impl SearchEvaluator {
+    pub fn new(network: Arc<Network>, board: &Board) -> Self {
+        let mut frames: Vec<_> = (0..128)
+            .map(|_| Frame {
+                board: *board,
+                white: [0; WIDTH],
+                black: [0; WIDTH],
+                valid: false,
+            })
+            .collect();
+        frames[0].white = network.accumulator(board, Color::White);
+        frames[0].black = network.accumulator(board, Color::Black);
+        frames[0].valid = true;
+        Self {
+            network,
+            frames,
+            ply: 0,
+        }
+    }
+
+    pub fn push(&mut self, board: &Board) {
+        self.ply += 1;
+        let frame = self.frames.get_mut(self.ply).expect("NNUE stack overflow");
+        frame.board = *board;
+        frame.valid = false;
+    }
+
+    pub fn pop(&mut self) {
+        self.ply = self.ply.checked_sub(1).expect("NNUE stack underflow");
+    }
+
+    fn ensure(&mut self) {
+        let mut start = self.ply;
+        while !self.frames[start].valid {
+            start -= 1;
+        }
+        for index in start + 1..=self.ply {
+            let (parents, children) = self.frames.split_at_mut(index);
+            let parent = &parents[index - 1];
+            let child = &mut children[0];
+            child.white = parent.white;
+            child.black = parent.black;
+            self.network
+                .transition(&mut child.white, &parent.board, &child.board, Color::White);
+            self.network
+                .transition(&mut child.black, &parent.board, &child.board, Color::Black);
+            child.valid = true;
+        }
+    }
+
+    pub fn evaluate(&mut self, board: &Board) -> i32 {
+        assert_eq!(
+            self.frames[self.ply].board, *board,
+            "NNUE stack desynchronized"
+        );
+        self.ensure();
+        let frame = &self.frames[self.ply];
+        self.network
+            .evaluate_accumulators(board, &frame.white, &frame.black)
+    }
+}
+
 /// One perspective's incrementally maintained feature transformer state.
 pub struct PerspectiveAccumulator<'a> {
     network: &'a Network,
@@ -153,7 +230,8 @@ impl Network {
 
     pub fn accumulator(&self, board: &Board, perspective: Color) -> [i16; WIDTH] {
         let mut result = self.bias;
-        for feature in feature_indices(board, perspective) {
+        let (features, count) = fixed_features(board, perspective);
+        for &feature in &features[..count] {
             let row = &self.weights[feature * WIDTH..(feature + 1) * WIDTH];
             for (value, &weight) in result.iter_mut().zip(row) {
                 *value = value.wrapping_add(weight);
@@ -223,20 +301,39 @@ impl Network {
         after: &Board,
         perspective: Color,
     ) {
-        let old = feature_indices(before, perspective);
-        let new = feature_indices(after, perspective);
-        for (features, other, add) in [(&old, &new, false), (&new, &old, true)] {
-            for &feature in features {
-                if other.binary_search(&feature).is_ok() {
-                    continue;
-                }
-                let row = &self.weights[feature * WIDTH..(feature + 1) * WIDTH];
-                for (value, &weight) in values.iter_mut().zip(row) {
-                    *value = if add {
-                        value.wrapping_add(weight)
-                    } else {
-                        value.wrapping_sub(weight)
-                    };
+        if feature_context(before, perspective) != feature_context(after, perspective) {
+            *values = self.accumulator(after, perspective);
+            return;
+        }
+        let (bucket, mask) = feature_context(after, perspective);
+        for (color_index, color) in [perspective, !perspective].into_iter().enumerate() {
+            for (piece_index, piece) in [
+                Piece::Pawn,
+                Piece::Knight,
+                Piece::Bishop,
+                Piece::Rook,
+                Piece::Queen,
+                Piece::King,
+            ]
+            .into_iter()
+            .enumerate()
+            {
+                let old = *before.pieces(piece) & *before.color_combined(color);
+                let new = *after.pieces(piece) & *after.color_combined(color);
+                for (squares, add) in [(old & !new, false), (new & !old, true)] {
+                    for square in squares {
+                        let feature = bucket * 768
+                            + (color_index * 6 + piece_index) * 64
+                            + (square.to_index() ^ mask);
+                        let row = &self.weights[feature * WIDTH..(feature + 1) * WIDTH];
+                        for (value, &weight) in values.iter_mut().zip(row) {
+                            *value = if add {
+                                value.wrapping_add(weight)
+                            } else {
+                                value.wrapping_sub(weight)
+                            };
+                        }
+                    }
                 }
             }
         }
@@ -276,13 +373,25 @@ impl Network {
     }
 }
 
-fn feature_indices(board: &Board, perspective: Color) -> Vec<usize> {
+fn feature_context(board: &Board, perspective: Color) -> (usize, usize) {
     let king = board.king_square(perspective).to_index();
     let mask =
         (if king % 8 >= 4 { 7 } else { 0 }) | (if perspective == Color::Black { 56 } else { 0 });
     let king = king ^ mask;
-    let bucket = (king / 8) * 4 + king % 8;
-    let mut features = Vec::with_capacity(32);
+    ((king / 8) * 4 + king % 8, mask)
+}
+
+fn feature_indices(board: &Board, perspective: Color) -> Vec<usize> {
+    let (features, count) = fixed_features(board, perspective);
+    let mut result = features[..count].to_vec();
+    result.sort_unstable();
+    result
+}
+
+fn fixed_features(board: &Board, perspective: Color) -> ([usize; 32], usize) {
+    let (bucket, mask) = feature_context(board, perspective);
+    let mut features = [0; 32];
+    let mut count = 0;
     for (color_index, color) in [perspective, !perspective].into_iter().enumerate() {
         for (piece_index, piece) in [
             Piece::Pawn,
@@ -296,16 +405,14 @@ fn feature_indices(board: &Board, perspective: Color) -> Vec<usize> {
         .enumerate()
         {
             for square in *board.pieces(piece) & *board.color_combined(color) {
-                features.push(
-                    bucket * 768
-                        + (color_index * 6 + piece_index) * 64
-                        + (square.to_index() ^ mask),
-                );
+                features[count] = bucket * 768
+                    + (color_index * 6 + piece_index) * 64
+                    + (square.to_index() ^ mask);
+                count += 1;
             }
         }
     }
-    features.sort_unstable();
-    features
+    (features, count)
 }
 
 #[cfg(test)]
@@ -313,6 +420,109 @@ mod tests {
     use super::*;
     use chess::{ChessMove, MoveGen};
     use std::str::FromStr;
+    fn patterned_network() -> Arc<Network> {
+        let weights = (0..INPUTS * WIDTH)
+            .map(|i| ((i * 13 + i / WIDTH * 7) % 31) as i16 - 15)
+            .collect();
+        let mut bytes = vec![0; SUBNET_SIZE * 8];
+        for (i, byte) in bytes.iter_mut().enumerate() {
+            *byte = (i * 17 + 23) as u8;
+        }
+        Arc::new(Network {
+            weights,
+            bias: [100; WIDTH],
+            bytes,
+        })
+    }
+
+    fn check_stack(stack: &mut SearchEvaluator, net: &Network, board: &Board) {
+        stack.ensure();
+        let frame = &stack.frames[stack.ply];
+        assert_eq!(frame.white, net.accumulator(board, Color::White));
+        assert_eq!(frame.black, net.accumulator(board, Color::Black));
+        let inputs = Network::inputs_from_accumulators(
+            if board.side_to_move() == Color::White {
+                &frame.white
+            } else {
+                &frame.black
+            },
+            if board.side_to_move() == Color::White {
+                &frame.black
+            } else {
+                &frame.white
+            },
+        );
+        assert_eq!(
+            std::array::from_fn::<_, 8, _>(|b| net.raw_bucket(&inputs, b)),
+            net.raw_outputs(board)
+        );
+        assert_eq!(stack.evaluate(board), net.evaluate(board));
+    }
+
+    #[test]
+    fn lazy_stack_special_moves_and_all_promotions_restore_exact_raw_outputs() {
+        let net = patterned_network();
+        let mut cases = vec![
+            ("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1", "e1g1"),
+            ("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1", "e1c1"),
+            ("r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1", "e8g8"),
+            ("r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1", "e8c8"),
+            ("4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1", "e5d6"),
+            ("4k3/8/8/8/8/8/8/3K4 w - - 0 1", "d1e1"),
+        ];
+        for token in ["a7a8q", "a7a8r", "a7a8b", "a7a8n"] {
+            cases.push(("4k3/P7/8/8/8/8/8/4K3 w - - 0 1", token));
+        }
+        for (fen, token) in cases {
+            let board = Board::from_str(fen).unwrap();
+            let mv = ChessMove::from_str(token).unwrap();
+            assert!(MoveGen::new_legal(&board).any(|m| m == mv));
+            let next = board.make_move_new(mv);
+            let mut stack = SearchEvaluator::new(Arc::clone(&net), &board);
+            stack.push(&next);
+            check_stack(&mut stack, &net, &next);
+            stack.pop();
+            check_stack(&mut stack, &net, &board);
+        }
+    }
+
+    #[test]
+    fn lazy_stack_random_paths_skipped_evaluations_and_sibling_reuse() {
+        let net = patterned_network();
+        let mut seed = 2026u64;
+        for _ in 0..8 {
+            let mut board = Board::default();
+            let mut stack = SearchEvaluator::new(Arc::clone(&net), &board);
+            let mut path = vec![board];
+            for ply in 1..=110 {
+                let moves: Vec<_> = MoveGen::new_legal(&board).collect();
+                if moves.is_empty() {
+                    break;
+                }
+                seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1);
+                board = board.make_move_new(moves[(seed >> 32) as usize % moves.len()]);
+                path.push(board);
+                stack.push(&board);
+                if ply % 7 == 0 {
+                    check_stack(&mut stack, &net, &board);
+                }
+            }
+            while path.len() > 1 {
+                path.pop();
+                stack.pop();
+                board = *path.last().unwrap();
+                check_stack(&mut stack, &net, &board);
+                // An unsearched or cutoff sibling must not reuse the old child's state.
+                if let Some(mv) = MoveGen::new_legal(&board).next() {
+                    let sibling = board.make_move_new(mv);
+                    stack.push(&sibling);
+                    check_stack(&mut stack, &net, &sibling);
+                    stack.pop();
+                }
+            }
+        }
+    }
+
     #[test]
     fn validates_header_and_empty_network_output() {
         assert!(Network::from_bytes(vec![0; 64]).is_err());

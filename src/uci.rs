@@ -25,6 +25,7 @@ struct SearchOptions {
     aspiration: bool,
     positional: bool,
     threads: usize,
+    nnue_stack: bool,
 }
 
 struct IterationState {
@@ -143,8 +144,17 @@ fn start_search(
         exchange_ordering: options.exchange_ordering,
         pvs: options.pvs,
         positional: options.positional,
+        stack: RefCell::new(if options.nnue_stack {
+            network
+                .as_ref()
+                .map(|net| farzin::caissa::SearchEvaluator::new(Arc::clone(net), &game.board))
+        } else {
+            None
+        }),
         cache: RefCell::new(
-            network.map(|net| farzin::caissa::CachedEvaluator::new(net, &game.board)),
+            network
+                .filter(|_| !options.nnue_stack)
+                .map(|net| farzin::caissa::CachedEvaluator::new(net, &game.board)),
         ),
     };
     let handle = thread::spawn(move || {
@@ -234,19 +244,27 @@ fn start_parallel_search(
             let local_nodes = Arc::clone(&nodes);
             let local_network = network.clone();
             workers.push(thread::spawn(move || {
-                let control =
-                    SearchControl {
-                        stop: local_stop,
-                        deadline,
-                        node_limit,
-                        shared_nodes: Some(local_nodes),
-                        exchange_ordering: options.exchange_ordering,
-                        pvs: options.pvs,
-                        positional: options.positional,
-                        cache: RefCell::new(local_network.map(|net| {
+                let control = SearchControl {
+                    stop: local_stop,
+                    deadline,
+                    node_limit,
+                    shared_nodes: Some(local_nodes),
+                    exchange_ordering: options.exchange_ordering,
+                    pvs: options.pvs,
+                    positional: options.positional,
+                    stack: RefCell::new(if options.nnue_stack {
+                        local_network.as_ref().map(|net| {
+                            farzin::caissa::SearchEvaluator::new(Arc::clone(net), &local_game.board)
+                        })
+                    } else {
+                        None
+                    }),
+                    cache: RefCell::new(
+                        local_network.filter(|_| !options.nnue_stack).map(|net| {
                             farzin::caissa::CachedEvaluator::new(net, &local_game.board)
-                        })),
-                    };
+                        }),
+                    ),
+                };
                 let mut state = IterationState::new(entries);
                 if let Some(mv) = hint {
                     state.hints.insert(local_game.board.get_hash(), mv);
@@ -362,13 +380,14 @@ pub(crate) fn run() {
         aspiration: false,
         positional: false,
         threads: 1,
+        nnue_stack: false,
     };
     let mut network = None;
     for line in stdin.lock().lines() {
         let Ok(line) = line else { break };
         let line = line.trim();
         if line == "uci" {
-            println!("id name Farzin 0.1.0\nid author Farzin contributors\noption name Hash type spin default 16 min 1 max 256\noption name Clear Hash type button\noption name Threads type spin default 1 min 1 max 8\noption name Move Overhead type spin default 20 min 0 max 5000\noption name Exchange Ordering type check default false\noption name PVS type check default false\noption name Aspiration type check default false\noption name Positional type check default false\noption name EvalFile type string default <empty>\nuciok");
+            println!("id name Farzin 0.1.0\nid author Farzin contributors\noption name Hash type spin default 16 min 1 max 256\noption name Clear Hash type button\noption name Threads type spin default 1 min 1 max 8\noption name Move Overhead type spin default 20 min 0 max 5000\noption name Exchange Ordering type check default false\noption name PVS type check default false\noption name Aspiration type check default false\noption name Positional type check default false\noption name NNUE Stack type check default false\noption name EvalFile type string default <empty>\nuciok");
         } else if line == "isready" {
             println!("readyok");
         } else if line == "ucinewgame" {
@@ -403,6 +422,10 @@ pub(crate) fn run() {
         } else if let Some(value) = line.strip_prefix("setoption name Positional value ") {
             if value == "true" || value == "false" {
                 options.positional = value == "true";
+            }
+        } else if let Some(value) = line.strip_prefix("setoption name NNUE Stack value ") {
+            if value == "true" || value == "false" {
+                options.nnue_stack = value == "true";
             }
         } else if let Some(value) = line.strip_prefix("setoption name EvalFile value ") {
             stop_search(&mut worker, true);
@@ -553,6 +576,7 @@ mod tests {
             pvs: false,
             positional: false,
             cache: RefCell::new(None),
+            stack: RefCell::new(None),
         };
         let score = quiescence(&mut game, -MATE, MATE, 0, 0, &control, &mut 0).unwrap();
         assert!(
@@ -574,6 +598,7 @@ mod tests {
             pvs: false,
             positional: false,
             cache: RefCell::new(None),
+            stack: RefCell::new(None),
         };
         assert!(quiescence(&mut game, -MATE, MATE, 0, MAX_QPLY, &control, &mut 0).is_some());
         assert_eq!(game.board, original);
@@ -591,6 +616,7 @@ mod tests {
             pvs: false,
             positional: false,
             cache: RefCell::new(None),
+            stack: RefCell::new(None),
         };
         assert!(best_move(
             &mut board,
