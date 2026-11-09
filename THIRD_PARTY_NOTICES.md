@@ -1,6 +1,6 @@
 # Third-party notices
 
-`tools/compare_caissa_accumulators.py` implements the network format and scalar
+`tools/compare_caissa_accumulators.py` and `src/caissa.rs` implement the network format and scalar
 mathematics described by Caissa, commit `395c2e6bb7361bacdde813b014dd438af2d21339`.
 The original Caissa code is distributed under the following MIT license. This
 notice concerns the code; it does not establish a license for neural-network weights.
