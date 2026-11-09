@@ -430,9 +430,15 @@ mod tests {
                     deadline: None,
                     node_limit: None,
                 };
-                let score = best_move(&mut game, 3, &control, &mut hints, &mut table, &mut nodes)
-                    .unwrap()
-                    .1;
+                let depth = if fen == "startpos" { 4 } else { 3 };
+                let score = best_move(
+                    &mut game, depth, &control, &mut hints, &mut table, &mut nodes,
+                )
+                .unwrap()
+                .1;
+                if fen == "startpos" && capacity != 0 {
+                    assert!(table.cutoffs > 0, "the test must exercise a cache cutoff");
+                }
                 scores.push(score);
             }
             assert_eq!(scores[0], scores[1], "{fen}");
