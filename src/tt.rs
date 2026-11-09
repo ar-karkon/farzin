@@ -1,5 +1,4 @@
 use chess::ChessMove;
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Bound {
@@ -16,9 +15,17 @@ pub struct Entry {
     pub best: Option<ChessMove>,
 }
 
+#[derive(Clone, Copy)]
+struct Slot {
+    key: u64,
+    entry: Entry,
+    generation: u8,
+}
+
 pub struct Table {
-    entries: HashMap<u64, Entry>,
-    capacity: usize,
+    entries: Vec<Option<Slot>>,
+    used: usize,
+    generation: u8,
     pub hits: u64,
     pub cutoffs: u64,
 }
@@ -26,31 +33,45 @@ pub struct Table {
 impl Table {
     pub fn new(capacity: usize) -> Self {
         Self {
-            entries: HashMap::new(),
-            capacity,
+            entries: vec![None; capacity.max(1)],
+            used: 0,
+            generation: 0,
             hits: 0,
             cutoffs: 0,
         }
     }
     pub fn get(&mut self, key: u64) -> Option<Entry> {
-        let entry = self.entries.get(&key).copied();
+        let entry = self.entries[(key % self.entries.len() as u64) as usize]
+            .filter(|slot| slot.key == key)
+            .map(|slot| slot.entry);
         if entry.is_some() {
             self.hits += 1;
         }
         entry
     }
     pub fn hashfull(&self) -> usize {
-        self.entries.len().saturating_mul(1000) / self.capacity.max(1)
+        self.used.saturating_mul(1000) / self.entries.len()
     }
     pub fn put(&mut self, key: u64, entry: Entry) {
-        if let Some(old) = self.entries.get(&key) {
-            if old.depth > entry.depth {
+        let index = (key % self.entries.len() as u64) as usize;
+        if let Some(old) = self.entries[index] {
+            if old.generation == self.generation && old.entry.depth > entry.depth {
                 return;
             }
-        } else if self.entries.len() >= self.capacity {
-            return;
+        } else {
+            self.used += 1;
         }
-        self.entries.insert(key, entry);
+        self.entries[index] = Some(Slot {
+            key,
+            entry,
+            generation: self.generation,
+        });
+    }
+    pub fn next_generation(&mut self) {
+        self.generation = self.generation.wrapping_add(1);
+    }
+    pub fn entries_for_megabytes(megabytes: usize) -> usize {
+        megabytes.saturating_mul(1024 * 1024) / std::mem::size_of::<Option<Slot>>()
     }
 }
 
@@ -104,5 +125,22 @@ mod tests {
             },
         );
         assert_eq!(tt.get(1).unwrap().score, 9);
+    }
+    #[test]
+    fn collision_and_age_control_replacement() {
+        let mut tt = Table::new(1);
+        let entry = Entry {
+            depth: 5,
+            score: 9,
+            bound: Bound::Exact,
+            best: None,
+        };
+        tt.put(1, entry);
+        tt.put(2, Entry { depth: 2, ..entry });
+        assert!(tt.get(2).is_none());
+        tt.next_generation();
+        tt.put(2, Entry { depth: 2, ..entry });
+        assert!(tt.get(1).is_none());
+        assert_eq!(tt.get(2).unwrap().score, 9);
     }
 }

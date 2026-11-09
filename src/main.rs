@@ -288,10 +288,10 @@ fn start_search(mut game: Game, args: &str, hash_mb: usize) -> Worker {
     let handle = thread::spawn(move || {
         let mut best = MoveGen::new_legal(&game.board).next();
         let mut hints = HashMap::new();
-        // HashMap overhead is implementation-dependent; reserve conservatively per entry.
-        let mut table = Table::new(hash_mb.saturating_mul(1024 * 1024) / 128);
+        let mut table = Table::new(Table::entries_for_megabytes(hash_mb));
         let mut nodes = 0;
         for current_depth in 1..=depth {
+            table.next_generation();
             if let Some((mv, score)) = best_move(
                 &mut game,
                 current_depth,
