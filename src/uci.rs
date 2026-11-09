@@ -23,6 +23,7 @@ struct SearchOptions {
     exchange_ordering: bool,
     pvs: bool,
     aspiration: bool,
+    positional: bool,
 }
 
 fn stop_search(worker: &mut Option<Worker>, discard: bool) {
@@ -69,6 +70,7 @@ fn start_search(
         node_limit: number("nodes"),
         exchange_ordering: options.exchange_ordering,
         pvs: options.pvs,
+        positional: options.positional,
         cache: RefCell::new(
             network.map(|net| farzin::caissa::CachedEvaluator::new(net, &game.board)),
         ),
@@ -163,13 +165,14 @@ pub(crate) fn run() {
         exchange_ordering: false,
         pvs: false,
         aspiration: false,
+        positional: false,
     };
     let mut network = None;
     for line in stdin.lock().lines() {
         let Ok(line) = line else { break };
         let line = line.trim();
         if line == "uci" {
-            println!("id name Farzin 0.1.0\nid author Farzin contributors\noption name Hash type spin default 16 min 1 max 256\noption name Clear Hash type button\noption name Move Overhead type spin default 20 min 0 max 5000\noption name Exchange Ordering type check default false\noption name PVS type check default false\noption name Aspiration type check default false\noption name EvalFile type string default <empty>\nuciok");
+            println!("id name Farzin 0.1.0\nid author Farzin contributors\noption name Hash type spin default 16 min 1 max 256\noption name Clear Hash type button\noption name Move Overhead type spin default 20 min 0 max 5000\noption name Exchange Ordering type check default false\noption name PVS type check default false\noption name Aspiration type check default false\noption name Positional type check default false\noption name EvalFile type string default <empty>\nuciok");
         } else if line == "isready" {
             println!("readyok");
         } else if line == "ucinewgame" {
@@ -196,6 +199,10 @@ pub(crate) fn run() {
         } else if let Some(value) = line.strip_prefix("setoption name Aspiration value ") {
             if value == "true" || value == "false" {
                 options.aspiration = value == "true";
+            }
+        } else if let Some(value) = line.strip_prefix("setoption name Positional value ") {
+            if value == "true" || value == "false" {
+                options.positional = value == "true";
             }
         } else if let Some(value) = line.strip_prefix("setoption name EvalFile value ") {
             stop_search(&mut worker, true);
@@ -343,6 +350,7 @@ mod tests {
             node_limit: None,
             exchange_ordering: false,
             pvs: false,
+            positional: false,
             cache: RefCell::new(None),
         };
         let score = quiescence(&mut game, -MATE, MATE, 0, 0, &control, &mut 0).unwrap();
@@ -362,6 +370,7 @@ mod tests {
             node_limit: None,
             exchange_ordering: false,
             pvs: false,
+            positional: false,
             cache: RefCell::new(None),
         };
         assert!(quiescence(&mut game, -MATE, MATE, 0, MAX_QPLY, &control, &mut 0).is_some());
@@ -377,6 +386,7 @@ mod tests {
             node_limit: None,
             exchange_ordering: false,
             pvs: false,
+            positional: false,
             cache: RefCell::new(None),
         };
         assert!(best_move(

@@ -1,5 +1,5 @@
 use crate::{
-    evaluation::evaluate,
+    evaluation::{evaluate, evaluate_positional},
     game::Game,
     tt::{self, Bound, Entry, Table},
 };
@@ -19,15 +19,22 @@ pub(crate) struct SearchControl {
     pub(crate) node_limit: Option<u64>,
     pub(crate) exchange_ordering: bool,
     pub(crate) pvs: bool,
+    pub(crate) positional: bool,
     pub(crate) cache: RefCell<Option<farzin::caissa::CachedEvaluator>>,
 }
 
 impl SearchControl {
     fn evaluate(&self, board: &Board) -> i32 {
-        self.cache
-            .borrow_mut()
-            .as_mut()
-            .map_or_else(|| evaluate(board), |cache| cache.evaluate(board))
+        self.cache.borrow_mut().as_mut().map_or_else(
+            || {
+                if self.positional {
+                    evaluate_positional(board)
+                } else {
+                    evaluate(board)
+                }
+            },
+            |cache| cache.evaluate(board),
+        )
     }
     fn stopped(&self, nodes: u64) -> bool {
         self.stop.load(Ordering::Relaxed)
@@ -490,6 +497,7 @@ mod tests {
                 node_limit: None,
                 exchange_ordering: enabled,
                 pvs: false,
+                positional: false,
                 cache: RefCell::new(None),
             };
             scores.push(
@@ -520,6 +528,7 @@ mod tests {
                     node_limit: None,
                     exchange_ordering: false,
                     pvs,
+                    positional: false,
                     cache: RefCell::new(None),
                 };
                 scores.push(
@@ -548,6 +557,7 @@ mod tests {
             node_limit: None,
             exchange_ordering: false,
             pvs: false,
+            positional: false,
             cache: RefCell::new(None),
         };
         let (best, _, pv) = best_move(
@@ -576,6 +586,7 @@ mod tests {
             node_limit: None,
             exchange_ordering: false,
             pvs: false,
+            positional: false,
             cache: RefCell::new(None),
         };
         let hint = ChessMove::from_str("h2h4").unwrap();
@@ -643,6 +654,7 @@ mod tests {
                 node_limit: None,
                 exchange_ordering: false,
                 pvs: false,
+                positional: false,
                 cache: RefCell::new(None),
             };
             assert!(search(&mut game, 1, -50, 50, 0, &control, &mut state).is_some());
@@ -677,6 +689,7 @@ mod tests {
             node_limit: Some(2),
             exchange_ordering: false,
             pvs: false,
+            positional: false,
             cache: RefCell::new(None),
         };
         assert!(search(&mut game, 4, -MATE, MATE, 0, &control, &mut state).is_none());
@@ -706,6 +719,7 @@ mod tests {
             node_limit: Some(1),
             exchange_ordering: false,
             pvs: false,
+            positional: false,
             cache: RefCell::new(None),
         };
         assert!(search(&mut game, 0, -MATE, MATE, 0, &control, &mut state).is_some());
@@ -731,6 +745,7 @@ mod tests {
                     node_limit: None,
                     exchange_ordering: false,
                     pvs: false,
+                    positional: false,
                     cache: RefCell::new(None),
                 };
                 let depth = if fen == "startpos" { 4 } else { 3 };
@@ -778,6 +793,7 @@ mod tests {
             node_limit: None,
             exchange_ordering: false,
             pvs: false,
+            positional: false,
             cache: RefCell::new(None),
         };
         let score = search(&mut game, 1, -MATE, MATE, 0, &control, &mut state).unwrap();
@@ -801,6 +817,7 @@ mod tests {
                     node_limit: None,
                     exchange_ordering: false,
                     pvs,
+                    positional: false,
                     cache: RefCell::new(None),
                 };
                 let mut position = game.clone();
@@ -834,6 +851,7 @@ mod tests {
                     node_limit: None,
                     exchange_ordering: false,
                     pvs,
+                    positional: false,
                     cache: RefCell::new(None),
                 };
                 let mut table = Table::new(4096);
@@ -878,6 +896,7 @@ mod tests {
             node_limit: Some(2),
             exchange_ordering: false,
             pvs: true,
+            positional: false,
             cache: RefCell::new(None),
         };
         assert!(best_move_window(
