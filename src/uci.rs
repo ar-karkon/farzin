@@ -479,12 +479,18 @@ pub(crate) fn run() {
         hash_mb: 16,
         overhead: 20,
         exchange_ordering: false,
-        pvs: false,
+        // Phase 4 defaults: the combination accepted by paired SPRT tests
+        // against the Phase 3 defaults (docs/v4-search-results.md).
+        pvs: true,
         aspiration: false,
         positional: false,
         threads: 1,
-        features: SearchFeatures::default(),
-        persistent_hash: false,
+        features: SearchFeatures {
+            persistent_history: false,
+            lmr: true,
+            null_move: true,
+        },
+        persistent_hash: true,
         #[cfg(feature = "nnue-stack")]
         nnue_stack: false,
         nnue_simd: false,
@@ -505,7 +511,7 @@ pub(crate) fn run() {
             } else {
                 ""
             };
-            println!("id name Farzin 0.1.0\nid author Farzin contributors\noption name Hash type spin default 16 min 1 max 256\noption name Clear Hash type button\noption name Threads type spin default 1 min 1 max 8\noption name Move Overhead type spin default 20 min 0 max 5000\noption name Exchange Ordering type check default false\noption name PVS type check default false\noption name Aspiration type check default false\noption name Positional type check default false\noption name NNUE SIMD type check default false\noption name LMR type check default false\noption name Null Move type check default false\noption name Persistent History type check default false\noption name Persistent Hash type check default false\n{stack_option}option name EvalFile type string default <empty>\nuciok");
+            println!("id name Farzin 0.1.0\nid author Farzin contributors\noption name Hash type spin default 16 min 1 max 256\noption name Clear Hash type button\noption name Threads type spin default 1 min 1 max 8\noption name Move Overhead type spin default 20 min 0 max 5000\noption name Exchange Ordering type check default false\noption name PVS type check default true\noption name Aspiration type check default false\noption name Positional type check default false\noption name NNUE SIMD type check default false\noption name LMR type check default true\noption name Null Move type check default true\noption name Persistent History type check default false\noption name Persistent Hash type check default true\n{stack_option}option name EvalFile type string default <empty>\nuciok");
         } else if line == "isready" {
             println!("readyok");
         } else if line == "ucinewgame" {

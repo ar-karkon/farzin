@@ -410,8 +410,16 @@ fn persistent_hash_is_reused_only_until_cleared() {
          go depth 4\nsetoption name Hash value 8\nposition startpos\ngo depth 4\n\
          position startpos moves d2d4\ngo depth 3",
     );
-    for option in ["LMR", "Null Move", "Persistent History", "Persistent Hash"] {
-        assert!(lines.contains(&format!("option name {option} type check default false")));
+    for (option, default) in [
+        ("PVS", true),
+        ("LMR", true),
+        ("Null Move", true),
+        ("Persistent History", false),
+        ("Persistent Hash", true),
+    ] {
+        assert!(lines.contains(&format!(
+            "option name {option} type check default {default}"
+        )));
     }
     let reuse: Vec<_> = lines
         .iter()
@@ -430,9 +438,11 @@ fn persistent_hash_is_reused_only_until_cleared() {
 }
 
 #[test]
-fn hash_is_not_reused_by_default() {
-    let lines =
-        transcript("position startpos\ngo depth 3\nposition startpos moves e2e4\ngo depth 3");
+fn hash_is_not_reused_when_disabled() {
+    let lines = transcript(
+        "setoption name Persistent Hash value false\nposition startpos\ngo depth 3\n\
+         position startpos moves e2e4\ngo depth 3",
+    );
     assert_eq!(
         lines
             .iter()

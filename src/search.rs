@@ -1391,9 +1391,17 @@ mod tests {
         }
     }
 
+    /// Every combination in release tests; a representative subset in debug
+    /// builds (CI), where the full matrix takes several minutes.
     fn all_feature_sets() -> Vec<(SearchFeatures, bool)> {
         let mut sets = Vec::new();
-        for bits in 0..16u8 {
+        let subset: &[u8] = &[0, 2, 4 | 8, 2 | 8, 1, 15];
+        let bits: Vec<u8> = if cfg!(debug_assertions) {
+            subset.to_vec()
+        } else {
+            (0..16).collect()
+        };
+        for bits in bits {
             sets.push((
                 SearchFeatures {
                     persistent_history: bits & 1 != 0,
