@@ -35,12 +35,35 @@ impl Game {
     }
     pub(crate) fn draw(&self) -> bool {
         self.halfmove >= 100
+            || self.insufficient_material()
             || self
                 .history
                 .iter()
                 .filter(|&&hash| hash == self.board.get_hash())
                 .count()
                 >= 3
+    }
+
+    fn insufficient_material(&self) -> bool {
+        if [Piece::Pawn, Piece::Rook, Piece::Queen]
+            .iter()
+            .any(|&p| self.board.pieces(p).popcnt() != 0)
+        {
+            return false;
+        }
+        let knights = self.board.pieces(Piece::Knight).popcnt();
+        let bishops = *self.board.pieces(Piece::Bishop);
+        if knights + bishops.popcnt() <= 1 {
+            return true;
+        }
+        if knights != 0 {
+            return false;
+        }
+        let mut colors = bishops
+            .into_iter()
+            .map(|sq| (sq.get_rank().to_index() + sq.get_file().to_index()) % 2);
+        let first = colors.next();
+        colors.all(|color| Some(color) == first)
     }
 }
 
@@ -72,4 +95,22 @@ pub(crate) fn position(command: &str) -> Result<Game, String> {
         }
     }
     Ok(game)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn only_dead_material_is_drawn() {
+        for fen in [
+            "7k/8/8/8/8/8/8/4K3 w - - 0 1",
+            "7k/8/8/8/8/8/8/2B1K3 w - - 0 1",
+            "7k/8/8/8/8/8/8/2N1K3 w - - 0 1",
+        ] {
+            assert!(position(&format!("fen {fen}")).unwrap().draw());
+        }
+        assert!(!position("fen 7k/8/8/8/8/8/8/1BN1K3 w - - 0 1")
+            .unwrap()
+            .draw());
+    }
 }
