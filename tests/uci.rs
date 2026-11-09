@@ -4,6 +4,77 @@ use std::str::FromStr;
 use std::time::{Duration, Instant};
 
 #[test]
+fn parallel_search_obeys_shared_node_limit() {
+    let mut child = Command::new(env!("CARGO_BIN_EXE_farzin"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let mut input = child.stdin.take().unwrap();
+    let mut output = BufReader::new(child.stdout.take().unwrap());
+    writeln!(input, "uci\nsetoption name Threads value 2\nsetoption name PVS value true\nsetoption name Aspiration value true\nposition startpos\ngo nodes 1000").unwrap();
+    input.flush().unwrap();
+    let mut advertised = false;
+    let mut nodes = None;
+    loop {
+        let mut line = String::new();
+        assert_ne!(output.read_line(&mut line).unwrap(), 0);
+        advertised |= line.starts_with("option name Threads ");
+        if let Some(value) = line.strip_prefix("info string parallel workers 2 nodes ") {
+            nodes = Some(value.trim().parse::<u64>().unwrap());
+        }
+        if let Some(mv) = line.strip_prefix("bestmove ") {
+            let mv = chess::ChessMove::from_str(mv.trim()).unwrap();
+            assert!(chess::MoveGen::new_legal(&chess::Board::default()).any(|legal| legal == mv));
+            break;
+        }
+    }
+    assert!(advertised);
+    assert_eq!(nodes, Some(1000));
+    writeln!(input, "quit").unwrap();
+    child.wait().unwrap();
+}
+
+#[test]
+fn parallel_stop_and_replacement_do_not_leak_results() {
+    let mut child = Command::new(env!("CARGO_BIN_EXE_farzin"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let mut input = child.stdin.take().unwrap();
+    let mut output = BufReader::new(child.stdout.take().unwrap());
+    writeln!(
+        input,
+        "setoption name Threads value 2\nposition startpos\ngo infinite\nstop\nisready"
+    )
+    .unwrap();
+    input.flush().unwrap();
+    let mut bestmoves = 0;
+    loop {
+        let mut line = String::new();
+        assert_ne!(output.read_line(&mut line).unwrap(), 0);
+        bestmoves += usize::from(line.starts_with("bestmove "));
+        if line.trim() == "readyok" {
+            break;
+        }
+    }
+    assert_eq!(bestmoves, 1);
+    writeln!(input, "go infinite\nposition startpos moves e2e4\nisready").unwrap();
+    input.flush().unwrap();
+    loop {
+        let mut line = String::new();
+        assert_ne!(output.read_line(&mut line).unwrap(), 0);
+        assert!(!line.starts_with("bestmove "), "stale result: {line}");
+        if line.trim() == "readyok" {
+            break;
+        }
+    }
+    writeln!(input, "quit").unwrap();
+    child.wait().unwrap();
+}
+
+#[test]
 fn handshake_and_node_limited_search() {
     let mut child = Command::new(env!("CARGO_BIN_EXE_farzin"))
         .stdin(Stdio::piped())

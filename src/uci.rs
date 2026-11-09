@@ -4,8 +4,8 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::io::{self, BufRead, Write};
 use std::sync::{
-    atomic::{AtomicBool, Ordering},
-    Arc,
+    atomic::{AtomicBool, AtomicU64, Ordering},
+    mpsc, Arc,
 };
 use std::thread::{self, JoinHandle};
 use std::time::{Duration, Instant};
@@ -24,6 +24,7 @@ struct SearchOptions {
     pvs: bool,
     aspiration: bool,
     positional: bool,
+    threads: usize,
 }
 
 struct IterationState {
@@ -127,6 +128,9 @@ fn start_search(
         )
         .clamp(1, 64) as u8;
     let time = millis.map(Duration::from_millis);
+    if options.threads > 1 {
+        return start_parallel_search(game, options, network, depth, time, number("nodes"));
+    }
     let stop = Arc::new(AtomicBool::new(false));
     let suppress = Arc::new(AtomicBool::new(false));
     let suppress_worker = Arc::clone(&suppress);
@@ -186,6 +190,166 @@ fn start_search(
     (stop, suppress, handle)
 }
 
+enum ParallelReport {
+    Depth {
+        depth: u8,
+        mv: chess::ChessMove,
+        score: i32,
+        pv: Vec<chess::ChessMove>,
+        hashfull: usize,
+    },
+    Stats {
+        probes: u64,
+        hits: u64,
+        cutoffs: u64,
+    },
+}
+
+fn start_parallel_search(
+    game: Game,
+    options: SearchOptions,
+    network: Option<Arc<farzin::caissa::Network>>,
+    depth: u8,
+    time: Option<Duration>,
+    node_limit: Option<u64>,
+) -> Worker {
+    let stop = Arc::new(AtomicBool::new(false));
+    let suppress = Arc::new(AtomicBool::new(false));
+    let stop_workers = Arc::clone(&stop);
+    let suppress_output = Arc::clone(&suppress);
+    let started = Instant::now();
+    let deadline = time.and_then(|duration| started.checked_add(duration));
+    let handle = thread::spawn(move || {
+        let legal: Vec<_> = MoveGen::new_legal(&game.board).collect();
+        let mut best = legal.first().copied();
+        let nodes = Arc::new(AtomicU64::new(0));
+        let (sender, receiver) = mpsc::channel();
+        let mut workers = Vec::with_capacity(options.threads);
+        let entries = (Table::entries_for_megabytes(options.hash_mb) / options.threads).max(1);
+        for id in 0..options.threads {
+            let mut local_game = game.clone();
+            let hint = legal.get(id % legal.len().max(1)).copied();
+            let tx = sender.clone();
+            let local_stop = Arc::clone(&stop_workers);
+            let local_nodes = Arc::clone(&nodes);
+            let local_network = network.clone();
+            workers.push(thread::spawn(move || {
+                let control =
+                    SearchControl {
+                        stop: local_stop,
+                        deadline,
+                        node_limit,
+                        shared_nodes: Some(local_nodes),
+                        exchange_ordering: options.exchange_ordering,
+                        pvs: options.pvs,
+                        positional: options.positional,
+                        cache: RefCell::new(local_network.map(|net| {
+                            farzin::caissa::CachedEvaluator::new(net, &local_game.board)
+                        })),
+                    };
+                let mut state = IterationState::new(entries);
+                if let Some(mv) = hint {
+                    state.hints.insert(local_game.board.get_hash(), mv);
+                }
+                for current_depth in 1..=depth {
+                    match state.search(&mut local_game, current_depth, &control, options.aspiration)
+                    {
+                        Some((mv, score, pv)) => {
+                            if tx
+                                .send(ParallelReport::Depth {
+                                    depth: current_depth,
+                                    mv,
+                                    score,
+                                    pv,
+                                    hashfull: state.table.hashfull(),
+                                })
+                                .is_err()
+                            {
+                                break;
+                            }
+                        }
+                        None => break,
+                    }
+                }
+                let _ = tx.send(ParallelReport::Stats {
+                    probes: state.table.probes,
+                    hits: state.table.hits,
+                    cutoffs: state.table.cutoffs,
+                });
+            }));
+        }
+        drop(sender);
+        let mut best_depth = 0;
+        let mut best_score = -MATE;
+        let (mut probes, mut hits, mut cutoffs) = (0, 0, 0);
+        for report in receiver {
+            match report {
+                ParallelReport::Depth {
+                    depth,
+                    mv,
+                    score,
+                    pv,
+                    hashfull,
+                } => {
+                    if depth > best_depth || (depth == best_depth && score > best_score) {
+                        best_depth = depth;
+                        best_score = score;
+                        best = Some(mv);
+                        if !suppress_output.load(Ordering::Relaxed) {
+                            let uci_score = if score.abs() > MATE - 100 {
+                                let moves = (MATE - score.abs() + 1) / 2;
+                                format!("mate {}", if score > 0 { moves } else { -moves })
+                            } else {
+                                format!("cp {score}")
+                            };
+                            let elapsed = started.elapsed().as_millis();
+                            let total_nodes = nodes.load(Ordering::Relaxed);
+                            let nps = u128::from(total_nodes) * 1000 / elapsed.max(1);
+                            let pv = pv
+                                .iter()
+                                .map(ToString::to_string)
+                                .collect::<Vec<_>>()
+                                .join(" ");
+                            println!("info depth {depth} score {uci_score} nodes {total_nodes} nps {nps} time {elapsed} hashfull {hashfull} pv {pv}");
+                        }
+                    }
+                }
+                ParallelReport::Stats {
+                    probes: p,
+                    hits: h,
+                    cutoffs: c,
+                } => {
+                    probes += p;
+                    hits += h;
+                    cutoffs += c;
+                }
+            }
+        }
+        let mut failed = false;
+        for worker in workers {
+            failed |= worker.join().is_err();
+        }
+        if !suppress_output.load(Ordering::Relaxed) {
+            if failed {
+                println!("info string parallel search worker failed");
+            }
+            println!(
+                "info string parallel workers {} nodes {}",
+                options.threads,
+                nodes.load(Ordering::Relaxed)
+            );
+            println!("info string tt probes {probes} hits {hits} cutoffs {cutoffs}");
+            println!(
+                "bestmove {}",
+                best.map(|mv| mv.to_string())
+                    .unwrap_or_else(|| "0000".into())
+            );
+            let _ = io::stdout().flush();
+        }
+    });
+    (stop, suppress, handle)
+}
+
 pub(crate) fn run() {
     let stdin = io::stdin();
     let mut game = Game::new(Board::default(), 0);
@@ -197,13 +361,14 @@ pub(crate) fn run() {
         pvs: false,
         aspiration: false,
         positional: false,
+        threads: 1,
     };
     let mut network = None;
     for line in stdin.lock().lines() {
         let Ok(line) = line else { break };
         let line = line.trim();
         if line == "uci" {
-            println!("id name Farzin 0.1.0\nid author Farzin contributors\noption name Hash type spin default 16 min 1 max 256\noption name Clear Hash type button\noption name Move Overhead type spin default 20 min 0 max 5000\noption name Exchange Ordering type check default false\noption name PVS type check default false\noption name Aspiration type check default false\noption name Positional type check default false\noption name EvalFile type string default <empty>\nuciok");
+            println!("id name Farzin 0.1.0\nid author Farzin contributors\noption name Hash type spin default 16 min 1 max 256\noption name Clear Hash type button\noption name Threads type spin default 1 min 1 max 8\noption name Move Overhead type spin default 20 min 0 max 5000\noption name Exchange Ordering type check default false\noption name PVS type check default false\noption name Aspiration type check default false\noption name Positional type check default false\noption name EvalFile type string default <empty>\nuciok");
         } else if line == "isready" {
             println!("readyok");
         } else if line == "ucinewgame" {
@@ -215,6 +380,10 @@ pub(crate) fn run() {
             }
         } else if line == "setoption name Clear Hash" {
             // Tables are per-search, so no state survives a completed search.
+        } else if let Some(value) = line.strip_prefix("setoption name Threads value ") {
+            if let Ok(value) = value.parse::<usize>() {
+                options.threads = value.clamp(1, 8);
+            }
         } else if let Some(value) = line.strip_prefix("setoption name Move Overhead value ") {
             if let Ok(value) = value.parse::<u64>() {
                 options.overhead = value.min(5000);
