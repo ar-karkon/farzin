@@ -45,6 +45,27 @@ class BenchmarkTests(unittest.TestCase):
             self.assertEqual(len(result["engine_sha256"]), 64)
             self.assertEqual(len(result["positions"]), 3)
 
+    def test_backend_is_final_selection_after_loading_and_toggling(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            network = root / "synthetic.pnn"
+            network.write_bytes(b"test-only")
+            engine = root / "engine"
+            fake = ENGINE.replace('print("info string failed to load network: invalid file", flush=True)',
+                                  'print("info string nnue backend scalar\\ninfo string experimental network loaded", flush=True)')
+            fake = fake.replace('    elif line == "isready":',
+                                '    elif line.startswith("setoption name NNUE SIMD"):\n        print("info string nnue backend avx2", flush=True)\n    elif line == "isready":')
+            engine.write_text(fake)
+            os.chmod(engine, 0o755)
+            output = root / "report.json"
+            subprocess.run([sys.executable, str(BENCH), str(engine), "--depth", "1",
+                            "--option", f"EvalFile={network}", "--option", "NNUE SIMD=true",
+                            "--json", str(output)], check=True, capture_output=True, timeout=10)
+            report = json.loads(output.read_text())
+            self.assertEqual(report["nnue_backend"], "avx2")
+            self.assertIn("info string nnue backend scalar", report["setup_info"])
+            self.assertIn("info string nnue backend avx2", report["setup_info"])
+
     def test_silent_model_failure_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             engine = Path(directory) / "engine"

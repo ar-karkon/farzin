@@ -81,7 +81,9 @@ def main():
             send(f"setoption name {name} value {value}")
         send("isready")
         setup = until("readyok", reject_failures=True)
-        report["nnue_backend"] = next((line.rsplit(" ", 1)[1] for line in setup if line.startswith("info string nnue backend ")), None)
+        backends = [line.rsplit(" ", 1)[1] for line in setup if line.startswith("info string nnue backend ")]
+        report["nnue_backend"] = backends[-1] if backends else None
+        report["setup_info"] = setup
         network = next((value for name, value in options if name.lower() == "evalfile"), None)
         farzin = any(line.startswith("id name Farzin ") for line in identity)
         if farzin and network and network != "<empty>":
