@@ -36,9 +36,11 @@ impl SearchControl {
             stack.pop();
         }
     }
-    fn evaluate(&self, board: &Board) -> i32 {
-        if let Some(stack) = self.stack.borrow_mut().as_mut() {
-            return stack.evaluate(board);
+    fn evaluate<const STACK: bool>(&self, board: &Board) -> i32 {
+        if STACK {
+            if let Some(stack) = self.stack.borrow_mut().as_mut() {
+                return stack.evaluate(board);
+            }
         }
         self.cache.borrow_mut().as_mut().map_or_else(
             || {
@@ -93,7 +95,7 @@ impl SearchControl {
 
 pub(crate) const MAX_QPLY: i32 = 16;
 
-pub(crate) fn quiescence(
+fn quiescence_impl<const STACK: bool>(
     game: &mut Game,
     mut alpha: i32,
     beta: i32,
@@ -117,7 +119,7 @@ pub(crate) fn quiescence(
     let in_check = board.checkers().popcnt() > 0;
     if qply >= MAX_QPLY {
         if !in_check {
-            return Some(control.evaluate(&board));
+            return Some(control.evaluate::<STACK>(&board));
         }
         // At the hard limit, examine every legal evasion once rather than
         // pretending that passing in check is legal or aborting the iteration.
@@ -127,14 +129,18 @@ pub(crate) fn quiescence(
             }
             let halfmove = game.halfmove;
             game.play(mv);
-            control.push(&game.board);
+            if STACK {
+                control.push(&game.board);
+            }
             let score = match game.board.status() {
                 BoardStatus::Checkmate => MATE - ply - 1,
                 BoardStatus::Stalemate => 0,
                 BoardStatus::Ongoing if game.draw() => 0,
-                BoardStatus::Ongoing => -control.evaluate(&game.board),
+                BoardStatus::Ongoing => -control.evaluate::<STACK>(&game.board),
             };
-            control.pop();
+            if STACK {
+                control.pop();
+            }
             game.unplay(board, halfmove);
             alpha = alpha.max(score);
             if alpha >= beta {
@@ -144,7 +150,7 @@ pub(crate) fn quiescence(
         return Some(alpha);
     }
     if !in_check {
-        let stand_pat = control.evaluate(&board);
+        let stand_pat = control.evaluate::<STACK>(&board);
         if stand_pat >= beta {
             return Some(stand_pat);
         }
@@ -159,9 +165,14 @@ pub(crate) fn quiescence(
         }
         let halfmove = game.halfmove;
         game.play(mv);
-        control.push(&game.board);
-        let result = quiescence(game, -beta, -alpha, ply + 1, qply + 1, control, nodes);
-        control.pop();
+        if STACK {
+            control.push(&game.board);
+        }
+        let result =
+            quiescence_impl::<STACK>(game, -beta, -alpha, ply + 1, qply + 1, control, nodes);
+        if STACK {
+            control.pop();
+        }
         game.unplay(board, halfmove);
         let score = -result?;
         if score >= beta {
@@ -276,7 +287,7 @@ fn move_score(
     history[mv.get_source().to_index()][mv.get_dest().to_index()]
 }
 
-fn search(
+fn search<const STACK: bool>(
     game: &mut Game,
     depth: u8,
     mut alpha: i32,
@@ -292,7 +303,7 @@ fn search(
     state.pv_len[pv_index] = 0;
     // Quiescence counts and validates its own entry node.
     if depth == 0 {
-        return quiescence(game, alpha, beta, ply, 0, control, state.nodes);
+        return quiescence_impl::<STACK>(game, alpha, beta, ply, 0, control, state.nodes);
     }
     if !control.visit_node(state.nodes) {
         return None;
@@ -360,18 +371,22 @@ fn search(
         let mv = moves[index];
         let halfmove = game.halfmove;
         game.play(mv);
-        control.push(&game.board);
+        if STACK {
+            control.push(&game.board);
+        }
         let result = if control.pvs && index > 0 && alpha + 1 < beta {
-            match search(game, depth - 1, -alpha - 1, -alpha, ply + 1, control, state) {
+            match search::<STACK>(game, depth - 1, -alpha - 1, -alpha, ply + 1, control, state) {
                 Some(probe) if -probe > alpha && -probe < beta => {
-                    search(game, depth - 1, -beta, -alpha, ply + 1, control, state)
+                    search::<STACK>(game, depth - 1, -beta, -alpha, ply + 1, control, state)
                 }
                 other => other,
             }
         } else {
-            search(game, depth - 1, -beta, -alpha, ply + 1, control, state)
+            search::<STACK>(game, depth - 1, -beta, -alpha, ply + 1, control, state)
         };
-        control.pop();
+        if STACK {
+            control.pop();
+        }
         game.unplay(board, halfmove);
         let score = -result?;
         if best.is_none() || score > best_score {
@@ -446,6 +461,41 @@ pub(crate) fn best_move_window(
     nodes: &mut u64,
     window: (i32, i32),
 ) -> Option<(ChessMove, i32, Vec<ChessMove>)> {
+    let stack = control.stack.borrow().is_some();
+    if stack {
+        best_move_window_impl::<true>(game, depth, control, hints, table, nodes, window)
+    } else {
+        best_move_window_impl::<false>(game, depth, control, hints, table, nodes, window)
+    }
+}
+
+#[cfg(test)]
+pub(crate) fn quiescence(
+    game: &mut Game,
+    alpha: i32,
+    beta: i32,
+    ply: i32,
+    qply: i32,
+    control: &SearchControl,
+    nodes: &mut u64,
+) -> Option<i32> {
+    let stack = control.stack.borrow().is_some();
+    if stack {
+        quiescence_impl::<true>(game, alpha, beta, ply, qply, control, nodes)
+    } else {
+        quiescence_impl::<false>(game, alpha, beta, ply, qply, control, nodes)
+    }
+}
+
+fn best_move_window_impl<const STACK: bool>(
+    game: &mut Game,
+    depth: u8,
+    control: &SearchControl,
+    hints: &mut HashMap<u64, ChessMove>,
+    table: &mut Table,
+    nodes: &mut u64,
+    window: (i32, i32),
+) -> Option<(ChessMove, i32, Vec<ChessMove>)> {
     let board = game.board;
     if game.draw() {
         return MoveGen::new_legal(&board)
@@ -474,8 +524,10 @@ pub(crate) fn best_move_window(
     for mv in moves {
         let halfmove = game.halfmove;
         game.play(mv);
-        control.push(&game.board);
-        let result = search(
+        if STACK {
+            control.push(&game.board);
+        }
+        let result = search::<STACK>(
             game,
             depth.saturating_sub(1),
             -beta,
@@ -484,7 +536,9 @@ pub(crate) fn best_move_window(
             control,
             &mut state,
         );
-        control.pop();
+        if STACK {
+            control.pop();
+        }
         game.unplay(board, halfmove);
         let score = -result?;
         if best.is_none() || score > alpha {
@@ -552,7 +606,10 @@ mod tests {
                 );
                 assert_eq!(game.board, Board::default());
                 assert_eq!(game.history, original);
-                assert_eq!(control.evaluate(&game.board), net.evaluate(&game.board));
+                assert_eq!(
+                    control.evaluate::<true>(&game.board),
+                    net.evaluate(&game.board)
+                );
                 signatures.push((result, nodes));
             }
             assert_eq!(signatures[0], signatures[1]);
@@ -770,7 +827,7 @@ mod tests {
                 cache: RefCell::new(None),
                 stack: RefCell::new(None),
             };
-            assert!(search(&mut game, 1, -50, 50, 0, &control, &mut state).is_some());
+            assert!(search::<false>(&mut game, 1, -50, 50, 0, &control, &mut state).is_some());
             assert_eq!(
                 state.table.cutoffs > 0,
                 expected_cutoff,
@@ -807,7 +864,7 @@ mod tests {
             cache: RefCell::new(None),
             stack: RefCell::new(None),
         };
-        assert!(search(&mut game, 4, -MATE, MATE, 0, &control, &mut state).is_none());
+        assert!(search::<false>(&mut game, 4, -MATE, MATE, 0, &control, &mut state).is_none());
         assert_eq!(game.board, original_board);
         assert_eq!(game.history, original_history);
         assert_eq!(game.halfmove, 0);
@@ -839,7 +896,7 @@ mod tests {
             cache: RefCell::new(None),
             stack: RefCell::new(None),
         };
-        assert!(search(&mut game, 0, -MATE, MATE, 0, &control, &mut state).is_some());
+        assert!(search::<false>(&mut game, 0, -MATE, MATE, 0, &control, &mut state).is_some());
         assert_eq!(*state.nodes, 1);
     }
 
@@ -948,7 +1005,7 @@ mod tests {
             cache: RefCell::new(None),
             stack: RefCell::new(None),
         };
-        let score = search(&mut game, 1, -MATE, MATE, 0, &control, &mut state).unwrap();
+        let score = search::<false>(&mut game, 1, -MATE, MATE, 0, &control, &mut state).unwrap();
         assert_ne!(score, 12_345);
         assert_eq!(state.table.cutoffs, 0);
     }
