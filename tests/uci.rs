@@ -29,6 +29,15 @@ fn handshake_and_node_limited_search() {
     assert!(lines
         .iter()
         .any(|s| s.starts_with("info depth ") && s.contains(" nps ")));
+    let stats = lines
+        .iter()
+        .find(|s| s.starts_with("info string tt probes "))
+        .unwrap();
+    let fields: Vec<_> = stats.split_whitespace().collect();
+    let probes: u64 = fields[4].parse().unwrap();
+    let hits: u64 = fields[6].parse().unwrap();
+    let cutoffs: u64 = fields[8].parse().unwrap();
+    assert!(cutoffs <= hits && hits <= probes);
     assert!(!lines.last().unwrap().contains("0000"));
     writeln!(input, "quit").unwrap();
     child.wait().unwrap();

@@ -100,8 +100,8 @@ fn start_search(
         }
         if !suppress_worker.load(Ordering::Relaxed) {
             println!(
-                "info string tt hits {} cutoffs {}",
-                table.hits, table.cutoffs
+                "info string tt probes {} hits {} cutoffs {}",
+                table.probes, table.hits, table.cutoffs
             );
             println!(
                 "bestmove {}",

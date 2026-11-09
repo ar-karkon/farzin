@@ -27,6 +27,7 @@ pub struct Table {
     used: usize,
     generation: u8,
     pub hits: u64,
+    pub probes: u64,
     pub cutoffs: u64,
 }
 
@@ -37,10 +38,12 @@ impl Table {
             used: 0,
             generation: 0,
             hits: 0,
+            probes: 0,
             cutoffs: 0,
         }
     }
     pub fn get(&mut self, key: u64) -> Option<Entry> {
+        self.probes += 1;
         if self.entries.is_empty() {
             return None;
         }
