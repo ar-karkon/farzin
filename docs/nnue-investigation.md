@@ -1,0 +1,14 @@
+# بررسی اولیهٔ NNUE — ۲۰۲۶-۱۱-۰۹
+
+این بررسی فقط فایل‌های متنی عمومی را خوانده است؛ هیچ وزن یا کد موتور دیگری وارد فرزین نشده و سازگاری باینری یا مجوز توزیع وزن‌ها تأیید نشده است. شناسه‌های زیر وضعیت شاخهٔ پیش‌فرض هنگام بررسی هستند، نه الزاماً نسخه‌های انتشار گزارش پژوهشی.
+
+| موتور و کد بررسی‌شده | معماری مشاهده‌شده | مجوز فایل کد پروژه |
+| --- | --- | --- |
+| [Stockfish `7cdd5e8`](https://github.com/official-stockfish/Stockfish/blob/7cdd5e89a39fe3071b67d91c7bb07d712044bf76/src/nnue/nnue_architecture.h) | ویژگی‌های K32H3، تهدید و جفت‌پیاده؛ ۱۰۲۴/۳۲/۳۲ و ۳۲ پشتهٔ خروجی در این revision توسعه | GPL-3.0-or-later طبق سرآیند کد |
+| [Reckless `0756957`](https://github.com/codedeliveryservice/Reckless/blob/075695720fa0690ac4f290c49412ca9f7ae02ba7/src/nnue.rs) | ورودی ۱۰ bucket، عرض ۷۶۸، لایه‌های ۱۶/۳۲ و ۸ bucket خروجی؛ accumulator برای مهره و تهدید | [AGPL-3.0](https://github.com/codedeliveryservice/Reckless/blob/075695720fa0690ac4f290c49412ca9f7ae02ba7/LICENSE) |
+| [PlentyChess `fb2e2b2`](https://github.com/Yoshie2000/PlentyChess/blob/fb2e2b2bb34d49dc934c85e14d05828429c0534d/src/nnue.h) | ۱۲ king bucket، تهدید و جفت‌پیاده، ۱۰۲۴/۱۶/۳۲ و ۸ خروجی | [GPL-3.0](https://github.com/Yoshie2000/PlentyChess/blob/fb2e2b2bb34d49dc934c85e14d05828429c0534d/LICENSE) |
+| [Caissa `395c2e6`](https://github.com/Witek902/Caissa/blob/395c2e6bb7361bacdde813b014dd438af2d21339/src/backend/PackedNeuralNetwork.hpp) | ۳۲ king bucket، ۷۶۸ ویژگی مهره در هر bucket، accumulator با عرض ۱۵۳۶، لایه‌های ۱۶/۳۲ و ۸ خروجی؛ header با شناسه `CSNN` و نسخهٔ ۱۵ در این revision | [MIT](https://github.com/Witek902/Caissa/blob/395c2e6bb7361bacdde813b014dd438af2d21339/LICENSE) برای مخزن کد |
+
+ساختارها، مقیاس‌ها، ترتیب ویژگی‌ها و فرمت فایل‌ها متفاوت‌اند؛ وزن‌ها قابل تعویض یا میانگین‌گیری مستقیم نیستند. برای پژوهش اولیه Caissa نامزد بررسی است، چون کدش MIT است و مشخصات فرمت را منتشر کرده است؛ این به‌معنای داشتن حق توزیع یا سازگاری وزن خاص نیست. [README آن](https://github.com/Witek902/Caissa/blob/395c2e6bb7361bacdde813b014dd438af2d21339/README.md) می‌گوید فایل‌های `.pnn` در releaseهای مخزن جداگانه قرار دارند. در بررسی [Caissa-Nets با commit `513b990`](https://github.com/Witek902/Caissa-Nets/tree/513b990ddb1204ca25a650cfb8d31e13b38a9414)، README شرایط وزن‌ها را توضیح نمی‌داد و مسیر `LICENSE` در همان revision موجود نبود؛ شرایط هر فایل release هنوز تأیید نشده است.
+
+پیش از واردکردن مدل: یک فایل مشخص و منشأ و مجوزش را تأیید، حجم و SHA-256 آن را ثبت، و اجازهٔ دانلود بزرگ را طبق درخواست اولیه دریافت کنید. سپس parser با بررسی نسخه و طول، استنتاج scalar، تست خروجی موقعیت‌های ثابت در برابر همان revision مرجع، accumulator افزایشی و تست تمام حرکت‌های ویژه، و فقط بعد SIMD و آزمون مسابقه‌ای لازم است. تفاوت نسخهٔ مدل و کد مرجع باید شکست صریح بدهد. تا انجام این مراحل، ارزیابی فرزین همچنان کلاسیک است.
