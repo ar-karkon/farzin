@@ -393,6 +393,10 @@ pub(crate) fn best_move_window(
     }
     let mut best = None;
     let (mut alpha, beta) = window;
+    let root_hint = hints
+        .get(&board.get_hash())
+        .copied()
+        .filter(|hint| MoveGen::new_legal(&board).any(|mv| mv == *hint));
     let mut state = SearchState {
         hints,
         table,
@@ -403,7 +407,10 @@ pub(crate) fn best_move_window(
         pv_len: [0; 65],
     };
     let mut best_pv = Vec::new();
-    for mv in MoveGen::new_legal(&board) {
+    let moves = root_hint
+        .into_iter()
+        .chain(MoveGen::new_legal(&board).filter(|mv| Some(*mv) != root_hint));
+    for mv in moves {
         let halfmove = game.halfmove;
         game.play(mv);
         let result = search(
@@ -428,7 +435,12 @@ pub(crate) fn best_move_window(
             break;
         }
     }
-    best.map(|mv| (mv, alpha, best_pv))
+    best.map(|mv| {
+        if hints.len() < 200_000 {
+            hints.insert(board.get_hash(), mv);
+        }
+        (mv, alpha, best_pv)
+    })
 }
 
 #[cfg(test)]
@@ -553,6 +565,45 @@ mod tests {
             assert!(MoveGen::new_legal(&game.board).any(|legal| legal == mv));
             game.play(mv);
         }
+    }
+
+    #[test]
+    fn root_search_prefers_valid_hint_when_scores_tie() {
+        let mut game = Game::new(Board::default(), 0);
+        let control = SearchControl {
+            stop: Arc::new(AtomicBool::new(false)),
+            deadline: None,
+            node_limit: None,
+            exchange_ordering: false,
+            pvs: false,
+            cache: RefCell::new(None),
+        };
+        let hint = ChessMove::from_str("h2h4").unwrap();
+        let mut hints = HashMap::new();
+        hints.insert(game.board.get_hash(), hint);
+        let result = best_move(
+            &mut game,
+            1,
+            &control,
+            &mut hints,
+            &mut Table::new(0),
+            &mut 0,
+        )
+        .unwrap();
+        assert_eq!(result.0, hint);
+        assert_eq!(hints.get(&game.board.get_hash()), Some(&hint));
+        // A stale or illegal hint must never become a best move.
+        hints.insert(game.board.get_hash(), ChessMove::from_str("e2e5").unwrap());
+        let result = best_move(
+            &mut game,
+            1,
+            &control,
+            &mut hints,
+            &mut Table::new(0),
+            &mut 0,
+        )
+        .unwrap();
+        assert!(MoveGen::new_legal(&game.board).any(|mv| mv == result.0));
     }
 
     #[test]
