@@ -1,0 +1,55 @@
+{
+  "pentanomial": [
+    2,
+    22,
+    120,
+    46,
+    10
+  ],
+  "pairs": 200,
+  "elo0": 0.0,
+  "elo1": 10.0,
+  "alpha": 0.05,
+  "beta": 0.05,
+  "lower_bound": -2.9444389791664403,
+  "upper_bound": 2.9444389791664403,
+  "llr": 3.649562513699285,
+  "decision": "accept H1",
+  "score": 0.55,
+  "elo": 34.86007028756008,
+  "elo_95": [
+    17.065051502886114,
+    52.83942582406815
+  ],
+  "games": {
+    "wins": 116,
+    "draws": 208,
+    "losses": 76,
+    "unfinished": 0
+  },
+  "excluded_pairs": 0,
+  "unfinished_as_draw": true,
+  "reports": [
+    "match-pvs-nullmove-vs-pvs-60ms-b1/m-shard0.json.gz",
+    "match-pvs-nullmove-vs-pvs-60ms-b1/m-shard1.json.gz",
+    "match-pvs-nullmove-vs-pvs-60ms-b1/m-shard2.json.gz",
+    "match-pvs-nullmove-vs-pvs-60ms-b2/m-shard0.json.gz",
+    "match-pvs-nullmove-vs-pvs-60ms-b2/m-shard1.json.gz",
+    "match-pvs-nullmove-vs-pvs-60ms-b2/m-shard2.json.gz"
+  ],
+  "options": [
+    {
+      "PVS": "true",
+      "Null Move": "true"
+    },
+    {
+      "PVS": "true"
+    }
+  ],
+  "movetime_ms": 60,
+  "depth": null,
+  "engine_sha256": [
+    "061d697041749c1ab58a85f83ed038456dbe59e6ae14cb179dce7563f809119f",
+    "061d697041749c1ab58a85f83ed038456dbe59e6ae14cb179dce7563f809119f"
+  ]
+}
