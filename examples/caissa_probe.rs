@@ -1,7 +1,8 @@
 //! Diagnostic only: print raw outputs from a local Caissa v15 network.
 use chess::{Board, ChessMove, Color, MoveGen};
-use farzin::caissa::{Network, PerspectiveAccumulator};
+use farzin::caissa::{CachedEvaluator, Network, PerspectiveAccumulator};
 use std::str::FromStr;
+use std::sync::Arc;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut args = std::env::args().skip(1);
@@ -12,7 +13,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some(fen) => Board::from_str(&fen).map_err(|e| format!("invalid FEN: {e}"))?,
         None => Board::default(),
     };
-    let network = Network::from_file(path)?;
+    let network = Arc::new(Network::from_file(path)?);
+    let mut cache = CachedEvaluator::new(Arc::clone(&network), &board);
     let mut white = PerspectiveAccumulator::new(&network, &board, Color::White);
     let mut black = PerspectiveAccumulator::new(&network, &board, Color::Black);
     for token in args {
@@ -27,6 +29,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             || *black.values() != network.accumulator(&next, Color::Black)
         {
             return Err(format!("incremental mismatch after {token}").into());
+        }
+        if cache.evaluate(&next) != network.evaluate(&next) {
+            return Err(format!("cached score mismatch after {token}").into());
+        }
+        if cache.evaluate(&board) != network.evaluate(&board) {
+            return Err(format!("cached undo mismatch after {token}").into());
         }
         board = next;
     }

@@ -4,6 +4,7 @@
 //! Witanowski (MIT); see THIRD_PARTY_NOTICES.md. Weights are not distributed.
 use chess::{Board, Color, Piece};
 use std::path::Path;
+use std::sync::Arc;
 
 const FILE_SIZE: usize = 75_703_872;
 const MAGIC: u32 = 0x43534e4e;
@@ -17,6 +18,40 @@ const SUBNET_SIZE: usize = 25_408;
 
 pub struct Network {
     bytes: Vec<u8>,
+}
+
+/// Per-search cache. Diffs from the last evaluated board, so skipped nodes and
+/// search interruption do not require separate make/unmake synchronization.
+pub struct CachedEvaluator {
+    network: Arc<Network>,
+    board: Board,
+    white: [i16; WIDTH],
+    black: [i16; WIDTH],
+}
+
+impl CachedEvaluator {
+    pub fn new(network: Arc<Network>, board: &Board) -> Self {
+        let white = network.accumulator(board, Color::White);
+        let black = network.accumulator(board, Color::Black);
+        Self {
+            network,
+            board: *board,
+            white,
+            black,
+        }
+    }
+
+    pub fn evaluate(&mut self, board: &Board) -> i32 {
+        if self.board != *board {
+            self.network
+                .transition(&mut self.white, &self.board, board, Color::White);
+            self.network
+                .transition(&mut self.black, &self.board, board, Color::Black);
+            self.board = *board;
+        }
+        self.network
+            .evaluate_accumulators(board, &self.white, &self.black)
+    }
 }
 
 /// One perspective's incrementally maintained feature transformer state.
@@ -124,9 +159,25 @@ impl Network {
     /// Approximate search score in centipawns, from the side-to-move perspective.
     /// Unlike Caissa's full evaluator this excludes its endgame and castling adjustments.
     pub fn evaluate(&self, board: &Board) -> i32 {
+        let white = self.accumulator(board, Color::White);
+        let black = self.accumulator(board, Color::Black);
+        self.evaluate_accumulators(board, &white, &black)
+    }
+
+    fn evaluate_accumulators(
+        &self,
+        board: &Board,
+        white: &[i16; WIDTH],
+        black: &[i16; WIDTH],
+    ) -> i32 {
         let pieces = board.combined().popcnt().saturating_sub(2) as usize;
         let bucket = (pieces / 4).min(7);
-        let raw = self.raw_bucket(&self.inputs(board), bucket);
+        let (ours, theirs) = if board.side_to_move() == Color::White {
+            (white, black)
+        } else {
+            (black, white)
+        };
+        let raw = self.raw_bucket(&Self::inputs_from_accumulators(ours, theirs), bucket);
         let phase = board.pieces(Piece::Knight).popcnt()
             + board.pieces(Piece::Bishop).popcnt()
             + 2 * board.pieces(Piece::Rook).popcnt()
@@ -138,6 +189,10 @@ impl Network {
     fn inputs(&self, board: &Board) -> [u8; WIDTH] {
         let ours = self.accumulator(board, board.side_to_move());
         let theirs = self.accumulator(board, !board.side_to_move());
+        Self::inputs_from_accumulators(&ours, &theirs)
+    }
+
+    fn inputs_from_accumulators(ours: &[i16; WIDTH], theirs: &[i16; WIDTH]) -> [u8; WIDTH] {
         let mut inputs = [0u8; WIDTH];
         for (perspective, acc) in [ours, theirs].iter().enumerate() {
             for i in 0..WIDTH / 2 {
@@ -147,6 +202,33 @@ impl Network {
             }
         }
         inputs
+    }
+
+    fn transition(
+        &self,
+        values: &mut [i16; WIDTH],
+        before: &Board,
+        after: &Board,
+        perspective: Color,
+    ) {
+        let old = feature_indices(before, perspective);
+        let new = feature_indices(after, perspective);
+        for (features, other, add) in [(&old, &new, false), (&new, &old, true)] {
+            for &feature in features {
+                if other.binary_search(&feature).is_ok() {
+                    continue;
+                }
+                let row = HEADER + feature * WIDTH * 2;
+                for (i, value) in values.iter_mut().enumerate() {
+                    let weight = self.i16_at(row + i * 2);
+                    *value = if add {
+                        value.wrapping_add(weight)
+                    } else {
+                        value.wrapping_sub(weight)
+                    };
+                }
+            }
+        }
     }
 
     fn raw_bucket(&self, inputs: &[u8; WIDTH], bucket: usize) -> i32 {
@@ -218,7 +300,7 @@ mod tests {
         let mut bytes = vec![0; FILE_SIZE];
         bytes[0..4].copy_from_slice(&MAGIC.to_le_bytes());
         bytes[4..8].copy_from_slice(&VERSION.to_le_bytes());
-        let net = Network::from_bytes(bytes).unwrap();
+        let net = Arc::new(Network::from_bytes(bytes).unwrap());
         assert_eq!(net.raw_outputs(&Board::default()), [0; 8]);
     }
     #[test]
@@ -243,7 +325,7 @@ mod tests {
             let weight = (feature as i16).wrapping_mul(13);
             bytes[offset..offset + 2].copy_from_slice(&weight.to_le_bytes());
         }
-        let net = Network::from_bytes(bytes).unwrap();
+        let net = Arc::new(Network::from_bytes(bytes).unwrap());
         for (fen, token) in [
             ("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1", "e1g1"),
             ("4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1", "e5d6"),
@@ -254,6 +336,13 @@ mod tests {
             let mv = ChessMove::from_str(token).unwrap();
             assert!(MoveGen::new_legal(&before).any(|legal| legal == mv));
             let after = before.make_move_new(mv);
+            let mut cache = CachedEvaluator::new(Arc::clone(&net), &before);
+            assert_eq!(cache.evaluate(&after), net.evaluate(&after));
+            assert_eq!(cache.white, net.accumulator(&after, Color::White));
+            assert_eq!(cache.black, net.accumulator(&after, Color::Black));
+            assert_eq!(cache.evaluate(&before), net.evaluate(&before));
+            assert_eq!(cache.white, net.accumulator(&before, Color::White));
+            assert_eq!(cache.black, net.accumulator(&before, Color::Black));
             for color in [Color::White, Color::Black] {
                 let mut acc = PerspectiveAccumulator::new(&net, &before, color);
                 acc.update(&after);
