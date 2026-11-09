@@ -1,5 +1,6 @@
 use crate::tt::Table;
 use chess::{Board, MoveGen};
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::io::{self, BufRead, Write};
 use std::sync::{
@@ -62,7 +63,9 @@ fn start_search(
         node_limit: number("nodes"),
         exchange_ordering,
         pvs,
-        network,
+        cache: RefCell::new(
+            network.map(|net| farzin::caissa::CachedEvaluator::new(net, &game.board)),
+        ),
     };
     let handle = thread::spawn(move || {
         let mut best = MoveGen::new_legal(&game.board).next();
@@ -281,7 +284,7 @@ mod tests {
             node_limit: None,
             exchange_ordering: false,
             pvs: false,
-            network: None,
+            cache: RefCell::new(None),
         };
         let score = quiescence(&mut game, -MATE, MATE, 0, 0, &control, &mut 0).unwrap();
         assert!(
@@ -300,7 +303,7 @@ mod tests {
             node_limit: None,
             exchange_ordering: false,
             pvs: false,
-            network: None,
+            cache: RefCell::new(None),
         };
         assert!(quiescence(&mut game, -MATE, MATE, 0, MAX_QPLY, &control, &mut 0).is_some());
         assert_eq!(game.board, original);
@@ -315,7 +318,7 @@ mod tests {
             node_limit: None,
             exchange_ordering: false,
             pvs: false,
-            network: None,
+            cache: RefCell::new(None),
         };
         assert!(best_move(
             &mut board,

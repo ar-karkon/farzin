@@ -4,6 +4,7 @@ use crate::{
     tt::{self, Bound, Entry, Table},
 };
 use chess::{BitBoard, Board, BoardStatus, ChessMove, MoveGen, Piece, Square};
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
@@ -18,14 +19,15 @@ pub(crate) struct SearchControl {
     pub(crate) node_limit: Option<u64>,
     pub(crate) exchange_ordering: bool,
     pub(crate) pvs: bool,
-    pub(crate) network: Option<Arc<farzin::caissa::Network>>,
+    pub(crate) cache: RefCell<Option<farzin::caissa::CachedEvaluator>>,
 }
 
 impl SearchControl {
     fn evaluate(&self, board: &Board) -> i32 {
-        self.network
-            .as_ref()
-            .map_or_else(|| evaluate(board), |net| net.evaluate(board))
+        self.cache
+            .borrow_mut()
+            .as_mut()
+            .map_or_else(|| evaluate(board), |cache| cache.evaluate(board))
     }
     fn stopped(&self, nodes: u64) -> bool {
         self.stop.load(Ordering::Relaxed)
@@ -461,7 +463,7 @@ mod tests {
                 node_limit: None,
                 exchange_ordering: enabled,
                 pvs: false,
-                network: None,
+                cache: RefCell::new(None),
             };
             scores.push(
                 best_move(
@@ -491,7 +493,7 @@ mod tests {
                     node_limit: None,
                     exchange_ordering: false,
                     pvs,
-                    network: None,
+                    cache: RefCell::new(None),
                 };
                 scores.push(
                     best_move(
@@ -519,7 +521,7 @@ mod tests {
             node_limit: None,
             exchange_ordering: false,
             pvs: false,
-            network: None,
+            cache: RefCell::new(None),
         };
         let (best, _, pv) = best_move(
             &mut game,
@@ -575,7 +577,7 @@ mod tests {
                 node_limit: None,
                 exchange_ordering: false,
                 pvs: false,
-                network: None,
+                cache: RefCell::new(None),
             };
             assert!(search(&mut game, 1, -50, 50, 0, &control, &mut state).is_some());
             assert_eq!(
@@ -609,7 +611,7 @@ mod tests {
             node_limit: Some(2),
             exchange_ordering: false,
             pvs: false,
-            network: None,
+            cache: RefCell::new(None),
         };
         assert!(search(&mut game, 4, -MATE, MATE, 0, &control, &mut state).is_none());
         assert_eq!(game.board, original_board);
@@ -638,7 +640,7 @@ mod tests {
             node_limit: Some(1),
             exchange_ordering: false,
             pvs: false,
-            network: None,
+            cache: RefCell::new(None),
         };
         assert!(search(&mut game, 0, -MATE, MATE, 0, &control, &mut state).is_some());
         assert_eq!(*state.nodes, 1);
@@ -663,7 +665,7 @@ mod tests {
                     node_limit: None,
                     exchange_ordering: false,
                     pvs: false,
-                    network: None,
+                    cache: RefCell::new(None),
                 };
                 let depth = if fen == "startpos" { 4 } else { 3 };
                 let score = best_move(

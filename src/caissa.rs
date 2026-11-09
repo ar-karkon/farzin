@@ -355,5 +355,20 @@ mod tests {
                 );
             }
         }
+        // Search may skip whole branches, so consecutive evaluated positions
+        // are not necessarily parent and child.
+        let initial = Board::default();
+        let mut cache = CachedEvaluator::new(Arc::clone(&net), &initial);
+        for fen in [
+            "4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1",
+            "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1",
+            "4k3/P7/8/8/8/8/8/4K3 w - - 0 1",
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        ] {
+            let board = Board::from_str(fen).unwrap();
+            assert_eq!(cache.evaluate(&board), net.evaluate(&board));
+            assert_eq!(cache.white, net.accumulator(&board, Color::White));
+            assert_eq!(cache.black, net.accumulator(&board, Color::Black));
+        }
     }
 }
