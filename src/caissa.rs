@@ -233,27 +233,35 @@ impl Network {
 
     fn raw_bucket(&self, inputs: &[u8; WIDTH], bucket: usize) -> i32 {
         let offset = SUBNET_OFFSET + bucket * SUBNET_SIZE;
-        let l1 = self.hidden(inputs, offset, offset + 24576, 16);
-        let l2 = self.hidden(&l1, offset + 24640, offset + 25152, 32);
+        let l1 = self.hidden::<16>(inputs, offset, offset + 24576);
+        let l2 = self.hidden::<32>(&l1, offset + 24640, offset + 25152);
         let bias = self.i32_at(offset + 25344);
         l2.iter().enumerate().fold(bias, |sum, (i, &v)| {
             sum.wrapping_add(i32::from(v) * i32::from(self.i16_at(offset + 25280 + i * 2)))
         })
     }
 
-    fn hidden(&self, inputs: &[u8], weights: usize, biases: usize, outputs: usize) -> Vec<u8> {
-        (0..outputs)
-            .map(|out| {
-                let mut sum = self.i32_at(biases + out * 4);
-                for (i, &value) in inputs.iter().enumerate() {
-                    let index = (i / 4) * (outputs * 4) + out * 4 + i % 4;
-                    sum = sum.wrapping_add(
-                        i32::from(value) * i32::from(self.bytes[weights + index] as i8),
-                    );
+    fn hidden<const OUTPUTS: usize>(
+        &self,
+        inputs: &[u8],
+        weights: usize,
+        biases: usize,
+    ) -> [u8; OUTPUTS] {
+        let mut sums: [i32; OUTPUTS] = std::array::from_fn(|i| self.i32_at(biases + i * 4));
+        for (group, chunk) in inputs.as_chunks::<4>().0.iter().enumerate() {
+            if chunk.iter().all(|&value| value == 0) {
+                continue;
+            }
+            let group_offset = weights + group * OUTPUTS * 4;
+            for (out, sum) in sums.iter_mut().enumerate() {
+                let base = group_offset + out * 4;
+                for (i, &value) in chunk.iter().enumerate() {
+                    *sum =
+                        sum.wrapping_add(i32::from(value) * i32::from(self.bytes[base + i] as i8));
                 }
-                (sum >> 6).clamp(0, 127) as u8
-            })
-            .collect()
+            }
+        }
+        sums.map(|sum| (sum >> 6).clamp(0, 127) as u8)
     }
 }
 
@@ -313,6 +321,29 @@ mod tests {
             features.dedup();
             assert_eq!(features.len(), 32);
         }
+    }
+
+    #[test]
+    fn sparse_hidden_layer_matches_simple_reference() {
+        let mut bytes = vec![0; 128];
+        for (i, value) in bytes[..48].iter_mut().enumerate() {
+            *value = ((i * 37 + 11) as u8).wrapping_sub(128);
+        }
+        for (i, bias) in [-1000i32, 0, 3000, 9000].iter().enumerate() {
+            bytes[64 + i * 4..68 + i * 4].copy_from_slice(&bias.to_le_bytes());
+        }
+        let net = Network { bytes };
+        let input = [0, 0, 0, 0, 4, 80, 127, 1, 2, 0, 64, 17];
+        let actual = net.hidden::<4>(&input, 0, 64);
+        let expected: [u8; 4] = std::array::from_fn(|out| {
+            let mut sum = net.i32_at(64 + out * 4);
+            for (i, &value) in input.iter().enumerate() {
+                let index = (i / 4) * 16 + out * 4 + i % 4;
+                sum = sum.wrapping_add(i32::from(value) * i32::from(net.bytes[index] as i8));
+            }
+            (sum >> 6).clamp(0, 127) as u8
+        });
+        assert_eq!(actual, expected);
     }
 
     #[test]
