@@ -30,9 +30,9 @@
   "excluded_pairs": 0,
   "unfinished_as_draw": true,
   "reports": [
-    "benchmarks/v4-experiments/match-lmr-60ms-b1/m-shard0.json",
-    "benchmarks/v4-experiments/match-lmr-60ms-b1/m-shard1.json",
-    "benchmarks/v4-experiments/match-lmr-60ms-b1/m-shard2.json"
+    "benchmarks/v4-experiments/match-lmr-60ms-b1/m-shard0.json.gz",
+    "benchmarks/v4-experiments/match-lmr-60ms-b1/m-shard1.json.gz",
+    "benchmarks/v4-experiments/match-lmr-60ms-b1/m-shard2.json.gz"
   ],
   "options": [
     {

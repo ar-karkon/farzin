@@ -13,6 +13,7 @@ choice is reported. The Elo interval is a normal-approximation 95% interval of
 the mean pair score; it is only meaningful for large samples.
 """
 import argparse
+import gzip
 import json
 import math
 
@@ -95,7 +96,7 @@ def analyse(counts, elo0, elo1, alpha, beta):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("reports", nargs="+", help="match.py JSON reports for the same pairing")
+    parser.add_argument("reports", nargs="+", help="match.py JSON reports (optionally .gz) for the same pairing")
     parser.add_argument("--elo0", type=float, default=0.0)
     parser.add_argument("--elo1", type=float, default=10.0)
     parser.add_argument("--alpha", type=float, default=0.05)
@@ -107,7 +108,8 @@ def main():
         parser.error("alpha/beta must be in (0, 1) and elo1 must exceed elo0")
     reports = []
     for path in args.reports:
-        with open(path, encoding="utf-8") as source:
+        opener = gzip.open if path.endswith(".gz") else open
+        with opener(path, "rt", encoding="utf-8") as source:
             reports.append(json.load(source))
     keys = [(r.get("engine_sha256"), r.get("options"), r.get("depth"), r.get("movetime_ms")) for r in reports]
     if any(key != keys[0] for key in keys):
