@@ -19,6 +19,58 @@ pub struct Network {
     bytes: Vec<u8>,
 }
 
+/// One perspective's incrementally maintained feature transformer state.
+pub struct PerspectiveAccumulator<'a> {
+    network: &'a Network,
+    perspective: Color,
+    features: Vec<usize>,
+    values: [i16; WIDTH],
+}
+
+impl<'a> PerspectiveAccumulator<'a> {
+    pub fn new(network: &'a Network, board: &Board, perspective: Color) -> Self {
+        Self {
+            network,
+            perspective,
+            features: feature_indices(board, perspective),
+            values: network.accumulator(board, perspective),
+        }
+    }
+
+    pub fn values(&self) -> &[i16; WIDTH] {
+        &self.values
+    }
+
+    /// Reconcile feature sets; king bucket and mirror changes are handled by the same diff.
+    pub fn update(&mut self, board: &Board) {
+        let next = feature_indices(board, self.perspective);
+        for index in 0..self.features.len() {
+            let feature = self.features[index];
+            if next.binary_search(&feature).is_err() {
+                self.apply(feature, false);
+            }
+        }
+        for &feature in &next {
+            if self.features.binary_search(&feature).is_err() {
+                self.apply(feature, true);
+            }
+        }
+        self.features = next;
+    }
+
+    fn apply(&mut self, feature: usize, add: bool) {
+        let row = HEADER + feature * WIDTH * 2;
+        for (i, value) in self.values.iter_mut().enumerate() {
+            let weight = self.network.i16_at(row + i * 2);
+            *value = if add {
+                value.wrapping_add(weight)
+            } else {
+                value.wrapping_sub(weight)
+            };
+        }
+    }
+}
+
 impl Network {
     pub fn from_file(path: impl AsRef<Path>) -> Result<Self, String> {
         let path = path.as_ref();
@@ -130,12 +182,15 @@ fn feature_indices(board: &Board, perspective: Color) -> Vec<usize> {
             }
         }
     }
+    features.sort_unstable();
     features
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use chess::{ChessMove, MoveGen};
+    use std::str::FromStr;
     #[test]
     fn validates_header_and_empty_network_output() {
         assert!(Network::from_bytes(vec![0; 64]).is_err());
@@ -154,6 +209,41 @@ mod tests {
             features.sort_unstable();
             features.dedup();
             assert_eq!(features.len(), 32);
+        }
+    }
+
+    #[test]
+    fn incremental_features_match_refresh_for_special_moves() {
+        let mut bytes = vec![0; FILE_SIZE];
+        bytes[0..4].copy_from_slice(&MAGIC.to_le_bytes());
+        bytes[4..8].copy_from_slice(&VERSION.to_le_bytes());
+        for feature in 0..INPUTS {
+            let offset = HEADER + feature * WIDTH * 2;
+            let weight = (feature as i16).wrapping_mul(13);
+            bytes[offset..offset + 2].copy_from_slice(&weight.to_le_bytes());
+        }
+        let net = Network::from_bytes(bytes).unwrap();
+        for (fen, token) in [
+            ("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1", "e1g1"),
+            ("4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1", "e5d6"),
+            ("4k3/P7/8/8/8/8/8/4K3 w - - 0 1", "a7a8n"),
+            ("4k3/8/8/8/8/8/8/3K4 w - - 0 1", "d1e1"),
+        ] {
+            let before = Board::from_str(fen).unwrap();
+            let mv = ChessMove::from_str(token).unwrap();
+            assert!(MoveGen::new_legal(&before).any(|legal| legal == mv));
+            let after = before.make_move_new(mv);
+            for color in [Color::White, Color::Black] {
+                let mut acc = PerspectiveAccumulator::new(&net, &before, color);
+                acc.update(&after);
+                assert_eq!(*acc.values(), net.accumulator(&after, color), "{token}");
+                acc.update(&before);
+                assert_eq!(
+                    *acc.values(),
+                    net.accumulator(&before, color),
+                    "undo {token}"
+                );
+            }
         }
     }
 }
