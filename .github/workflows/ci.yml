@@ -13,3 +13,13 @@ jobs:
       - run: cargo test --locked
       - run: cargo build --release --locked
       - run: python3 -m unittest discover -s tests -p 'test_*.py'
+  experimental-stack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - run: cargo clippy --all-targets --features nnue-stack -- -D warnings
+      - run: cargo test --locked --features nnue-stack
+      - run: cargo build --release --locked --features nnue-stack

@@ -1,7 +1,7 @@
 # Performance/search v3: reproducible experiments
 
 This branch keeps classical evaluation and existing search defaults. `NNUE Stack`
-is an opt-in UCI experiment; no trained weights are bundled or downloaded.
+requires `cargo build --release --locked --features nnue-stack` and is then an opt-in UCI experiment; no trained weights are bundled or downloaded.
 
 ## Reproduction
 
@@ -119,3 +119,32 @@ fixtures retain nonzero output weights and exercise overflow. Real-model speedup
 must be remeasured, including sparse activation distributions. Microbenchmark
 modes use different traversal patterns, so compare each mode between backends;
 use end-to-end runs to compare cache vs stack with identical search trees.
+
+## Compile-time isolation of stack hooks
+
+The scalar-only stack experiment did not show a clear speed benefit. A subsequent
+root-specialization experiment (`b1bf9c0`) was measured in alternating runs and
+reverted (`8b6dd01`) because it did not improve throughput. Final normal builds
+compile out stack fields and make/unmake/evaluation hooks with the Cargo feature
+`nnue-stack` disabled. Library accumulator diagnostics/tests remain available.
+Only builds with this feature advertise `NNUE Stack`; setting it in a normal
+build prints an explicit unavailable-feature message. SIMD does not require this
+feature. CI checks both builds without external models.
+
+```sh
+cargo build --release --locked --features nnue-stack
+# Enable both experiments explicitly after loading the engine:
+# setoption name NNUE Stack value true
+# setoption name NNUE SIMD value true
+```
+
+Optional independent Python reference (not the Caissa executable) requires
+`python-chess==1.999` (`chess==1.11.2`) in a separate virtual environment. These
+are test-tool dependencies, not Rust engine code. The chess Python dependency
+is GPL-3.0-or-later; it is not vendored. No GPL/AGPL engine source or model is
+incorporated in Rust. The repository still has no top-level project LICENSE;
+choosing one and clearing trained-weight usage rights remain owner decisions.
+
+```sh
+python3 tools/validate_caissa_scalar.py /path/to/local-network.pnn   target/release/examples/caissa_probe --network-kind synthetic   --plies 40 --json /tmp/scalar-reference.json
+```

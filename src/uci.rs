@@ -25,6 +25,7 @@ struct SearchOptions {
     aspiration: bool,
     positional: bool,
     threads: usize,
+    #[cfg(feature = "nnue-stack")]
     nnue_stack: bool,
     nnue_simd: bool,
 }
@@ -145,6 +146,7 @@ fn start_search(
         exchange_ordering: options.exchange_ordering,
         pvs: options.pvs,
         positional: options.positional,
+        #[cfg(feature = "nnue-stack")]
         stack: RefCell::new(if options.nnue_stack {
             network
                 .as_ref()
@@ -154,7 +156,16 @@ fn start_search(
         }),
         cache: RefCell::new(
             network
-                .filter(|_| !options.nnue_stack)
+                .filter(|_| {
+                    #[cfg(feature = "nnue-stack")]
+                    {
+                        !options.nnue_stack
+                    }
+                    #[cfg(not(feature = "nnue-stack"))]
+                    {
+                        true
+                    }
+                })
                 .map(|net| farzin::caissa::CachedEvaluator::new(net, &game.board)),
         ),
     };
@@ -253,6 +264,7 @@ fn start_parallel_search(
                     exchange_ordering: options.exchange_ordering,
                     pvs: options.pvs,
                     positional: options.positional,
+                    #[cfg(feature = "nnue-stack")]
                     stack: RefCell::new(if options.nnue_stack {
                         local_network.as_ref().map(|net| {
                             farzin::caissa::SearchEvaluator::new(Arc::clone(net), &local_game.board)
@@ -261,9 +273,20 @@ fn start_parallel_search(
                         None
                     }),
                     cache: RefCell::new(
-                        local_network.filter(|_| !options.nnue_stack).map(|net| {
-                            farzin::caissa::CachedEvaluator::new(net, &local_game.board)
-                        }),
+                        local_network
+                            .filter(|_| {
+                                #[cfg(feature = "nnue-stack")]
+                                {
+                                    !options.nnue_stack
+                                }
+                                #[cfg(not(feature = "nnue-stack"))]
+                                {
+                                    true
+                                }
+                            })
+                            .map(|net| {
+                                farzin::caissa::CachedEvaluator::new(net, &local_game.board)
+                            }),
                     ),
                 };
                 let mut state = IterationState::new(entries);
@@ -381,6 +404,7 @@ pub(crate) fn run() {
         aspiration: false,
         positional: false,
         threads: 1,
+        #[cfg(feature = "nnue-stack")]
         nnue_stack: false,
         nnue_simd: false,
     };
@@ -389,7 +413,12 @@ pub(crate) fn run() {
         let Ok(line) = line else { break };
         let line = line.trim();
         if line == "uci" {
-            println!("id name Farzin 0.1.0\nid author Farzin contributors\noption name Hash type spin default 16 min 1 max 256\noption name Clear Hash type button\noption name Threads type spin default 1 min 1 max 8\noption name Move Overhead type spin default 20 min 0 max 5000\noption name Exchange Ordering type check default false\noption name PVS type check default false\noption name Aspiration type check default false\noption name Positional type check default false\noption name NNUE SIMD type check default false\noption name NNUE Stack type check default false\noption name EvalFile type string default <empty>\nuciok");
+            let stack_option = if cfg!(feature = "nnue-stack") {
+                "option name NNUE Stack type check default false\n"
+            } else {
+                ""
+            };
+            println!("id name Farzin 0.1.0\nid author Farzin contributors\noption name Hash type spin default 16 min 1 max 256\noption name Clear Hash type button\noption name Threads type spin default 1 min 1 max 8\noption name Move Overhead type spin default 20 min 0 max 5000\noption name Exchange Ordering type check default false\noption name PVS type check default false\noption name Aspiration type check default false\noption name Positional type check default false\noption name NNUE SIMD type check default false\n{stack_option}option name EvalFile type string default <empty>\nuciok");
         } else if line == "isready" {
             println!("readyok");
         } else if line == "ucinewgame" {
@@ -437,7 +466,14 @@ pub(crate) fn run() {
             }
         } else if let Some(value) = line.strip_prefix("setoption name NNUE Stack value ") {
             if value == "true" || value == "false" {
-                options.nnue_stack = value == "true";
+                #[cfg(feature = "nnue-stack")]
+                {
+                    options.nnue_stack = value == "true";
+                }
+                #[cfg(not(feature = "nnue-stack"))]
+                if value == "true" {
+                    println!("info string NNUE Stack requires a build with --features nnue-stack");
+                }
             }
         } else if let Some(value) = line.strip_prefix("setoption name EvalFile value ") {
             stop_search(&mut worker, true);
@@ -590,6 +626,7 @@ mod tests {
             pvs: false,
             positional: false,
             cache: RefCell::new(None),
+            #[cfg(feature = "nnue-stack")]
             stack: RefCell::new(None),
         };
         let score = quiescence(&mut game, -MATE, MATE, 0, 0, &control, &mut 0).unwrap();
@@ -612,6 +649,7 @@ mod tests {
             pvs: false,
             positional: false,
             cache: RefCell::new(None),
+            #[cfg(feature = "nnue-stack")]
             stack: RefCell::new(None),
         };
         assert!(quiescence(&mut game, -MATE, MATE, 0, MAX_QPLY, &control, &mut 0).is_some());
@@ -630,6 +668,7 @@ mod tests {
             pvs: false,
             positional: false,
             cache: RefCell::new(None),
+            #[cfg(feature = "nnue-stack")]
             stack: RefCell::new(None),
         };
         assert!(best_move(

@@ -308,9 +308,14 @@ fn experimental_network_loads_and_can_be_disabled() {
         .unwrap();
     let mut input = child.stdin.take().unwrap();
     let mut output = BufReader::new(child.stdout.take().unwrap());
+    let stack_option = if cfg!(feature = "nnue-stack") {
+        "setoption name NNUE Stack value true\n"
+    } else {
+        ""
+    };
     writeln!(
         input,
-        "setoption name NNUE Stack value true\nsetoption name NNUE SIMD value true\nsetoption name Threads value 2\nsetoption name EvalFile value {}\nisready\nposition startpos\ngo depth 2",
+        "{stack_option}setoption name NNUE SIMD value true\nsetoption name Threads value 2\nsetoption name EvalFile value {}\nisready\nposition startpos\ngo depth 2",
         path.display()
     )
     .unwrap();

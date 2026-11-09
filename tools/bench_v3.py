@@ -18,6 +18,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('engine')
     parser.add_argument('--commit', required=True)
+    parser.add_argument('--build-features', default='', help='Cargo features used to produce this binary')
     parser.add_argument('--depth', type=int, default=4)
     parser.add_argument('--repeats', type=int, default=5)
     parser.add_argument('--positions', default=str(Path(__file__).with_name('positions-v3.fen')))
@@ -37,7 +38,7 @@ def main():
                   benchmark_tool_sha256=sha256_file(__file__),
                   uci_driver_sha256=sha256_file(Path(__file__).with_name("bench.py")),
                   rustc=subprocess.check_output([shutil.which('rustc') or str(Path.home() / '.cargo/bin/rustc'), '-Vv'], text=True) if shutil.which('rustc') or (Path.home() / '.cargo/bin/rustc').exists() else None,
-                  build_profile='release', build_flags=os.environ.get('RUSTFLAGS', ''),
+                  build_profile='release', build_features=args.build_features, build_flags=os.environ.get('RUSTFLAGS', ''),
                   evaluator='classical' if args.network_kind == 'none' else 'caissa-v15',
                   network_sha256=None, threads=int(next((v for k,v in supplied.items() if k.lower() == 'threads'), '1')),
                   hash_mb=int(next((v for k,v in supplied.items() if k.lower() == 'hash'), '16')), binary_sha256=sha256_file(args.engine),

@@ -22,21 +22,25 @@ pub(crate) struct SearchControl {
     pub(crate) pvs: bool,
     pub(crate) positional: bool,
     pub(crate) cache: RefCell<Option<farzin::caissa::CachedEvaluator>>,
+    #[cfg(feature = "nnue-stack")]
     pub(crate) stack: RefCell<Option<farzin::caissa::SearchEvaluator>>,
 }
 
 impl SearchControl {
+    #[cfg(feature = "nnue-stack")]
     fn push(&self, board: &Board) {
         if let Some(stack) = self.stack.borrow_mut().as_mut() {
             stack.push(board);
         }
     }
+    #[cfg(feature = "nnue-stack")]
     fn pop(&self) {
         if let Some(stack) = self.stack.borrow_mut().as_mut() {
             stack.pop();
         }
     }
     fn evaluate(&self, board: &Board) -> i32 {
+        #[cfg(feature = "nnue-stack")]
         if let Some(stack) = self.stack.borrow_mut().as_mut() {
             return stack.evaluate(board);
         }
@@ -127,6 +131,7 @@ pub(crate) fn quiescence(
             }
             let halfmove = game.halfmove;
             game.play(mv);
+            #[cfg(feature = "nnue-stack")]
             control.push(&game.board);
             let score = match game.board.status() {
                 BoardStatus::Checkmate => MATE - ply - 1,
@@ -134,6 +139,7 @@ pub(crate) fn quiescence(
                 BoardStatus::Ongoing if game.draw() => 0,
                 BoardStatus::Ongoing => -control.evaluate(&game.board),
             };
+            #[cfg(feature = "nnue-stack")]
             control.pop();
             game.unplay(board, halfmove);
             alpha = alpha.max(score);
@@ -159,8 +165,10 @@ pub(crate) fn quiescence(
         }
         let halfmove = game.halfmove;
         game.play(mv);
+        #[cfg(feature = "nnue-stack")]
         control.push(&game.board);
         let result = quiescence(game, -beta, -alpha, ply + 1, qply + 1, control, nodes);
+        #[cfg(feature = "nnue-stack")]
         control.pop();
         game.unplay(board, halfmove);
         let score = -result?;
@@ -360,6 +368,7 @@ fn search(
         let mv = moves[index];
         let halfmove = game.halfmove;
         game.play(mv);
+        #[cfg(feature = "nnue-stack")]
         control.push(&game.board);
         let result = if control.pvs && index > 0 && alpha + 1 < beta {
             match search(game, depth - 1, -alpha - 1, -alpha, ply + 1, control, state) {
@@ -371,6 +380,7 @@ fn search(
         } else {
             search(game, depth - 1, -beta, -alpha, ply + 1, control, state)
         };
+        #[cfg(feature = "nnue-stack")]
         control.pop();
         game.unplay(board, halfmove);
         let score = -result?;
@@ -474,6 +484,7 @@ pub(crate) fn best_move_window(
     for mv in moves {
         let halfmove = game.halfmove;
         game.play(mv);
+        #[cfg(feature = "nnue-stack")]
         control.push(&game.board);
         let result = search(
             game,
@@ -484,6 +495,7 @@ pub(crate) fn best_move_window(
             control,
             &mut state,
         );
+        #[cfg(feature = "nnue-stack")]
         control.pop();
         game.unplay(board, halfmove);
         let score = -result?;
@@ -512,6 +524,7 @@ mod tests {
     use chess::Board;
     use std::str::FromStr;
 
+    #[cfg(feature = "nnue-stack")]
     #[test]
     fn nnue_stack_search_cutoffs_and_interruption_restore_root() {
         let mut bytes = vec![0; 75_703_872];
@@ -537,6 +550,7 @@ mod tests {
                     cache: RefCell::new((!stack_enabled).then(|| {
                         farzin::caissa::CachedEvaluator::new(Arc::clone(&net), &game.board)
                     })),
+                    #[cfg(feature = "nnue-stack")]
                     stack: RefCell::new(stack_enabled.then(|| {
                         farzin::caissa::SearchEvaluator::new(Arc::clone(&net), &game.board)
                     })),
@@ -603,6 +617,7 @@ mod tests {
                 pvs: false,
                 positional: false,
                 cache: RefCell::new(None),
+                #[cfg(feature = "nnue-stack")]
                 stack: RefCell::new(None),
             };
             scores.push(
@@ -636,6 +651,7 @@ mod tests {
                     pvs,
                     positional: false,
                     cache: RefCell::new(None),
+                    #[cfg(feature = "nnue-stack")]
                     stack: RefCell::new(None),
                 };
                 scores.push(
@@ -667,6 +683,7 @@ mod tests {
             pvs: false,
             positional: false,
             cache: RefCell::new(None),
+            #[cfg(feature = "nnue-stack")]
             stack: RefCell::new(None),
         };
         let (best, _, pv) = best_move(
@@ -698,6 +715,7 @@ mod tests {
             pvs: false,
             positional: false,
             cache: RefCell::new(None),
+            #[cfg(feature = "nnue-stack")]
             stack: RefCell::new(None),
         };
         let hint = ChessMove::from_str("h2h4").unwrap();
@@ -768,6 +786,7 @@ mod tests {
                 pvs: false,
                 positional: false,
                 cache: RefCell::new(None),
+                #[cfg(feature = "nnue-stack")]
                 stack: RefCell::new(None),
             };
             assert!(search(&mut game, 1, -50, 50, 0, &control, &mut state).is_some());
@@ -805,6 +824,7 @@ mod tests {
             pvs: false,
             positional: false,
             cache: RefCell::new(None),
+            #[cfg(feature = "nnue-stack")]
             stack: RefCell::new(None),
         };
         assert!(search(&mut game, 4, -MATE, MATE, 0, &control, &mut state).is_none());
@@ -837,6 +857,7 @@ mod tests {
             pvs: false,
             positional: false,
             cache: RefCell::new(None),
+            #[cfg(feature = "nnue-stack")]
             stack: RefCell::new(None),
         };
         assert!(search(&mut game, 0, -MATE, MATE, 0, &control, &mut state).is_some());
@@ -859,6 +880,7 @@ mod tests {
                     pvs: false,
                     positional: false,
                     cache: RefCell::new(None),
+                    #[cfg(feature = "nnue-stack")]
                     stack: RefCell::new(None),
                 };
                 let mut nodes = 0;
@@ -896,6 +918,7 @@ mod tests {
                     pvs: false,
                     positional: false,
                     cache: RefCell::new(None),
+                    #[cfg(feature = "nnue-stack")]
                     stack: RefCell::new(None),
                 };
                 let depth = if fen == "startpos" { 4 } else { 3 };
@@ -946,6 +969,7 @@ mod tests {
             pvs: false,
             positional: false,
             cache: RefCell::new(None),
+            #[cfg(feature = "nnue-stack")]
             stack: RefCell::new(None),
         };
         let score = search(&mut game, 1, -MATE, MATE, 0, &control, &mut state).unwrap();
@@ -972,6 +996,7 @@ mod tests {
                     pvs,
                     positional: false,
                     cache: RefCell::new(None),
+                    #[cfg(feature = "nnue-stack")]
                     stack: RefCell::new(None),
                 };
                 let mut position = game.clone();
@@ -1008,6 +1033,7 @@ mod tests {
                     pvs,
                     positional: false,
                     cache: RefCell::new(None),
+                    #[cfg(feature = "nnue-stack")]
                     stack: RefCell::new(None),
                 };
                 let mut table = Table::new(4096);
@@ -1055,6 +1081,7 @@ mod tests {
             pvs: true,
             positional: false,
             cache: RefCell::new(None),
+            #[cfg(feature = "nnue-stack")]
             stack: RefCell::new(None),
         };
         assert!(best_move_window(
