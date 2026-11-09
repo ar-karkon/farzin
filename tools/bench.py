@@ -32,12 +32,16 @@ def main():
     if not 1 <= args.depth <= 64:
         parser.error("depth must be between 1 and 64")
     options = []
+    option_names = set()
     for option in args.option:
         if "=" not in option or "\n" in option or "\r" in option:
             parser.error("options must be NAME=VALUE on one line")
         name, value = option.split("=", 1)
         if not name.strip():
             parser.error("option name cannot be empty")
+        if name.strip().lower() in option_names:
+            parser.error("duplicate option name")
+        option_names.add(name.strip().lower())
         options.append((name.strip(), value))
     report = {"platform": platform.platform(), "engine": args.engine,
               "engine_sha256": sha256_file(args.engine), "depth": args.depth,
@@ -50,21 +54,29 @@ def main():
             engine.stdin.flush()
 
         def until(prefix, reject_failures=False):
+            observed = []
             while True:
                 line = engine.stdout.readline()
                 if not line:
                     raise RuntimeError("engine exited unexpectedly")
                 if reject_failures and line.startswith("info string failed to load network:"):
                     raise RuntimeError(line.strip())
+                observed.append(line.strip())
                 if line.startswith(prefix):
-                    return line.strip()
+                    return observed
 
         send("uci")
-        until("uciok")
+        identity = until("uciok")
         for name, value in options:
             send(f"setoption name {name} value {value}")
         send("isready")
-        until("readyok", reject_failures=True)
+        setup = until("readyok", reject_failures=True)
+        network = next((value for name, value in options if name.lower() == "evalfile"), None)
+        farzin = any(line.startswith("id name Farzin ") for line in identity)
+        if farzin and network and network != "<empty>":
+            if "info string experimental network loaded" not in setup:
+                raise RuntimeError("Farzin did not confirm loading the requested EvalFile")
+            report["network_sha256"] = sha256_file(network)
         for position in POSITIONS:
             send("ucinewgame")
             send("position " + position)

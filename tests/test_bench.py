@@ -11,7 +11,7 @@ ENGINE = '''#!/usr/bin/env python3
 import sys
 for line in sys.stdin:
     line = line.strip()
-    if line == "uci": print("uciok", flush=True)
+    if line == "uci": print("id name Farzin test\\nuciok", flush=True)
     elif line.startswith("setoption name EvalFile"):
         print("info string failed to load network: invalid file", flush=True)
     elif line == "isready": print("readyok", flush=True)
@@ -44,6 +44,15 @@ class BenchmarkTests(unittest.TestCase):
             result = json.loads(report.read_text(encoding="utf-8"))
             self.assertEqual(len(result["engine_sha256"]), 64)
             self.assertEqual(len(result["positions"]), 3)
+
+    def test_silent_model_failure_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            engine = Path(directory) / "engine"
+            engine.write_text(ENGINE.replace('print("info string failed to load network: invalid file", flush=True)', 'pass'), encoding="utf-8")
+            os.chmod(engine, 0o755)
+            result = subprocess.run([sys.executable, str(BENCH), str(engine), "--depth", "1", "--option", "EvalFile=missing"], capture_output=True, text=True, timeout=10)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("did not confirm loading", result.stderr)
 
 
 if __name__ == "__main__":

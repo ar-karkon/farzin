@@ -56,6 +56,8 @@ def main():
             name, value = option.split("=", 1)
             if not name.strip():
                 parser.error("option name cannot be empty")
+            if any(existing.lower() == name.strip().lower() for existing in parsed):
+                parser.error("duplicate engine option name")
             parsed[name.strip()] = value
         options.append(parsed)
     verification = []
