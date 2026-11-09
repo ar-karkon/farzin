@@ -115,10 +115,16 @@ fn quiescence(
     if game.draw() {
         return Some(0);
     }
-    if qply >= MAX_QPLY {
-        return Some(evaluate(&board));
-    }
     let in_check = board.checkers().popcnt() > 0;
+    if qply >= MAX_QPLY {
+        // A static score while in check would illegally allow the side to pass.
+        // Abort this iteration instead; iterative deepening retains its last result.
+        return if in_check {
+            None
+        } else {
+            Some(evaluate(&board))
+        };
+    }
     if !in_check {
         let stand_pat = evaluate(&board);
         if stand_pat >= beta {
@@ -531,6 +537,18 @@ mod tests {
             "hanging queen capture should not win material: {score}"
         );
         assert_eq!(game.board, board);
+    }
+    #[test]
+    fn quiescence_never_stand_pats_in_check_at_limit() {
+        let mut game = position("fen 4k3/8/8/8/8/8/4r3/4K3 w - - 0 1").unwrap();
+        let original = game.board;
+        let control = SearchControl {
+            stop: Arc::new(AtomicBool::new(false)),
+            deadline: None,
+            node_limit: None,
+        };
+        assert!(quiescence(&mut game, -MATE, MATE, 0, MAX_QPLY, &control, &mut 0).is_none());
+        assert_eq!(game.board, original);
     }
     #[test]
     fn mate_has_no_move() {
