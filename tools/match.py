@@ -82,6 +82,9 @@ def main():
                 players = [a, b]
                 for player, requested in zip(players, options):
                     player.configure(requested)
+                    # setoption may return before a large model is loaded; wait
+                    # for isready so setup time is not charged to the first move.
+                    player.ping()
                 while not board.is_game_over(claim_draw=True) and len(board.move_stack) < args.max_plies:
                     player = white if board.turn == chess.WHITE else 1 - white
                     search_limit = chess.engine.Limit(depth=depth, time=args.movetime_ms / 1000 if args.movetime_ms else None)
