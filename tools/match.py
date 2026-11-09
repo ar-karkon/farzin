@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Play paired fixed-depth games between two UCI engines using python-chess."""
 import argparse
+import hashlib
 import json
 import os
 import platform
@@ -8,6 +9,14 @@ import time
 
 import chess
 import chess.engine
+
+
+def sha256_file(path):
+    digest = hashlib.sha256()
+    with open(path, "rb") as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def main():
@@ -48,7 +57,7 @@ def main():
                 parser.error("option name cannot be empty")
             parsed[name.strip()] = value
         options.append(parsed)
-    report = {"engines": engines, "depth": depth, "movetime_ms": args.movetime_ms, "pairs": args.pairs,
+    report = {"engines": engines, "engine_sha256": [sha256_file(path) for path in engines], "depth": depth, "movetime_ms": args.movetime_ms, "pairs": args.pairs,
               "max_plies": args.max_plies, "platform": platform.platform(), "options": options, "games": []}
     for number in range(args.pairs * 2):
         white = number % 2

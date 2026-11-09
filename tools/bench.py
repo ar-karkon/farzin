@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run a fixed-depth UCI benchmark on known positions; no third-party packages."""
 import argparse
+import hashlib
 import json
 import platform
 import subprocess
@@ -11,6 +12,14 @@ POSITIONS = [
     "fen r1bq1rk1/ppp2ppp/2n2n2/3pp3/3PP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 6",
     "fen 8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1",
 ]
+
+
+def sha256_file(path):
+    digest = hashlib.sha256()
+    with open(path, "rb") as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def main():
@@ -30,7 +39,9 @@ def main():
         if not name.strip():
             parser.error("option name cannot be empty")
         options.append((name.strip(), value))
-    report = {"platform": platform.platform(), "engine": args.engine, "depth": args.depth, "options": options, "positions": []}
+    report = {"platform": platform.platform(), "engine": args.engine,
+              "engine_sha256": sha256_file(args.engine), "depth": args.depth,
+              "options": options, "positions": []}
     print(f"platform={platform.platform()} engine={args.engine} depth={args.depth}")
     with subprocess.Popen([args.engine], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                           text=True, bufsize=1) as engine:
@@ -38,11 +49,13 @@ def main():
             engine.stdin.write(command + "\n")
             engine.stdin.flush()
 
-        def until(prefix):
+        def until(prefix, reject_failures=False):
             while True:
                 line = engine.stdout.readline()
                 if not line:
                     raise RuntimeError("engine exited unexpectedly")
+                if reject_failures and line.startswith("info string failed to load network:"):
+                    raise RuntimeError(line.strip())
                 if line.startswith(prefix):
                     return line.strip()
 
@@ -51,7 +64,7 @@ def main():
         for name, value in options:
             send(f"setoption name {name} value {value}")
         send("isready")
-        until("readyok")
+        until("readyok", reject_failures=True)
         for position in POSITIONS:
             send("ucinewgame")
             send("position " + position)
