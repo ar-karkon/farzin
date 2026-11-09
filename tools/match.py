@@ -9,6 +9,7 @@ import time
 
 import chess
 import chess.engine
+from uci_preflight import verify_farzin_network
 
 
 def sha256_file(path):
@@ -57,8 +58,18 @@ def main():
                 parser.error("option name cannot be empty")
             parsed[name.strip()] = value
         options.append(parsed)
+    verification = []
+    for engine, requested in zip(engines, options):
+        network = next((value for key, value in requested.items() if key.lower() == "evalfile"), None)
+        if network and network != "<empty>":
+            checked = verify_farzin_network(engine, network)
+            checked["network_sha256"] = sha256_file(network)
+            verification.append(checked)
+        else:
+            verification.append(None)
     report = {"engines": engines, "engine_sha256": [sha256_file(path) for path in engines], "depth": depth, "movetime_ms": args.movetime_ms, "pairs": args.pairs,
-              "max_plies": args.max_plies, "platform": platform.platform(), "options": options, "games": []}
+              "max_plies": args.max_plies, "platform": platform.platform(), "options": options,
+              "evalfile_preflight": verification, "games": []}
     for number in range(args.pairs * 2):
         white = number % 2
         fen = openings[(number // 2) % len(openings)]
