@@ -29,8 +29,9 @@ sample standard deviation. Fixed-depth throughput is not a strength test.
 python3 tools/bench_v3.py ../farzin-baseline/target/release/farzin \
   --commit efdb2307bded597dbf8c3fbcb01e9d33de3c4c29 --depth 4 --repeats 5 \
   --json benchmarks/v3-baseline/classical.json
-python3 tools/synthetic_network.py /tmp/farzin-synthetic.pnn
+python3 tools/synthetic_network.py /tmp/farzin-synthetic.pnn --neutral-output
 # This file is deterministic UNTRAINED test data, never use it in strength tests.
+# Neutral output avoids pathological search driven by arbitrary untrained scores.
 python3 tools/bench_v3.py target/release/farzin --commit SOURCE_SHA \
   --depth 3 --repeats 5 --network-kind synthetic \
   --option EvalFile=/tmp/farzin-synthetic.pnn --option 'NNUE Stack=true' \
@@ -58,7 +59,7 @@ removed/added features; this includes captures, promotions, en passant and the
 rook displacement in castling. Each perspective's king bucket and mirror are
 checked before applying deltas; a changed context refreshes that perspective.
 All arithmetic preserves the original wrapping i16 semantics. Refresh uses a
-fixed 32-feature buffer without allocating. Sibling states are invalidated even
+fixed 64-feature buffer (also safe for unreachable FENs accepted by the board parser) without allocating. Sibling states are invalidated even
 when search skips evaluation. Search unwinds both Game and evaluator before
 propagating stop or alpha-beta/PVS return values. Maximum supported search depth
 64 plus quiescence 16 plus boundary evasion stays below frame capacity.
@@ -81,3 +82,40 @@ TT ownership/invalidation, then parallel scaling and statistically designed
 paired matches. Keep TT's halfmove-zero score guard. Shared TT requires separate
 memory-model validation and measured benefit. No Elo, SPRT or external-engine
 strength conclusion follows from these performance experiments.
+
+## Experimental SIMD backend
+
+`NNUE SIMD=true` enables AVX2 only after runtime CPU detection, otherwise scalar
+is retained. Set it before EvalFile or toggle it later (UCI joins workers before
+changing the backend). The engine reports the actual backend on load/toggle.
+Default is false pending licensed-model/reference and strength validation.
+
+Hidden layers process eight outputs at a time directly from packed i8 weights;
+there is no per-evaluation weight conversion or allocation. All loads/stores are
+explicitly unaligned and checked slices bound the packed layer. u7 activations
+bound each maddubs signed-i16 pair sum to [-32512,32258], so saturation cannot
+occur. madd/add i32 operations preserve scalar wrapping sums. Other architectures
+compile scalar fallback; SSE/NEON are not implemented or claimed tested.
+
+```sh
+# Repeated same-board forward, full refresh, board cache and stack timings:
+./target/release/examples/caissa_bench /path/to/licensed-network.pnn 10000 --simd
+# Same output format as the existing reference diagnostic:
+FARZIN_PROBE_SIMD=1 ./target/release/examples/caissa_probe /path/to/network.pnn
+```
+
+The diagnostic probe's environment switch only selects the diagnostic backend;
+engine backend control is the explicit UCI option. Tests include i8 extrema,
+zero/sparse/dense inputs, wrapping i32 biases, unaligned rows, both hidden-layer
+widths, and exact all-eight-bucket comparisons on legal move sequences. Running
+on a CPU without AVX2 exercises fallback, not SIMD; report the actual backend.
+
+Performance fixture note: `--neutral-output` retains dense transformer/hidden
+arithmetic but sets output weights to zero. This is a bounded throughput workload,
+not a representative trained network. The original arbitrary-output depth-3 and
+depth-2 exploratory runs were stopped before their first repeat completed; both
+aborts are recorded, and no partial time is used as a successful result. Correctness
+fixtures retain nonzero output weights and exercise overflow. Real-model speedups
+must be remeasured, including sparse activation distributions. Microbenchmark
+modes use different traversal patterns, so compare each mode between backends;
+use end-to-end runs to compare cache vs stack with identical search trees.

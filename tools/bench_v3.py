@@ -35,6 +35,7 @@ def main():
                           if line.startswith(key)), None) for key in ('model name', 'flags')}
     report = dict(commit=args.commit, timestamp_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),
                   benchmark_tool_sha256=sha256_file(__file__),
+                  uci_driver_sha256=sha256_file(Path(__file__).with_name("bench.py")),
                   rustc=subprocess.check_output([shutil.which('rustc') or str(Path.home() / '.cargo/bin/rustc'), '-Vv'], text=True) if shutil.which('rustc') or (Path.home() / '.cargo/bin/rustc').exists() else None,
                   build_profile='release', build_flags=os.environ.get('RUSTFLAGS', ''),
                   evaluator='classical' if args.network_kind == 'none' else 'caissa-v15',

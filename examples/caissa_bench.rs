@@ -12,7 +12,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if iterations == 0 {
         return Err("iterations must be positive".into());
     }
-    let net = Arc::new(Network::from_file(path)?);
+    let mut loaded = Network::from_file(path)?;
+    loaded.set_simd(args.next().as_deref() == Some("--simd"));
+    let backend = loaded.backend();
+    let net = Arc::new(loaded);
     let root = Board::default();
     let mut boards = vec![root];
     for ply in 0..64 {
@@ -58,6 +61,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
     let stacked = started.elapsed().as_secs_f64();
-    println!("{{\"iterations\":{iterations},\"forward_seconds\":{forward},\"full_seconds\":{full},\"cached_seconds\":{cached},\"stack_seconds\":{stacked}}}");
+    println!("{{\"backend\":\"{backend}\",\"iterations\":{iterations},\"forward_seconds\":{forward},\"full_seconds\":{full},\"cached_seconds\":{cached},\"stack_seconds\":{stacked}}}");
     Ok(())
 }

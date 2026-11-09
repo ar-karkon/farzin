@@ -13,6 +13,7 @@ import sys
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('output')
+    parser.add_argument('--neutral-output', action='store_true', help='zero output weights for bounded search benchmarks; hidden arithmetic remains dense')
     args = parser.parse_args()
     header = struct.pack('<II', 0x43534E4E, 15) + bytes(56)
     # Small repeating weights keep activations nontrivial without training data.
@@ -31,7 +32,7 @@ def main():
             for i in range(count):
                 struct.pack_into('<i', subnets, base + start + i * 4, 1024 + i * 79)
         for i in range(32):
-            struct.pack_into('<h', subnets, base + 25280 + i * 2, (i % 9 - 4) * 13)
+            struct.pack_into('<h', subnets, base + 25280 + i * 2, 0 if args.neutral_output else (i % 9 - 4) * 13)
     with Path(args.output).open('wb') as output:
         output.write(header)
         for feature in range(32 * 12 * 64):

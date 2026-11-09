@@ -310,7 +310,7 @@ fn experimental_network_loads_and_can_be_disabled() {
     let mut output = BufReader::new(child.stdout.take().unwrap());
     writeln!(
         input,
-        "setoption name EvalFile value {}\nisready\nposition startpos\ngo depth 1",
+        "setoption name NNUE Stack value true\nsetoption name NNUE SIMD value true\nsetoption name Threads value 2\nsetoption name EvalFile value {}\nisready\nposition startpos\ngo depth 2",
         path.display()
     )
     .unwrap();
@@ -330,7 +330,7 @@ fn experimental_network_loads_and_can_be_disabled() {
     assert!(loaded && ready);
     writeln!(
         input,
-        "setoption name EvalFile value /definitely/not/a/network\nisready"
+        "setoption name NNUE SIMD value false\nsetoption name NNUE SIMD value true\nsetoption name EvalFile value /definitely/not/a/network\nisready"
     )
     .unwrap();
     input.flush().unwrap();

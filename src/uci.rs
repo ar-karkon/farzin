@@ -26,6 +26,7 @@ struct SearchOptions {
     positional: bool,
     threads: usize,
     nnue_stack: bool,
+    nnue_simd: bool,
 }
 
 struct IterationState {
@@ -381,13 +382,14 @@ pub(crate) fn run() {
         positional: false,
         threads: 1,
         nnue_stack: false,
+        nnue_simd: false,
     };
-    let mut network = None;
+    let mut network: Option<Arc<farzin::caissa::Network>> = None;
     for line in stdin.lock().lines() {
         let Ok(line) = line else { break };
         let line = line.trim();
         if line == "uci" {
-            println!("id name Farzin 0.1.0\nid author Farzin contributors\noption name Hash type spin default 16 min 1 max 256\noption name Clear Hash type button\noption name Threads type spin default 1 min 1 max 8\noption name Move Overhead type spin default 20 min 0 max 5000\noption name Exchange Ordering type check default false\noption name PVS type check default false\noption name Aspiration type check default false\noption name Positional type check default false\noption name NNUE Stack type check default false\noption name EvalFile type string default <empty>\nuciok");
+            println!("id name Farzin 0.1.0\nid author Farzin contributors\noption name Hash type spin default 16 min 1 max 256\noption name Clear Hash type button\noption name Threads type spin default 1 min 1 max 8\noption name Move Overhead type spin default 20 min 0 max 5000\noption name Exchange Ordering type check default false\noption name PVS type check default false\noption name Aspiration type check default false\noption name Positional type check default false\noption name NNUE SIMD type check default false\noption name NNUE Stack type check default false\noption name EvalFile type string default <empty>\nuciok");
         } else if line == "isready" {
             println!("readyok");
         } else if line == "ucinewgame" {
@@ -423,6 +425,16 @@ pub(crate) fn run() {
             if value == "true" || value == "false" {
                 options.positional = value == "true";
             }
+        } else if let Some(value) = line.strip_prefix("setoption name NNUE SIMD value ") {
+            if value == "true" || value == "false" {
+                stop_search(&mut worker, true);
+                options.nnue_simd = value == "true";
+                if let Some(net) = network.as_mut() {
+                    let net = Arc::get_mut(net).expect("joined workers released the network");
+                    net.set_simd(options.nnue_simd);
+                    println!("info string nnue backend {}", net.backend());
+                }
+            }
         } else if let Some(value) = line.strip_prefix("setoption name NNUE Stack value ") {
             if value == "true" || value == "false" {
                 options.nnue_stack = value == "true";
@@ -434,7 +446,9 @@ pub(crate) fn run() {
                 println!("info string classical evaluator enabled");
             } else {
                 match farzin::caissa::Network::from_file(value) {
-                    Ok(loaded) => {
+                    Ok(mut loaded) => {
+                        loaded.set_simd(options.nnue_simd);
+                        println!("info string nnue backend {}", loaded.backend());
                         network = Some(Arc::new(loaded));
                         println!("info string experimental network loaded");
                     }

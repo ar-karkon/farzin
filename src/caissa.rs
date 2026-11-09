@@ -1,4 +1,4 @@
-//! Experimental Caissa v15 scalar inference.
+//! Experimental Caissa v15 scalar/AVX2 inference.
 //!
 //! File layout and mathematics refer to Caissa commit 395c2e6 by Michał
 //! Witanowski (MIT); see THIRD_PARTY_NOTICES.md. Weights are not distributed.
@@ -20,6 +20,7 @@ pub struct Network {
     weights: Vec<i16>,
     bias: [i16; WIDTH],
     bytes: Vec<u8>,
+    simd: bool,
 }
 
 /// Per-search cache. Diffs from the last evaluated board, so skipped nodes and
@@ -218,7 +219,28 @@ impl Network {
             weights,
             bias,
             bytes: subnets,
+            simd: false,
         })
+    }
+
+    /// Opt-in backend selection. Unsupported CPUs always retain scalar inference.
+    /// Set this before sharing the network between search workers.
+    pub fn set_simd(&mut self, enabled: bool) {
+        self.simd = false;
+        #[cfg(target_arch = "x86_64")]
+        {
+            self.simd = enabled && std::is_x86_feature_detected!("avx2");
+        }
+        #[cfg(not(target_arch = "x86_64"))]
+        let _ = enabled;
+    }
+
+    pub fn backend(&self) -> &'static str {
+        if self.simd {
+            "avx2"
+        } else {
+            "scalar"
+        }
     }
 
     fn i16_at(&self, offset: usize) -> i16 {
@@ -356,6 +378,17 @@ impl Network {
         biases: usize,
     ) -> [u8; OUTPUTS] {
         let mut sums: [i32; OUTPUTS] = std::array::from_fn(|i| self.i32_at(biases + i * 4));
+        #[cfg(target_arch = "x86_64")]
+        if self.simd && (OUTPUTS == 16 || OUTPUTS == 32) {
+            let weights = &self.bytes[weights..weights + inputs.len() * OUTPUTS];
+            // SAFETY: simd is only set after runtime AVX2 detection; lengths are
+            // checked by the slice above, and network activations are in 0..=127.
+            unsafe {
+                hidden_avx2(inputs, weights, &mut sums);
+            }
+            return sums.map(|sum| (sum >> 6).clamp(0, 127) as u8);
+        }
+
         for (group, chunk) in inputs.as_chunks::<4>().0.iter().enumerate() {
             if chunk.iter().all(|&value| value == 0) {
                 continue;
@@ -370,6 +403,47 @@ impl Network {
             }
         }
         sums.map(|sum| (sum >> 6).clamp(0, 127) as u8)
+    }
+}
+
+// Each lane sums four u7 * i8 products. maddubs' signed i16 pair sums
+// cannot saturate: [-32512, 32258] is within i16. madd/add use wrapping
+// i32 arithmetic, exactly matching scalar, including overflow.
+#[cfg(target_arch = "x86_64")]
+#[target_feature(enable = "avx2")]
+unsafe fn hidden_avx2<const OUTPUTS: usize>(
+    inputs: &[u8],
+    weights: &[u8],
+    sums: &mut [i32; OUTPUTS],
+) {
+    use std::arch::x86_64::*;
+    debug_assert!(OUTPUTS == 16 || OUTPUTS == 32);
+    debug_assert!(inputs.iter().all(|&v| v <= 127));
+    debug_assert_eq!(inputs.len() % 4, 0);
+    debug_assert!(weights.len() >= inputs.len() * OUTPUTS);
+    let mut vectors = [_mm256_setzero_si256(); 4];
+    let ones = _mm256_set1_epi16(1);
+    for (out, vector) in vectors.iter_mut().enumerate().take(OUTPUTS / 8) {
+        // SAFETY: eight initialized i32 values are in bounds. Unaligned load.
+        *vector = _mm256_loadu_si256(sums.as_ptr().add(out * 8).cast());
+    }
+    for (group, chunk) in inputs.as_chunks::<4>().0.iter().enumerate() {
+        if *chunk == [0; 4] {
+            continue;
+        }
+        let input = _mm256_set1_epi32(i32::from_le_bytes(*chunk));
+        for (out, vector) in vectors.iter_mut().enumerate().take(OUTPUTS / 8) {
+            // SAFETY: each group has OUTPUTS*4 bytes; each load covers eight
+            // outputs and stays within the checked packed layer. No alignment required.
+            let weight =
+                _mm256_loadu_si256(weights.as_ptr().add(group * OUTPUTS * 4 + out * 32).cast());
+            let pairs = _mm256_maddubs_epi16(input, weight);
+            *vector = _mm256_add_epi32(*vector, _mm256_madd_epi16(pairs, ones));
+        }
+    }
+    for (out, vector) in vectors.iter().enumerate().take(OUTPUTS / 8) {
+        // SAFETY: store eight i32 values to the in-bounds output group.
+        _mm256_storeu_si256(sums.as_mut_ptr().add(out * 8).cast(), *vector);
     }
 }
 
@@ -388,9 +462,9 @@ fn feature_indices(board: &Board, perspective: Color) -> Vec<usize> {
     result
 }
 
-fn fixed_features(board: &Board, perspective: Color) -> ([usize; 32], usize) {
+fn fixed_features(board: &Board, perspective: Color) -> ([usize; 64], usize) {
     let (bucket, mask) = feature_context(board, perspective);
-    let mut features = [0; 32];
+    let mut features = [0; 64];
     let mut count = 0;
     for (color_index, color) in [perspective, !perspective].into_iter().enumerate() {
         for (piece_index, piece) in [
@@ -432,6 +506,7 @@ mod tests {
             weights,
             bias: [100; WIDTH],
             bytes,
+            simd: false,
         })
     }
 
@@ -457,6 +532,72 @@ mod tests {
             net.raw_outputs(board)
         );
         assert_eq!(stack.evaluate(board), net.evaluate(board));
+    }
+
+    #[test]
+    fn avx2_hidden_layers_match_scalar_with_extremes_sparsity_and_overflow() {
+        // Exercise both layer widths, packed groups, unaligned rows, maximum
+        // positive/negative pair products, sparse inputs and wrapping bias sums.
+        let mut net = Network {
+            weights: Vec::new(),
+            bias: [0; WIDTH],
+            bytes: vec![0; WIDTH * 32 + 256],
+            simd: false,
+        };
+        for mode in 0..16 {
+            let inputs: [u8; WIDTH] = std::array::from_fn(|i| match mode % 4 {
+                0 => 127,
+                1 => 0,
+                2 if i % 8 < 4 => 0,
+                _ => ((i * 73 + mode * 19) % 128) as u8,
+            });
+            for (i, value) in net.bytes.iter_mut().enumerate() {
+                *value = match mode / 4 {
+                    0 => 128,
+                    1 => 127,
+                    _ => (i * 37 + mode * 11) as u8,
+                };
+            }
+            let bias_offset = WIDTH * 32 + 1;
+            for out in 0..32 {
+                let bias = [i32::MAX - 64, i32::MIN + 64, -1000, 3000][out % 4];
+                net.bytes[bias_offset + out * 4..bias_offset + out * 4 + 4]
+                    .copy_from_slice(&bias.to_le_bytes());
+            }
+            net.set_simd(false);
+            let expected16 = net.hidden::<16>(&inputs, 1, bias_offset);
+            let expected32 = net.hidden::<32>(&inputs, 1, bias_offset);
+            net.set_simd(true);
+            assert_eq!(
+                net.hidden::<16>(&inputs, 1, bias_offset),
+                expected16,
+                "mode {mode}"
+            );
+            assert_eq!(
+                net.hidden::<32>(&inputs, 1, bias_offset),
+                expected32,
+                "mode {mode}"
+            );
+            net.set_simd(false);
+            assert_eq!(net.backend(), "scalar");
+        }
+    }
+
+    #[test]
+    fn selected_backend_matches_all_raw_buckets_on_legal_paths() {
+        let mut net = Arc::try_unwrap(patterned_network()).ok().unwrap();
+        let mut board = Board::default();
+        for ply in 0..80 {
+            net.set_simd(false);
+            let expected = net.raw_outputs(&board);
+            net.set_simd(true);
+            assert_eq!(net.raw_outputs(&board), expected, "ply {ply}");
+            let moves: Vec<_> = MoveGen::new_legal(&board).collect();
+            if moves.is_empty() {
+                break;
+            }
+            board = board.make_move_new(moves[(ply * 37 + 5) % moves.len()]);
+        }
     }
 
     #[test]
@@ -571,6 +712,7 @@ mod tests {
             weights: Vec::new(),
             bias: [0; WIDTH],
             bytes,
+            simd: false,
         };
         let input = [0, 0, 0, 0, 4, 80, 127, 1, 2, 0, 64, 17];
         let actual = net.hidden::<4>(&input, 0, 64);

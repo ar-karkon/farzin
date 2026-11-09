@@ -75,10 +75,13 @@ def main():
 
         send("uci")
         identity = until("uciok")
+        report["engine_id"] = [line for line in identity if line.startswith("id ")]
+        report["advertised_options"] = [line for line in identity if line.startswith("option ")]
         for name, value in options:
             send(f"setoption name {name} value {value}")
         send("isready")
         setup = until("readyok", reject_failures=True)
+        report["nnue_backend"] = next((line.rsplit(" ", 1)[1] for line in setup if line.startswith("info string nnue backend ")), None)
         network = next((value for name, value in options if name.lower() == "evalfile"), None)
         farzin = any(line.startswith("id name Farzin ") for line in identity)
         if farzin and network and network != "<empty>":
