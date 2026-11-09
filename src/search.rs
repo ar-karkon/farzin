@@ -224,3 +224,74 @@ pub(crate) fn best_move(
     }
     best.map(|mv| (mv, alpha))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chess::Board;
+
+    #[test]
+    fn table_bounds_only_cut_off_valid_windows() {
+        for (bound, score, expected_cutoff) in [
+            (Bound::Exact, 37, true),
+            (Bound::Lower, 100, true),
+            (Bound::Lower, 0, false),
+            (Bound::Upper, -100, true),
+            (Bound::Upper, 0, false),
+        ] {
+            let mut game = Game::new(Board::default(), 0);
+            let mut table = Table::new(64);
+            table.put(
+                game.board.get_hash(),
+                Entry {
+                    depth: 1,
+                    score,
+                    bound,
+                    best: None,
+                },
+            );
+            let mut hints = HashMap::new();
+            let mut nodes = 0;
+            let mut state = SearchState {
+                hints: &mut hints,
+                table: &mut table,
+                nodes: &mut nodes,
+            };
+            let control = SearchControl {
+                stop: Arc::new(AtomicBool::new(false)),
+                deadline: None,
+                node_limit: None,
+            };
+            assert!(search(&mut game, 1, -50, 50, 0, &control, &mut state).is_some());
+            assert_eq!(
+                state.table.cutoffs > 0,
+                expected_cutoff,
+                "bound {bound:?}, score {score}"
+            );
+        }
+    }
+
+    #[test]
+    fn interrupted_search_restores_position_and_history() {
+        let mut game = Game::new(Board::default(), 0);
+        let original_board = game.board;
+        let original_history = game.history.clone();
+        let mut table = Table::new(64);
+        let mut hints = HashMap::new();
+        let mut nodes = 0;
+        let mut state = SearchState {
+            hints: &mut hints,
+            table: &mut table,
+            nodes: &mut nodes,
+        };
+        let control = SearchControl {
+            stop: Arc::new(AtomicBool::new(false)),
+            deadline: None,
+            node_limit: Some(2),
+        };
+        assert!(search(&mut game, 4, -MATE, MATE, 0, &control, &mut state).is_none());
+        assert_eq!(game.board, original_board);
+        assert_eq!(game.history, original_history);
+        assert_eq!(game.halfmove, 0);
+    }
+}
