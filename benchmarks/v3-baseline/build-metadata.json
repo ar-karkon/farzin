@@ -1,0 +1,19 @@
+{
+  "commit": "efdb2307bded597dbf8c3fbcb01e9d33de3c4c29",
+  "source_status": "",
+  "binary_sha256": "1a418d877955525efec0503441bded2fc39457d5600185db947c60e7b6322bf2",
+  "uci_identity": [
+    "id name Farzin 0.1.0",
+    "id author Farzin contributors"
+  ],
+  "build_profile": "release",
+  "build_features": [],
+  "network_note": "classical reports use no model; NNUE reports use the synthetic-network.json fixture",
+  "commands": [
+    "cargo fmt --check",
+    "cargo clippy --all-targets -- -D warnings",
+    "cargo test --locked",
+    "cargo build --release --locked"
+  ],
+  "all_required_checks_passed": true
+}

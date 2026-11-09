@@ -1,0 +1,157 @@
+{
+  "commit": "1866458c84f89f0d2f323314c1dbb9912901885a",
+  "binary_sha256": "60e9fd61ede0c1b5c36c687b6e4332c7f5e77897e5ad204a4741b401684700d4",
+  "network_sha256": "a26f3daeeca5d2082a0239892677bcad10070dc8d730be70909bd26af50a23df",
+  "network_kind": "synthetic-untrained-neutral-output",
+  "affinity": [
+    0
+  ],
+  "hardware_metadata": "../v3-baseline/nnue-synthetic.json",
+  "os": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "runs": [
+    {
+      "backend": "scalar",
+      "iterations": 10000,
+      "forward_seconds": 0.157154664,
+      "full_seconds": 0.294611162,
+      "cached_seconds": 0.269934381,
+      "stack_seconds": 0.19400242,
+      "requested_backend": "scalar"
+    },
+    {
+      "backend": "avx2",
+      "iterations": 10000,
+      "forward_seconds": 0.011150251,
+      "full_seconds": 0.08639667,
+      "cached_seconds": 0.019176166,
+      "stack_seconds": 0.020264451,
+      "requested_backend": "avx2"
+    },
+    {
+      "backend": "avx2",
+      "iterations": 10000,
+      "forward_seconds": 0.009091019,
+      "full_seconds": 0.102652068,
+      "cached_seconds": 0.030793787,
+      "stack_seconds": 0.023206678,
+      "requested_backend": "avx2"
+    },
+    {
+      "backend": "scalar",
+      "iterations": 10000,
+      "forward_seconds": 0.20310545,
+      "full_seconds": 1.3979202800000001,
+      "cached_seconds": 0.19243104,
+      "stack_seconds": 0.417877242,
+      "requested_backend": "scalar"
+    },
+    {
+      "backend": "scalar",
+      "iterations": 10000,
+      "forward_seconds": 0.535844284,
+      "full_seconds": 0.275123678,
+      "cached_seconds": 0.204638975,
+      "stack_seconds": 0.180838049,
+      "requested_backend": "scalar"
+    },
+    {
+      "backend": "avx2",
+      "iterations": 10000,
+      "forward_seconds": 0.010318697,
+      "full_seconds": 0.100304004,
+      "cached_seconds": 0.028393948,
+      "stack_seconds": 0.040255216,
+      "requested_backend": "avx2"
+    },
+    {
+      "backend": "avx2",
+      "iterations": 10000,
+      "forward_seconds": 0.008631047,
+      "full_seconds": 0.318263677,
+      "cached_seconds": 0.031981798,
+      "stack_seconds": 0.038301579,
+      "requested_backend": "avx2"
+    },
+    {
+      "backend": "scalar",
+      "iterations": 10000,
+      "forward_seconds": 0.239842027,
+      "full_seconds": 0.9107366,
+      "cached_seconds": 0.316064389,
+      "stack_seconds": 0.220036207,
+      "requested_backend": "scalar"
+    },
+    {
+      "backend": "scalar",
+      "iterations": 10000,
+      "forward_seconds": 0.193660223,
+      "full_seconds": 0.283140293,
+      "cached_seconds": 0.583897013,
+      "stack_seconds": 0.329185182,
+      "requested_backend": "scalar"
+    },
+    {
+      "backend": "avx2",
+      "iterations": 10000,
+      "forward_seconds": 0.018919248,
+      "full_seconds": 0.135372238,
+      "cached_seconds": 0.023653855,
+      "stack_seconds": 0.029483207,
+      "requested_backend": "avx2"
+    }
+  ],
+  "summary": {
+    "scalar": {
+      "forward_seconds": {
+        "median": 0.20310545,
+        "min": 0.157154664,
+        "max": 0.535844284,
+        "stdev": 0.15373371551065768
+      },
+      "full_seconds": {
+        "median": 0.294611162,
+        "min": 0.275123678,
+        "max": 1.3979202800000001,
+        "stdev": 0.5067599358822271
+      },
+      "cached_seconds": {
+        "median": 0.269934381,
+        "min": 0.19243104,
+        "max": 0.583897013,
+        "stdev": 0.15931685618155372
+      },
+      "stack_seconds": {
+        "median": 0.220036207,
+        "min": 0.180838049,
+        "max": 0.417877242,
+        "stdev": 0.1019551802645007
+      }
+    },
+    "avx2": {
+      "forward_seconds": {
+        "median": 0.010318697,
+        "min": 0.008631047,
+        "max": 0.018919248,
+        "stdev": 0.004198887914054005
+      },
+      "full_seconds": {
+        "median": 0.102652068,
+        "min": 0.08639667,
+        "max": 0.318263677,
+        "stdev": 0.09653199845485666
+      },
+      "cached_seconds": {
+        "median": 0.028393948,
+        "min": 0.019176166,
+        "max": 0.031981798,
+        "stdev": 0.005323605651287357
+      },
+      "stack_seconds": {
+        "median": 0.029483207,
+        "min": 0.020264451,
+        "max": 0.040255216,
+        "stdev": 0.008871670908740907
+      }
+    }
+  }
+}

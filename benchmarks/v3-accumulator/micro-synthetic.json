@@ -1,0 +1,81 @@
+{
+  "commit": "eb58947d45a6f3d42422069e90118ae0acf75a78",
+  "binary_sha256": "68a2bcaace4d2360010f88fc09347e5262059d4ffdae2a8d54f0b052863afd66",
+  "network_sha256": "a26f3daeeca5d2082a0239892677bcad10070dc8d730be70909bd26af50a23df",
+  "network_kind": "synthetic-untrained-neutral-output",
+  "affinity": [
+    0
+  ],
+  "hardware_metadata": "../v3-baseline/nnue-synthetic.json",
+  "os": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "runs": [
+    {
+      "iterations": 10000,
+      "forward_seconds": 0.20537539,
+      "full_seconds": 0.927519636,
+      "cached_seconds": 0.546255657,
+      "stack_seconds": 0.437584494,
+      "requested_backend": "scalar"
+    },
+    {
+      "iterations": 10000,
+      "forward_seconds": 0.178141575,
+      "full_seconds": 0.221677993,
+      "cached_seconds": 0.166596076,
+      "stack_seconds": 0.180977099,
+      "requested_backend": "scalar"
+    },
+    {
+      "iterations": 10000,
+      "forward_seconds": 0.696625388,
+      "full_seconds": 0.412734219,
+      "cached_seconds": 0.190329627,
+      "stack_seconds": 0.349697272,
+      "requested_backend": "scalar"
+    },
+    {
+      "iterations": 10000,
+      "forward_seconds": 0.301914574,
+      "full_seconds": 0.238793154,
+      "cached_seconds": 0.221957823,
+      "stack_seconds": 0.213790636,
+      "requested_backend": "scalar"
+    },
+    {
+      "iterations": 10000,
+      "forward_seconds": 0.231017034,
+      "full_seconds": 0.260573986,
+      "cached_seconds": 0.172856865,
+      "stack_seconds": 0.162432069,
+      "requested_backend": "scalar"
+    }
+  ],
+  "summary": {
+    "scalar": {
+      "forward_seconds": {
+        "median": 0.231017034,
+        "min": 0.178141575,
+        "max": 0.696625388,
+        "stdev": 0.21407951912069728
+      },
+      "full_seconds": {
+        "median": 0.260573986,
+        "min": 0.221677993,
+        "max": 0.927519636,
+        "stdev": 0.2978731325039452
+      },
+      "cached_seconds": {
+        "median": 0.190329627,
+        "min": 0.166596076,
+        "max": 0.546255657,
+        "stdev": 0.16167937801468563
+      },
+      "stack_seconds": {
+        "median": 0.213790636,
+        "min": 0.162432069,
+        "max": 0.437584494,
+        "stdev": 0.11946291941739295
+      }
+    }
+  }
+}

@@ -1,0 +1,152 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling proc-macro2 v1.0.107
+   Compiling libc v0.2.191
+   Compiling unicode-ident v1.0.27
+   Compiling quote v1.0.47
+   Compiling syn v1.0.109
+   Compiling zerocopy v0.8.63
+   Compiling unicode-xid v0.2.6
+   Compiling failure_derive v0.1.8
+   Compiling synstructure v0.12.6
+   Compiling gimli v0.34.0
+   Compiling rand_core v0.5.1
+   Compiling memchr v2.8.3
+   Compiling adler2 v2.0.1
+   Compiling miniz_oxide v0.9.1
+   Compiling object v0.40.0
+   Compiling addr2line v0.27.1
+   Compiling ppv-lite86 v0.2.21
+   Compiling cfg-if v1.0.5
+   Compiling rustc-demangle v0.1.28
+   Compiling rand_chacha v0.2.2
+   Compiling rand_pcg v0.2.1
+   Compiling backtrace v0.3.77
+   Compiling failure v0.1.8
+   Compiling rand v0.7.3
+   Compiling chess v3.2.0
+    Checking arrayvec v0.5.2
+    Checking nodrop v0.1.14
+    Checking farzin v0.1.0 (/workspace/farzin-baseline)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3m 03s
+   Compiling adler2 v2.0.1
+   Compiling gimli v0.34.0
+   Compiling memchr v2.8.3
+   Compiling object v0.40.0
+   Compiling addr2line v0.27.1
+   Compiling miniz_oxide v0.9.1
+   Compiling libc v0.2.191
+   Compiling cfg-if v1.0.5
+   Compiling rustc-demangle v0.1.28
+   Compiling arrayvec v0.5.2
+   Compiling nodrop v0.1.14
+   Compiling backtrace v0.3.77
+   Compiling failure v0.1.8
+   Compiling chess v3.2.0
+   Compiling farzin v0.1.0 (/workspace/farzin-baseline)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 47s
+     Running unittests src/lib.rs (target/debug/deps/farzin-4b4de6434baea8a5)
+
+running 7 tests
+test caissa::tests::initial_features_are_in_range_and_unique ... ok
+test caissa::tests::sparse_hidden_layer_matches_simple_reference ... ok
+test caissa::tests::incremental_features_match_refresh_for_special_moves ... ok
+test nnue::tests::incremental_matches_refresh_across_a_deterministic_game ... ok
+test nnue::tests::incremental_matches_refresh_and_undo_for_special_moves ... ok
+test nnue::tests::invalid_update_is_transactional ... ok
+test caissa::tests::validates_header_and_empty_network_output ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.04s
+
+     Running unittests src/main.rs (target/debug/deps/farzin-93f75d094bda7c2d)
+
+running 34 tests
+test game::tests::only_dead_material_is_drawn ... ok
+test evaluation::tests::positional_terms_are_symmetric_and_reward_central_knights ... ok
+test game::tests::repetition_ignores_pinned_en_passant_but_preserves_legal_right ... ok
+test search::tests::exchange_ordering_accounts_for_legal_recaptures ... ok
+test search::tests::experimental_exchange_ordering_preserves_score ... ok
+test search::tests::interrupted_aspiration_preserves_game ... ok
+test search::tests::interrupted_search_restores_position_and_history ... ok
+test search::tests::leaf_counts_once_toward_node_limit ... ok
+test search::tests::ordering_recognizes_en_passant_and_hash_move ... ok
+test search::tests::principal_variation_contains_legal_moves ... ok
+test search::tests::aspiration_failures_research_to_full_window_score ... ok
+test search::tests::pvs_matches_alpha_beta_on_reference_positions ... ok
+test search::tests::root_search_prefers_valid_hint_when_scores_tie ... ok
+test search::tests::shared_node_limit_is_exact_under_contention ... ok
+test search::tests::table_bounds_only_cut_off_valid_windows ... ok
+test search::tests::pvs_and_cache_match_reference_along_legal_game ... ok
+test search::tests::transposition_score_is_not_used_with_nonzero_halfmove_clock ... ok
+test time::tests::budgets_respect_clock_and_overhead ... ok
+test tt::tests::collision_and_age_control_replacement ... ok
+test tt::tests::deeper_entry_is_preserved ... ok
+test tt::tests::mate_distance_adjusts_to_new_ply ... ok
+test uci::tests::endgame_perft ... ok
+test uci::tests::initial_perft ... ok
+test search::tests::transposition_cache_preserves_search_scores ... ok
+test uci::tests::make_unmake_restores_state ... ok
+test uci::tests::mate_has_no_move ... ok
+test uci::tests::kiwipete_perft ... ok
+test uci::tests::quiescence_never_stand_pats_in_check_at_limit ... ok
+test uci::tests::quiescence_sees_recapture ... ok
+test uci::tests::recognizes_stalemate ... ok
+test uci::tests::rejects_illegal_move ... ok
+test uci::tests::repetition_and_halfmove_clock ... ok
+test uci::tests::special_moves_are_legal ... ok
+test uci::tests::perft_promotion_and_castling_positions ... ok
+
+test result: ok. 34 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.83s
+
+     Running tests/uci.rs (target/debug/deps/uci-0d2502a0efff2929)
+
+running 10 tests
+test clock_limited_search_finishes_promptly ... ok
+test aspiration_option_completes_search ... ok
+test handshake_and_node_limited_search ... ok
+test parallel_search_obeys_shared_node_limit ... ok
+test parallel_stop_and_replacement_do_not_leak_results ... ok
+test replacing_search_does_not_emit_stale_bestmove ... ok
+test reported_principal_variation_replays_legally ... ok
+test stop_infinite_search_produces_one_bestmove ... ok
+test terminal_position_reports_no_move ... ok
+test experimental_network_loads_and_can_be_disabled ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.28s
+
+   Doc-tests farzin
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Compiling libc v0.2.191
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.27
+   Compiling syn v1.0.109
+   Compiling zerocopy v0.8.63
+   Compiling failure_derive v0.1.8
+   Compiling unicode-xid v0.2.6
+   Compiling synstructure v0.12.6
+   Compiling adler2 v2.0.1
+   Compiling gimli v0.34.0
+   Compiling rand_core v0.5.1
+   Compiling memchr v2.8.3
+   Compiling addr2line v0.27.1
+   Compiling object v0.40.0
+   Compiling ppv-lite86 v0.2.21
+   Compiling miniz_oxide v0.9.1
+   Compiling cfg-if v1.0.5
+   Compiling rustc-demangle v0.1.28
+   Compiling rand_chacha v0.2.2
+   Compiling rand_pcg v0.2.1
+   Compiling backtrace v0.3.77
+   Compiling failure v0.1.8
+   Compiling rand v0.7.3
+   Compiling chess v3.2.0
+   Compiling arrayvec v0.5.2
+   Compiling nodrop v0.1.14
+   Compiling farzin v0.1.0 (/workspace/farzin-baseline)
+    Finished `release` profile [optimized] target(s) in 2m 26s

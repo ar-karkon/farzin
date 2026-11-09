@@ -1,0 +1,57 @@
+{
+  "commit": "e182b9cd1384e8b94a077e6634251c2377c68057",
+  "build_features": [
+    "nnue-stack"
+  ],
+  "binary_sha256": "ab8203ba3204d6d31208ad70b27c59222d317bd9a34c0270a0dd37572dbf807f",
+  "network_kind": "synthetic",
+  "network_sha256": "a26f3daeeca5d2082a0239892677bcad10070dc8d730be70909bd26af50a23df",
+  "initial_backend": "avx2",
+  "threads": 2,
+  "identity": [
+    "id name Farzin 0.1.0",
+    "id author Farzin contributors",
+    "option name Hash type spin default 16 min 1 max 256",
+    "option name Clear Hash type button",
+    "option name Threads type spin default 1 min 1 max 8",
+    "option name Move Overhead type spin default 20 min 0 max 5000",
+    "option name Exchange Ordering type check default false",
+    "option name PVS type check default false",
+    "option name Aspiration type check default false",
+    "option name Positional type check default false",
+    "option name NNUE SIMD type check default false",
+    "option name NNUE Stack type check default false",
+    "option name EvalFile type string default <empty>",
+    "uciok"
+  ],
+  "setup": [
+    "info string nnue backend avx2",
+    "info string experimental network loaded",
+    "readyok"
+  ],
+  "before_stop": [
+    "info depth 1 score cp 0 nodes 23 nps 3833 time 6 hashfull 0 pv a2a3",
+    "info depth 2 score cp 0 nodes 86 nps 14333 time 6 hashfull 0 pv a2a3 g8h6"
+  ],
+  "stop": [
+    "info depth 3 score cp 0 nodes 618 nps 88285 time 7 hashfull 0 pv a2a3 g8h6 a1a2",
+    "info depth 4 score cp 0 nodes 2034 nps 226000 time 9 hashfull 0 pv a2a3 g8h6 a1a2 h8g8",
+    "info string parallel workers 2 nodes 2559",
+    "info string tt probes 685 hits 182 cutoffs 112",
+    "bestmove a2a3",
+    "readyok"
+  ],
+  "replacement_and_backend_toggle": [
+    "info string nnue backend scalar",
+    "readyok"
+  ],
+  "restart": [
+    "info string nnue backend avx2",
+    "info depth 1 score cp 0 nodes 59 nps 59000 time 1 hashfull 0 pv a2a4",
+    "info depth 2 score cp 0 nodes 142 nps 142000 time 1 hashfull 0 pv a2a3 g8h6",
+    "info string parallel workers 2 nodes 162",
+    "info string tt probes 40 hits 0 cutoffs 0",
+    "bestmove a2a3"
+  ],
+  "assertions_passed": true
+}

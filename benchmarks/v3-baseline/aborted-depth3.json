@@ -1,0 +1,9 @@
+{
+  "status": "aborted",
+  "timestamp_utc": "2026-11-09T19:42:24.955525+00:00",
+  "commit": "efdb2307bded597dbf8c3fbcb01e9d33de3c4c29",
+  "network_kind": "synthetic-untrained",
+  "depth": 3,
+  "reason": "First 22-position synthetic repeat was still running after more than 75 seconds. Reduce NNUE suite to depth 2 for bounded development cost; no partial timing used as a result.",
+  "network_sha256": "0c888a660eee35f47b7ca127e610347a90feeecf099a3810c10814fcf58bc125"
+}

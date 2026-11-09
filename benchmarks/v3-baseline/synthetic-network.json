@@ -1,0 +1,10 @@
+{
+  "kind": "synthetic-untrained",
+  "generator": "tools/synthetic_network.py --neutral-output",
+  "generator_sha256": "9f09aad7f73ae476c4cdb3fdb38ffa800d5755c5f615133c69d6398ff859cce9",
+  "network_sha256": "a26f3daeeca5d2082a0239892677bcad10070dc8d730be70909bd26af50a23df",
+  "bytes": 75703872,
+  "license": "generated test data; no trained third-party weights",
+  "not_a_caissa_model": true,
+  "note": "Dense hidden arithmetic, zero output weights for bounded performance search; correctness tests use a separate all-lane nonzero-output fixture."
+}

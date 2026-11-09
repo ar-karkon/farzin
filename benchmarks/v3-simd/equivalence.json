@@ -1,0 +1,50 @@
+{
+  "positions": 22,
+  "all_runs_match": true,
+  "fields": [
+    "position",
+    "final_nodes",
+    "completed_depth",
+    "bestmove",
+    "score",
+    "iteration_PVs"
+  ],
+  "reports": [
+    {
+      "path": "benchmarks/v3-baseline/nnue-synthetic.json",
+      "sha256": "15fa5c626132a7051ce9792295d205e04d3ff4044657c3b43f6058ac1c7c3069",
+      "commit": "efdb2307bded597dbf8c3fbcb01e9d33de3c4c29",
+      "repeats": 5
+    },
+    {
+      "path": "benchmarks/v3-accumulator/cache-synthetic.json",
+      "sha256": "ee1562c9301f36fec585dcf71e33e197144f9df1a0c29c149a4e9fca76e3a787",
+      "commit": "eb58947d45a6f3d42422069e90118ae0acf75a78",
+      "repeats": 5
+    },
+    {
+      "path": "benchmarks/v3-accumulator/stack-synthetic.json",
+      "sha256": "4c84f5faea021f44c869af49aa5e78313004cda5326b88e7ee9cd9ba9a277aff",
+      "commit": "eb58947d45a6f3d42422069e90118ae0acf75a78",
+      "repeats": 5
+    },
+    {
+      "path": "benchmarks/v3-simd/stack-scalar-synthetic.json",
+      "sha256": "384e4139eb9e8c998a4ab6aaa37c6fde6133b3dfe9c61c3551eab9532dbdfa60",
+      "commit": "1866458c84f89f0d2f323314c1dbb9912901885a",
+      "repeats": 5
+    },
+    {
+      "path": "benchmarks/v3-simd/stack-avx2-synthetic.json",
+      "sha256": "82e5f642db5e6befa0039e1d71920cdc1a713a966488c4d38798038615b50d9e",
+      "commit": "1866458c84f89f0d2f323314c1dbb9912901885a",
+      "repeats": 5
+    },
+    {
+      "path": "benchmarks/v3-simd/cache-avx2-synthetic.json",
+      "sha256": "39e4a39ee9bc25f7385e2360bf55f6ca42be5cd67b55946896820628ea7405e6",
+      "commit": "1866458c84f89f0d2f323314c1dbb9912901885a",
+      "repeats": 5
+    }
+  ]
+}

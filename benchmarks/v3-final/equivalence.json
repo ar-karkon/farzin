@@ -1,0 +1,38 @@
+{
+  "positions": 22,
+  "all_runs_match": true,
+  "fields": [
+    "position",
+    "final_nodes",
+    "completed_depth",
+    "bestmove",
+    "score",
+    "iteration_PVs"
+  ],
+  "reports": [
+    {
+      "path": "benchmarks/v3-baseline/nnue-synthetic.json",
+      "sha256": "15fa5c626132a7051ce9792295d205e04d3ff4044657c3b43f6058ac1c7c3069",
+      "commit": "efdb2307bded597dbf8c3fbcb01e9d33de3c4c29",
+      "repeats": 5
+    },
+    {
+      "path": "benchmarks/v3-final/stack-scalar-synthetic.json",
+      "sha256": "4d5f3cf4d414375ff891f764ed687ee7658451a1221d7503158b5a6e40655709",
+      "commit": "e182b9cd1384e8b94a077e6634251c2377c68057",
+      "repeats": 5
+    },
+    {
+      "path": "benchmarks/v3-final/stack-avx2-synthetic.json",
+      "sha256": "ac93595a19c53695ba1cbe9bf41d98f8a248d12f43e6b91fe5ae311f4486060d",
+      "commit": "e182b9cd1384e8b94a077e6634251c2377c68057",
+      "repeats": 5
+    },
+    {
+      "path": "benchmarks/v3-final/cache-avx2-synthetic.json",
+      "sha256": "e4101ccd44ad6dcc2a42d84297f8d42f7813738b75c21dad907e0b4bd9b2edf6",
+      "commit": "e182b9cd1384e8b94a077e6634251c2377c68057",
+      "repeats": 5
+    }
+  ]
+}

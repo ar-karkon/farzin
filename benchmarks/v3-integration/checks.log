@@ -1,0 +1,46 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.04s
+   Compiling farzin v0.1.0 (/workspace/farzin)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.35s
+     Running unittests src/main.rs (target/debug/deps/farzin-93f75d094bda7c2d)
+
+running 35 tests
+test evaluation::tests::positional_terms_are_symmetric_and_reward_central_knights ... ok
+test game::tests::only_dead_material_is_drawn ... ok
+test game::tests::repetition_ignores_pinned_en_passant_but_preserves_legal_right ... ok
+test search::tests::exchange_ordering_accounts_for_legal_recaptures ... ok
+test search::tests::experimental_exchange_ordering_preserves_score ... ok
+test search::tests::interrupted_aspiration_preserves_game ... ok
+test search::tests::interrupted_search_restores_position_and_history ... ok
+test search::tests::leaf_counts_once_toward_node_limit ... ok
+test search::tests::aspiration_failures_research_to_full_window_score ... ok
+test search::tests::ordering_recognizes_en_passant_and_hash_move ... ok
+test search::tests::principal_variation_contains_legal_moves ... ok
+test search::tests::pvs_and_cache_match_reference_along_legal_game ... ok
+test search::tests::pvs_matches_alpha_beta_on_reference_positions ... ok
+test search::tests::root_search_prefers_valid_hint_when_scores_tie ... ok
+test search::tests::shared_node_limit_is_exact_under_contention ... ok
+test search::tests::table_bounds_only_cut_off_valid_windows ... ok
+test search::tests::transposition_cache_preserves_search_scores ... ok
+test search::tests::transposition_score_is_not_used_with_nonzero_halfmove_clock ... ok
+test time::tests::budgets_respect_clock_and_overhead ... ok
+test tt::tests::collision_and_age_control_replacement ... ok
+test tt::tests::deeper_entry_is_preserved ... ok
+test tt::tests::mate_distance_adjusts_to_new_ply ... ok
+test uci::tests::endgame_perft ... ok
+test uci::tests::initial_perft ... ok
+test uci::tests::kiwipete_perft ... ok
+test uci::tests::make_unmake_restores_state ... ok
+test uci::tests::mate_has_no_move ... ok
+test uci::tests::perft_promotion_and_castling_positions ... ok
+test uci::tests::quiescence_never_stand_pats_in_check_at_limit ... ok
+test uci::tests::quiescence_sees_recapture ... ok
+test uci::tests::recognizes_stalemate ... ok
+test uci::tests::rejects_illegal_move ... ok
+test uci::tests::repetition_and_halfmove_clock ... ok
+test uci::tests::special_moves_are_legal ... ok
+test search::tests::nnue_stack_search_cutoffs_and_interruption_restore_root ... ok
+
+test result: ok. 35 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.12s
+
+   Compiling farzin v0.1.0 (/workspace/farzin)
+    Finished `release` profile [optimized] target(s) in 8.82s

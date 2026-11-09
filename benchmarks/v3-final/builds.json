@@ -1,0 +1,18 @@
+{
+  "engine_source_commit": "e182b9cd1384e8b94a077e6634251c2377c68057",
+  "benchmark_backend_fix_commit": "c3be09e31fff542dfc27c87509d586809d933847",
+  "binaries": [
+    {
+      "name": "default",
+      "build_features": [],
+      "sha256": "ef99af2143273faedf75f0429e23271e33605595ab4a00990996b82310596c6d"
+    },
+    {
+      "name": "experimental-stack",
+      "build_features": [
+        "nnue-stack"
+      ],
+      "sha256": "ab8203ba3204d6d31208ad70b27c59222d317bd9a34c0270a0dd37572dbf807f"
+    }
+  ]
+}

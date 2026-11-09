@@ -1,0 +1,8 @@
+{
+  "status": "aborted",
+  "depth": 2,
+  "commit": "efdb2307bded597dbf8c3fbcb01e9d33de3c4c29",
+  "network_kind": "synthetic-untrained",
+  "reason": "Arbitrary non-trained output caused a high-cost search; first repeat still running after more than 94 seconds. No partial timings used. Replace performance-only synthetic output layer with zeros, retaining dense hidden arithmetic. Nonzero-output correctness tests remain separate.",
+  "network_sha256": "0c888a660eee35f47b7ca127e610347a90feeecf099a3810c10814fcf58bc125"
+}

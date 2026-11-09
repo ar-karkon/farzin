@@ -1,0 +1,26 @@
+{
+  "positions": 22,
+  "all_runs_match": true,
+  "fields": [
+    "position",
+    "final_nodes",
+    "completed_depth",
+    "bestmove",
+    "score",
+    "iteration_PVs"
+  ],
+  "reports": [
+    {
+      "path": "benchmarks/v3-baseline/classical.json",
+      "sha256": "c798f41391a47e3dce11f3d60d9bb07b6a66d4bab9143d44ae4d05b0a98982a9",
+      "commit": "efdb2307bded597dbf8c3fbcb01e9d33de3c4c29",
+      "repeats": 5
+    },
+    {
+      "path": "benchmarks/v3-simd/classical.json",
+      "sha256": "632293cb5a13160a9f56033e201941956886fb848ee31ce5ff67b986d7cd5edc",
+      "commit": "1866458c84f89f0d2f323314c1dbb9912901885a",
+      "repeats": 5
+    }
+  ]
+}
