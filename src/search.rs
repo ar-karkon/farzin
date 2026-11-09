@@ -196,15 +196,30 @@ fn search(
             }
         }
     }
-    let mut moves: Vec<_> = MoveGen::new_legal(&board).collect();
+    // Legal chess positions have fewer than 256 legal moves. Keep the list on
+    // the stack so every interior node does not allocate a new Vec.
+    let mut generator = MoveGen::new_legal(&board);
+    let first = generator
+        .next()
+        .expect("ongoing positions have legal moves");
+    let mut moves = [first; 256];
+    let mut move_count = 1;
+    for mv in generator {
+        assert!(
+            move_count < moves.len(),
+            "legal move list exceeded capacity"
+        );
+        moves[move_count] = mv;
+        move_count += 1;
+    }
     let hint = entry
         .and_then(|e| e.best)
         .or_else(|| state.hints.get(&board.get_hash()).copied());
     let mut best = None;
     let mut best_score = -MATE;
-    for index in 0..moves.len() {
+    for index in 0..move_count {
         let killers = state.killers[(ply as usize).min(127)];
-        let best_index = (index..moves.len())
+        let best_index = (index..move_count)
             .max_by_key(|&i| move_score(&board, moves[i], hint, killers, &state.history))
             .unwrap();
         moves.swap(index, best_index);
