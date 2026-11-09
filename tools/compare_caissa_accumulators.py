@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+"""Compare Caissa v15 scalar feature accumulators with its MIT-licensed reference.
+
+Feature convention and file layout: Caissa commit 395c2e6 by Michał Witanowski,
+https://github.com/Witek902/Caissa (MIT). This independent diagnostic loads no
+weights into Farzin and does not implement the network output layers.
+"""
+import argparse
+import os
+import re
+import struct
+import subprocess
+
+import chess
+from inspect_nnue import HEADER_BYTES, validate_header
+
+WIDTH = 1536
+BUCKETS = 32
+FEATURES_PER_BUCKET = 12 * 64
+BIAS_OFFSET = HEADER_BYTES + BUCKETS * FEATURES_PER_BUCKET * WIDTH * 2
+
+
+def feature_indices(board, perspective):
+    king = board.king(perspective)
+    if king is None:
+        raise ValueError("position must contain both kings")
+    mask = (7 if chess.square_file(king) >= 4 else 0) | (56 if perspective == chess.BLACK else 0)
+    canonical_king = king ^ mask
+    bucket = chess.square_rank(canonical_king) * 4 + chess.square_file(canonical_king)
+    features = []
+    for color_index, color in enumerate((perspective, not perspective)):
+        for piece_type in range(chess.PAWN, chess.KING + 1):
+            for square in board.pieces(piece_type, color):
+                features.append(bucket * FEATURES_PER_BUCKET + (color_index * 6 + piece_type - 1) * 64 + (square ^ mask))
+    return features
+
+
+def scalar_accumulator(stream, board, perspective):
+    stream.seek(BIAS_OFFSET)
+    values = list(struct.unpack("<1536h", stream.read(WIDTH * 2)))
+    for feature in feature_indices(board, perspective):
+        stream.seek(HEADER_BYTES + feature * WIDTH * 2)
+        row = struct.unpack("<1536h", stream.read(WIDTH * 2))
+        values = [((a + b + 32768) % 65536) - 32768 for a, b in zip(values, row)]
+    return values
+
+
+def reference_accumulators(binary, model, fen):
+    model = os.path.abspath(model)
+    if "\n" in model or "\r" in model:
+        raise ValueError("network path cannot contain a line break")
+    commands = f"uci\nsetoption name EvalFile value {model}\nisready\nposition fen {fen}\neval detailed\nquit\n"
+    completed = subprocess.run([os.path.abspath(binary)], input=commands, text=True, capture_output=True,
+                               cwd=os.path.dirname(os.path.abspath(binary)), timeout=60, check=True)
+    lines = completed.stdout.splitlines()
+    if f"info string Loaded neural network: {model}" not in lines:
+        raise ValueError("reference did not confirm loading the requested network")
+    groups = []
+    for i, line in enumerate(lines):
+        if line.startswith("Raw accumulator values (pre-activation)"):
+            values = []
+            for row in lines[i + 1:i + 1 + WIDTH // 16]:
+                match = re.fullmatch(r"\[\s*\d+\]\s+(.+)", row)
+                if not match:
+                    raise ValueError("unexpected reference accumulator output")
+                values.extend(int(value) for value in match.group(1).split())
+            groups.append(values)
+    if len(groups) != 2 or any(len(group) != WIDTH for group in groups):
+        raise ValueError("reference did not return two complete accumulators")
+    return groups
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("network")
+    parser.add_argument("reference")
+    parser.add_argument("--fen", default=chess.STARTING_FEN)
+    args = parser.parse_args()
+    board = chess.Board(args.fen)
+    if not board.is_valid():
+        parser.error("invalid position")
+    with open(args.network, "rb") as stream:
+        validate_header(stream.read(HEADER_BYTES), os.fstat(stream.fileno()).st_size)
+        ours = [scalar_accumulator(stream, board, color) for color in (board.turn, not board.turn)]
+    reference = reference_accumulators(args.reference, args.network, board.fen())
+    for perspective in range(2):
+        mismatches = sum(a != b for a, b in zip(ours[perspective], reference[perspective]))
+        print(f"perspective={perspective} compared={WIDTH} mismatches={mismatches}")
+        if mismatches:
+            raise SystemExit(1)
+
+
+if __name__ == "__main__":
+    main()
