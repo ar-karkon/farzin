@@ -1,4 +1,4 @@
-use chess::{Board, ChessMove, MoveGen, Piece};
+use chess::{Board, BoardBuilder, ChessMove, MoveGen, Piece};
 use std::str::FromStr;
 
 #[derive(Clone)]
@@ -12,7 +12,7 @@ impl Game {
     pub(crate) fn new(board: Board, halfmove: u32) -> Self {
         Self {
             board,
-            history: vec![board.get_hash()],
+            history: vec![repetition_hash(&board)],
             halfmove,
         }
     }
@@ -26,7 +26,7 @@ impl Game {
             self.halfmove.saturating_add(1)
         };
         self.board = self.board.make_move_new(mv);
-        self.history.push(self.board.get_hash());
+        self.history.push(repetition_hash(&self.board));
     }
     pub(crate) fn unplay(&mut self, board: Board, halfmove: u32) {
         self.board = board;
@@ -39,7 +39,7 @@ impl Game {
             || self
                 .history
                 .iter()
-                .filter(|&&hash| hash == self.board.get_hash())
+                .filter(|&&hash| Some(&hash) == self.history.last())
                 .count()
                 >= 3
     }
@@ -65,6 +65,27 @@ impl Game {
         let first = colors.next();
         colors.all(|color| Some(color) == first)
     }
+}
+
+// FIDE repetition distinguishes en passant only when a legal capture exists.
+// The chess crate retains an EP hash for pseudo-legal captures by pinned pawns.
+fn repetition_hash(board: &Board) -> u64 {
+    if board.en_passant().is_none() {
+        return board.get_hash();
+    }
+    let legal_en_passant = MoveGen::new_legal(board).any(|mv| {
+        board.piece_on(mv.get_source()) == Some(Piece::Pawn)
+            && mv.get_source().get_file() != mv.get_dest().get_file()
+            && board.piece_on(mv.get_dest()).is_none()
+    });
+    if legal_en_passant {
+        return board.get_hash();
+    }
+    let mut builder = BoardBuilder::from(board);
+    builder.en_passant(None);
+    Board::try_from(&builder)
+        .expect("removing en passant preserves a legal board")
+        .get_hash()
 }
 
 pub(crate) fn position(command: &str) -> Result<Game, String> {
@@ -112,5 +133,23 @@ mod tests {
         assert!(!position("fen 7k/8/8/8/8/8/8/1BN1K3 w - - 0 1")
             .unwrap()
             .draw());
+    }
+
+    #[test]
+    fn repetition_ignores_pinned_en_passant_but_preserves_legal_right() {
+        let pinned = position("fen k3r3/8/8/3pP3/8/8/8/4K3 w - d6 0 1").unwrap();
+        let no_right = position("fen k3r3/8/8/3pP3/8/8/8/4K3 w - - 0 1").unwrap();
+        assert_ne!(pinned.board.get_hash(), no_right.board.get_hash());
+        assert_eq!(pinned.history, no_right.history);
+
+        let legal = position("fen k7/8/8/3pP3/8/8/8/4K3 w - d6 0 1").unwrap();
+        let no_right = position("fen k7/8/8/3pP3/8/8/8/4K3 w - - 0 1").unwrap();
+        assert_ne!(legal.history, no_right.history);
+
+        let repeated = position(
+            "fen k3r3/8/8/3pP3/8/8/8/4K3 w - d6 0 1 moves e1f1 a8b8 f1e1 b8a8 e1f1 a8b8 f1e1 b8a8",
+        )
+        .unwrap();
+        assert!(repeated.draw());
     }
 }
