@@ -50,6 +50,40 @@ impl SearchControl {
     }
 }
 
+const MAX_QPLY: i32 = 16;
+
+fn quiescence(game: &mut Game, mut alpha: i32, beta: i32, ply: i32, qply: i32, control: &SearchControl, nodes: &mut u64) -> Option<i32> {
+    if control.stopped() { return None; }
+    *nodes += 1;
+    let board = game.board;
+    match board.status() {
+        BoardStatus::Checkmate => return Some(-MATE + ply),
+        BoardStatus::Stalemate => return Some(0),
+        BoardStatus::Ongoing => {}
+    }
+    if game.draw() { return Some(0); }
+    if qply >= MAX_QPLY { return Some(evaluate(&board)); }
+    let in_check = board.checkers().popcnt() > 0;
+    if !in_check {
+        let stand_pat = evaluate(&board);
+        if stand_pat >= beta { return Some(stand_pat); }
+        alpha = alpha.max(stand_pat);
+    }
+    for mv in MoveGen::new_legal(&board) {
+        let pawn = board.piece_on(mv.get_source()) == Some(Piece::Pawn);
+        let capture = board.piece_on(mv.get_dest()).is_some() || (pawn && mv.get_source().get_file() != mv.get_dest().get_file());
+        if !in_check && !capture && mv.get_promotion().is_none() { continue; }
+        let halfmove = game.halfmove;
+        game.play(mv);
+        let result = quiescence(game, -beta, -alpha, ply + 1, qply + 1, control, nodes);
+        game.unplay(board, halfmove);
+        let score = -result?;
+        if score >= beta { return Some(score); }
+        alpha = alpha.max(score);
+    }
+    Some(alpha)
+}
+
 fn search(game: &mut Game, depth: u8, mut alpha: i32, beta: i32, ply: i32, control: &SearchControl, hints: &mut HashMap<u64, ChessMove>, nodes: &mut u64) -> Option<i32> {
     if control.stopped() { return None; }
     *nodes += 1;
@@ -60,7 +94,7 @@ fn search(game: &mut Game, depth: u8, mut alpha: i32, beta: i32, ply: i32, contr
         BoardStatus::Ongoing => {}
     }
     if game.draw() { return Some(0); }
-    if depth == 0 { return Some(evaluate(&board)); }
+    if depth == 0 { return quiescence(game, alpha, beta, ply, 0, control, nodes); }
     let mut moves: Vec<_> = MoveGen::new_legal(&board).collect();
     moves.sort_by_key(|mv| std::cmp::Reverse((hints.get(&board.get_hash()) == Some(mv), board.piece_on(mv.get_dest()).is_some(), mv.get_promotion().is_some())));
     for mv in moves {
@@ -226,6 +260,14 @@ mod tests {
             assert_eq!(game.halfmove, halfmove);
             assert_eq!(game.history, old_history);
         }
+    }
+    #[test] fn quiescence_sees_recapture() {
+        let mut game = position("fen 3q3k/8/8/8/8/8/3r4/K2Q4 w - - 0 1").unwrap();
+        let board = game.board;
+        let control = SearchControl { stop: Arc::new(AtomicBool::new(false)), deadline: None };
+        let score = quiescence(&mut game, -MATE, MATE, 0, 0, &control, &mut 0).unwrap();
+        assert!(score < 0, "hanging queen capture should not win material: {score}");
+        assert_eq!(game.board, board);
     }
     #[test] fn mate_has_no_move() {
         let mut board = position("startpos moves f2f3 e7e5 g2g4 d8h4").unwrap();
