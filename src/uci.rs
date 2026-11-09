@@ -26,6 +26,73 @@ struct SearchOptions {
     positional: bool,
 }
 
+struct IterationState {
+    hints: HashMap<u64, chess::ChessMove>,
+    table: Table,
+    nodes: u64,
+    previous_score: Option<i32>,
+}
+
+impl IterationState {
+    fn new(entries: usize) -> Self {
+        Self {
+            hints: HashMap::new(),
+            table: Table::new(entries),
+            nodes: 0,
+            previous_score: None,
+        }
+    }
+
+    fn search(
+        &mut self,
+        game: &mut Game,
+        depth: u8,
+        control: &SearchControl,
+        aspiration: bool,
+    ) -> Option<(chess::ChessMove, i32, Vec<chess::ChessMove>)> {
+        self.table.next_generation();
+        let window = self
+            .previous_score
+            .filter(|score| aspiration && score.abs() < MATE - 100)
+            .map(|score| ((score - 50).max(-MATE), (score + 50).min(MATE)));
+        let result = if let Some(bounds) = window {
+            let trial = best_move_window(
+                game,
+                depth,
+                control,
+                &mut self.hints,
+                &mut self.table,
+                &mut self.nodes,
+                bounds,
+            );
+            match trial {
+                Some((_, score, _)) if score <= bounds.0 || score >= bounds.1 => best_move(
+                    game,
+                    depth,
+                    control,
+                    &mut self.hints,
+                    &mut self.table,
+                    &mut self.nodes,
+                ),
+                _ => trial,
+            }
+        } else {
+            best_move(
+                game,
+                depth,
+                control,
+                &mut self.hints,
+                &mut self.table,
+                &mut self.nodes,
+            )
+        };
+        if let Some((_, score, _)) = &result {
+            self.previous_score = Some(*score);
+        }
+        result
+    }
+}
+
 fn stop_search(worker: &mut Option<Worker>, discard: bool) {
     if let Some((stop, suppress, handle)) = worker.take() {
         if discard {
@@ -78,49 +145,11 @@ fn start_search(
     };
     let handle = thread::spawn(move || {
         let mut best = MoveGen::new_legal(&game.board).next();
-        let mut hints = HashMap::new();
-        let mut table = Table::new(Table::entries_for_megabytes(options.hash_mb));
-        let mut nodes = 0;
-        let mut previous_score: Option<i32> = None;
+        let mut state = IterationState::new(Table::entries_for_megabytes(options.hash_mb));
         for current_depth in 1..=depth {
-            table.next_generation();
-            let window = previous_score
-                .filter(|score| options.aspiration && score.abs() < MATE - 100)
-                .map(|score| ((score - 50).max(-MATE), (score + 50).min(MATE)));
-            let result = if let Some(bounds) = window {
-                let trial = best_move_window(
-                    &mut game,
-                    current_depth,
-                    &control,
-                    &mut hints,
-                    &mut table,
-                    &mut nodes,
-                    bounds,
-                );
-                match trial {
-                    Some((_, score, _)) if score <= bounds.0 || score >= bounds.1 => best_move(
-                        &mut game,
-                        current_depth,
-                        &control,
-                        &mut hints,
-                        &mut table,
-                        &mut nodes,
-                    ),
-                    _ => trial,
-                }
-            } else {
-                best_move(
-                    &mut game,
-                    current_depth,
-                    &control,
-                    &mut hints,
-                    &mut table,
-                    &mut nodes,
-                )
-            };
+            let result = state.search(&mut game, current_depth, &control, options.aspiration);
             if let Some((mv, score, pv)) = result {
                 best = Some(mv);
-                previous_score = Some(score);
                 let uci_score = if score.abs() > MATE - 100 {
                     let moves = (MATE - score.abs() + 1) / 2;
                     format!("mate {}", if score > 0 { moves } else { -moves })
@@ -128,6 +157,7 @@ fn start_search(
                     format!("cp {score}")
                 };
                 let elapsed = started.elapsed().as_millis();
+                let nodes = state.nodes;
                 let nps = (nodes as u128 * 1000) / elapsed.max(1);
                 if !suppress_worker.load(Ordering::Relaxed) {
                     let pv = pv
@@ -135,7 +165,7 @@ fn start_search(
                         .map(ToString::to_string)
                         .collect::<Vec<_>>()
                         .join(" ");
-                    println!("info depth {current_depth} score {uci_score} nodes {nodes} nps {nps} time {elapsed} hashfull {} pv {pv}", table.hashfull());
+                    println!("info depth {current_depth} score {uci_score} nodes {nodes} nps {nps} time {elapsed} hashfull {} pv {pv}", state.table.hashfull());
                 }
             } else {
                 break;
@@ -144,7 +174,7 @@ fn start_search(
         if !suppress_worker.load(Ordering::Relaxed) {
             println!(
                 "info string tt probes {} hits {} cutoffs {}",
-                table.probes, table.hits, table.cutoffs
+                state.table.probes, state.table.hits, state.table.cutoffs
             );
             println!(
                 "bestmove {}",
