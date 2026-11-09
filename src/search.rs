@@ -164,6 +164,10 @@ fn search(
     if control.stopped(*state.nodes) {
         return None;
     }
+    // Quiescence counts and validates its own entry node.
+    if depth == 0 {
+        return quiescence(game, alpha, beta, ply, 0, control, state.nodes);
+    }
     *state.nodes += 1;
     let board = game.board;
     match board.status() {
@@ -173,9 +177,6 @@ fn search(
     }
     if game.draw() {
         return Some(0);
-    }
-    if depth == 0 {
-        return quiescence(game, alpha, beta, ply, 0, control, state.nodes);
     }
     let original_alpha = alpha;
     let entry = state.table.get(board.get_hash());
@@ -387,5 +388,27 @@ mod tests {
         assert_eq!(game.board, original_board);
         assert_eq!(game.history, original_history);
         assert_eq!(game.halfmove, 0);
+    }
+
+    #[test]
+    fn leaf_counts_once_toward_node_limit() {
+        let mut game = Game::new(Board::default(), 0);
+        let mut table = Table::new(64);
+        let mut hints = HashMap::new();
+        let mut nodes = 0;
+        let mut state = SearchState {
+            hints: &mut hints,
+            table: &mut table,
+            nodes: &mut nodes,
+            killers: [[None; 2]; 128],
+            history: [[0; 64]; 64],
+        };
+        let control = SearchControl {
+            stop: Arc::new(AtomicBool::new(false)),
+            deadline: None,
+            node_limit: Some(1),
+        };
+        assert!(search(&mut game, 0, -MATE, MATE, 0, &control, &mut state).is_some());
+        assert_eq!(*state.nodes, 1);
     }
 }
