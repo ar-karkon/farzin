@@ -266,6 +266,31 @@ mod tests {
         assert_eq!(perft(&board, 2), 2039);
         assert_eq!(perft(&board, 3), 97862);
     }
+
+    #[test]
+    fn perft_promotion_and_castling_positions() {
+        // Chess Programming Wiki, Perft Results: positions 4 and 5.
+        let cases = [
+            (
+                "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1",
+                [6, 264, 9467],
+            ),
+            (
+                "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8",
+                [44, 1486, 62379],
+            ),
+        ];
+        for (fen, expected) in cases {
+            let game = position(&format!("fen {fen}")).unwrap();
+            for depth in 1..=3 {
+                assert_eq!(
+                    perft(&game.board, depth),
+                    expected[usize::from(depth - 1)],
+                    "{fen} depth {depth}"
+                );
+            }
+        }
+    }
     #[test]
     fn recognizes_stalemate() {
         let game = position("fen 7k/5Q2/6K1/8/8/8/8/8 b - - 0 1").unwrap();
