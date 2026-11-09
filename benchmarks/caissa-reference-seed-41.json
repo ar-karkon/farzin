@@ -1,0 +1,788 @@
+{
+  "seed": 41,
+  "requested_plies": 24,
+  "network_sha256": "bc3df8d32b584f01e21f0f3f9515b3fc0f97fa0ca59b9b5991f333ed5b437b6b",
+  "reference_sha256": "7e369a547a6ceca6644e2243a4f8385323d15c19f14ea6d3de8f40bbe7e4f6fd",
+  "probe_sha256": "5d5cd4d6af1f489462edffc17cf64b65144f2f0da5319af4a251913df256b60f",
+  "cases": [
+    {
+      "name": "initial",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [],
+      "final_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "outputs": {
+        "0": 50820,
+        "1": -66069,
+        "2": 91900,
+        "3": 82328,
+        "4": 70843,
+        "5": 100659,
+        "6": 77377,
+        "7": 38056
+      }
+    },
+    {
+      "name": "random-1",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4"
+      ],
+      "final_fen": "rnbqkbnr/pppppppp/8/8/7P/8/PPPPPPP1/RNBQKBNR b KQkq - 0 1",
+      "outputs": {
+        "0": 62266,
+        "1": -86194,
+        "2": 82845,
+        "3": 65121,
+        "4": 54011,
+        "5": 90549,
+        "6": 77358,
+        "7": 33740
+      }
+    },
+    {
+      "name": "random-2",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6"
+      ],
+      "final_fen": "rnbqkbnr/p1pppppp/1p6/8/7P/8/PPPPPPP1/RNBQKBNR w KQkq - 0 2",
+      "outputs": {
+        "0": 119998,
+        "1": -28766,
+        "2": 75360,
+        "3": 70798,
+        "4": 48024,
+        "5": 78517,
+        "6": 47597,
+        "7": 27222
+      }
+    },
+    {
+      "name": "random-3",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6",
+        "g2g3"
+      ],
+      "final_fen": "rnbqkbnr/p1pppppp/1p6/8/7P/6P1/PPPPPP2/RNBQKBNR b KQkq - 0 2",
+      "outputs": {
+        "0": 154144,
+        "1": -171457,
+        "2": -6197,
+        "3": 8143,
+        "4": 85,
+        "5": 41643,
+        "6": 11631,
+        "7": -1851
+      }
+    },
+    {
+      "name": "random-4",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6",
+        "g2g3",
+        "b8a6"
+      ],
+      "final_fen": "r1bqkbnr/p1pppppp/np6/8/7P/6P1/PPPPPP2/RNBQKBNR w KQkq - 1 3",
+      "outputs": {
+        "0": 82795,
+        "1": 10767,
+        "2": 170753,
+        "3": 148874,
+        "4": 124160,
+        "5": 128745,
+        "6": 96680,
+        "7": 69526
+      }
+    },
+    {
+      "name": "random-5",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6",
+        "g2g3",
+        "b8a6",
+        "d2d3"
+      ],
+      "final_fen": "r1bqkbnr/p1pppppp/np6/8/7P/3P2P1/PPP1PP2/RNBQKBNR b KQkq - 0 3",
+      "outputs": {
+        "0": 66000,
+        "1": -299091,
+        "2": -102710,
+        "3": -79729,
+        "4": -82676,
+        "5": -29214,
+        "6": -30420,
+        "7": -49491
+      }
+    },
+    {
+      "name": "random-6",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6",
+        "g2g3",
+        "b8a6",
+        "d2d3",
+        "d7d5"
+      ],
+      "final_fen": "r1bqkbnr/p1p1pppp/np6/3p4/7P/3P2P1/PPP1PP2/RNBQKBNR w KQkq - 0 4",
+      "outputs": {
+        "0": -4517,
+        "1": 29984,
+        "2": 144412,
+        "3": 121433,
+        "4": 81389,
+        "5": 102792,
+        "6": 62047,
+        "7": 41598
+      }
+    },
+    {
+      "name": "random-7",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6",
+        "g2g3",
+        "b8a6",
+        "d2d3",
+        "d7d5",
+        "a2a4"
+      ],
+      "final_fen": "r1bqkbnr/p1p1pppp/np6/3p4/P6P/3P2P1/1PP1PP2/RNBQKBNR b KQkq - 0 4",
+      "outputs": {
+        "0": 67450,
+        "1": -77379,
+        "2": 8467,
+        "3": 14786,
+        "4": 2480,
+        "5": 45318,
+        "6": 16573,
+        "7": 12475
+      }
+    },
+    {
+      "name": "random-8",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6",
+        "g2g3",
+        "b8a6",
+        "d2d3",
+        "d7d5",
+        "a2a4",
+        "h7h5"
+      ],
+      "final_fen": "r1bqkbnr/p1p1ppp1/np6/3p3p/P6P/3P2P1/1PP1PP2/RNBQKBNR w KQkq - 0 5",
+      "outputs": {
+        "0": -78982,
+        "1": -37123,
+        "2": 81971,
+        "3": 86360,
+        "4": 62072,
+        "5": 89727,
+        "6": 64753,
+        "7": 42944
+      }
+    },
+    {
+      "name": "random-9",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6",
+        "g2g3",
+        "b8a6",
+        "d2d3",
+        "d7d5",
+        "a2a4",
+        "h7h5",
+        "c1g5"
+      ],
+      "final_fen": "r1bqkbnr/p1p1ppp1/np6/3p2Bp/P6P/3P2P1/1PP1PP2/RN1QKBNR b KQkq - 1 5",
+      "outputs": {
+        "0": 75504,
+        "1": -28090,
+        "2": 29463,
+        "3": 21650,
+        "4": 8703,
+        "5": 50885,
+        "6": 20481,
+        "7": 14771
+      }
+    },
+    {
+      "name": "random-10",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6",
+        "g2g3",
+        "b8a6",
+        "d2d3",
+        "d7d5",
+        "a2a4",
+        "h7h5",
+        "c1g5",
+        "g7g6"
+      ],
+      "final_fen": "r1bqkbnr/p1p1pp2/np4p1/3p2Bp/P6P/3P2P1/1PP1PP2/RN1QKBNR w KQkq - 0 6",
+      "outputs": {
+        "0": -21740,
+        "1": -103150,
+        "2": 68050,
+        "3": 33421,
+        "4": 9294,
+        "5": 44378,
+        "6": 28295,
+        "7": 2994
+      }
+    },
+    {
+      "name": "random-11",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6",
+        "g2g3",
+        "b8a6",
+        "d2d3",
+        "d7d5",
+        "a2a4",
+        "h7h5",
+        "c1g5",
+        "g7g6",
+        "b1a3"
+      ],
+      "final_fen": "r1bqkbnr/p1p1pp2/np4p1/3p2Bp/P6P/N2P2P1/1PP1PP2/R2QKBNR b KQkq - 1 6",
+      "outputs": {
+        "0": 31350,
+        "1": -6155,
+        "2": 83916,
+        "3": 53004,
+        "4": 41339,
+        "5": 64115,
+        "6": 43613,
+        "7": 22280
+      }
+    },
+    {
+      "name": "random-12",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6",
+        "g2g3",
+        "b8a6",
+        "d2d3",
+        "d7d5",
+        "a2a4",
+        "h7h5",
+        "c1g5",
+        "g7g6",
+        "b1a3",
+        "c8f5"
+      ],
+      "final_fen": "r2qkbnr/p1p1pp2/np4p1/3p1bBp/P6P/N2P2P1/1PP1PP2/R2QKBNR w KQkq - 2 7",
+      "outputs": {
+        "0": 62092,
+        "1": 31021,
+        "2": 133468,
+        "3": 135408,
+        "4": 120493,
+        "5": 134908,
+        "6": 109274,
+        "7": 81501
+      }
+    },
+    {
+      "name": "random-13",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6",
+        "g2g3",
+        "b8a6",
+        "d2d3",
+        "d7d5",
+        "a2a4",
+        "h7h5",
+        "c1g5",
+        "g7g6",
+        "b1a3",
+        "c8f5",
+        "g5e7"
+      ],
+      "final_fen": "r2qkbnr/p1p1Bp2/np4p1/3p1b1p/P6P/N2P2P1/1PP1PP2/R2QKBNR b KQkq - 0 7",
+      "outputs": {
+        "0": 182631,
+        "1": 372794,
+        "2": 172003,
+        "3": 144424,
+        "4": 118544,
+        "5": 82657,
+        "6": 92492,
+        "7": -26303
+      }
+    },
+    {
+      "name": "random-14",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6",
+        "g2g3",
+        "b8a6",
+        "d2d3",
+        "d7d5",
+        "a2a4",
+        "h7h5",
+        "c1g5",
+        "g7g6",
+        "b1a3",
+        "c8f5",
+        "g5e7",
+        "a8c8"
+      ],
+      "final_fen": "2rqkbnr/p1p1Bp2/np4p1/3p1b1p/P6P/N2P2P1/1PP1PP2/R2QKBNR w KQk - 1 8",
+      "outputs": {
+        "0": 334878,
+        "1": 142986,
+        "2": 280344,
+        "3": 209499,
+        "4": 258348,
+        "5": 225245,
+        "6": 215125,
+        "7": 140063
+      }
+    },
+    {
+      "name": "random-15",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6",
+        "g2g3",
+        "b8a6",
+        "d2d3",
+        "d7d5",
+        "a2a4",
+        "h7h5",
+        "c1g5",
+        "g7g6",
+        "b1a3",
+        "c8f5",
+        "g5e7",
+        "a8c8",
+        "e7d8"
+      ],
+      "final_fen": "2rBkbnr/p1p2p2/np4p1/3p1b1p/P6P/N2P2P1/1PP1PP2/R2QKBNR b KQk - 0 8",
+      "outputs": {
+        "0": -93700,
+        "1": -522837,
+        "2": -651456,
+        "3": -652122,
+        "4": -837396,
+        "5": -1169701,
+        "6": -678791,
+        "7": -1270739
+      }
+    },
+    {
+      "name": "random-16",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6",
+        "g2g3",
+        "b8a6",
+        "d2d3",
+        "d7d5",
+        "a2a4",
+        "h7h5",
+        "c1g5",
+        "g7g6",
+        "b1a3",
+        "c8f5",
+        "g5e7",
+        "a8c8",
+        "e7d8",
+        "g6g5"
+      ],
+      "final_fen": "2rBkbnr/p1p2p2/np6/3p1bpp/P6P/N2P2P1/1PP1PP2/R2QKBNR w KQk - 0 9",
+      "outputs": {
+        "0": 1146140,
+        "1": 1253220,
+        "2": 1693920,
+        "3": 1526847,
+        "4": 1711424,
+        "5": 1391052,
+        "6": 1603448,
+        "7": 1475357
+      }
+    },
+    {
+      "name": "random-17",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6",
+        "g2g3",
+        "b8a6",
+        "d2d3",
+        "d7d5",
+        "a2a4",
+        "h7h5",
+        "c1g5",
+        "g7g6",
+        "b1a3",
+        "c8f5",
+        "g5e7",
+        "a8c8",
+        "e7d8",
+        "g6g5",
+        "g1h3"
+      ],
+      "final_fen": "2rBkbnr/p1p2p2/np6/3p1bpp/P6P/N2P2PN/1PP1PP2/R2QKB1R b KQk - 1 9",
+      "outputs": {
+        "0": -90921,
+        "1": -551562,
+        "2": -592606,
+        "3": -682774,
+        "4": -851561,
+        "5": -1170495,
+        "6": -828669,
+        "7": -1199674
+      }
+    },
+    {
+      "name": "random-18",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6",
+        "g2g3",
+        "b8a6",
+        "d2d3",
+        "d7d5",
+        "a2a4",
+        "h7h5",
+        "c1g5",
+        "g7g6",
+        "b1a3",
+        "c8f5",
+        "g5e7",
+        "a8c8",
+        "e7d8",
+        "g6g5",
+        "g1h3",
+        "f8c5"
+      ],
+      "final_fen": "2rBk1nr/p1p2p2/np6/2bp1bpp/P6P/N2P2PN/1PP1PP2/R2QKB1R w KQk - 2 10",
+      "outputs": {
+        "0": 1179567,
+        "1": 1111796,
+        "2": 1693920,
+        "3": 1407358,
+        "4": 1711424,
+        "5": 1372835,
+        "6": 1603448,
+        "7": 1475357
+      }
+    },
+    {
+      "name": "random-19",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6",
+        "g2g3",
+        "b8a6",
+        "d2d3",
+        "d7d5",
+        "a2a4",
+        "h7h5",
+        "c1g5",
+        "g7g6",
+        "b1a3",
+        "c8f5",
+        "g5e7",
+        "a8c8",
+        "e7d8",
+        "g6g5",
+        "g1h3",
+        "f8c5",
+        "h4g5"
+      ],
+      "final_fen": "2rBk1nr/p1p2p2/np6/2bp1bPp/P7/N2P2PN/1PP1PP2/R2QKB1R b KQk - 0 10",
+      "outputs": {
+        "0": -102301,
+        "1": -573246,
+        "2": -659654,
+        "3": -781140,
+        "4": -881129,
+        "5": -1351029,
+        "6": -882845,
+        "7": -1101255
+      }
+    },
+    {
+      "name": "random-20",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6",
+        "g2g3",
+        "b8a6",
+        "d2d3",
+        "d7d5",
+        "a2a4",
+        "h7h5",
+        "c1g5",
+        "g7g6",
+        "b1a3",
+        "c8f5",
+        "g5e7",
+        "a8c8",
+        "e7d8",
+        "g6g5",
+        "g1h3",
+        "f8c5",
+        "h4g5",
+        "c8a8"
+      ],
+      "final_fen": "r2Bk1nr/p1p2p2/np6/2bp1bPp/P7/N2P2PN/1PP1PP2/R2QKB1R w KQk - 1 11",
+      "outputs": {
+        "0": 1319956,
+        "1": 1361393,
+        "2": 1693920,
+        "3": 1796615,
+        "4": 1711424,
+        "5": 1502856,
+        "6": 1603448,
+        "7": 1414557
+      }
+    },
+    {
+      "name": "random-21",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6",
+        "g2g3",
+        "b8a6",
+        "d2d3",
+        "d7d5",
+        "a2a4",
+        "h7h5",
+        "c1g5",
+        "g7g6",
+        "b1a3",
+        "c8f5",
+        "g5e7",
+        "a8c8",
+        "e7d8",
+        "g6g5",
+        "g1h3",
+        "f8c5",
+        "h4g5",
+        "c8a8",
+        "h1h2"
+      ],
+      "final_fen": "r2Bk1nr/p1p2p2/np6/2bp1bPp/P7/N2P2PN/1PP1PP1R/R2QKB2 b Qk - 2 11",
+      "outputs": {
+        "0": -93700,
+        "1": -389741,
+        "2": -617294,
+        "3": -705753,
+        "4": -818600,
+        "5": -1213341,
+        "6": -786470,
+        "7": -935986
+      }
+    },
+    {
+      "name": "random-22",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6",
+        "g2g3",
+        "b8a6",
+        "d2d3",
+        "d7d5",
+        "a2a4",
+        "h7h5",
+        "c1g5",
+        "g7g6",
+        "b1a3",
+        "c8f5",
+        "g5e7",
+        "a8c8",
+        "e7d8",
+        "g6g5",
+        "g1h3",
+        "f8c5",
+        "h4g5",
+        "c8a8",
+        "h1h2",
+        "g8h6"
+      ],
+      "final_fen": "r2Bk2r/p1p2p2/np5n/2bp1bPp/P7/N2P2PN/1PP1PP1R/R2QKB2 w Qk - 3 12",
+      "outputs": {
+        "0": 921999,
+        "1": 1209765,
+        "2": 1693920,
+        "3": 1607110,
+        "4": 1711424,
+        "5": 1428177,
+        "6": 1599816,
+        "7": 1229667
+      }
+    },
+    {
+      "name": "random-23",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6",
+        "g2g3",
+        "b8a6",
+        "d2d3",
+        "d7d5",
+        "a2a4",
+        "h7h5",
+        "c1g5",
+        "g7g6",
+        "b1a3",
+        "c8f5",
+        "g5e7",
+        "a8c8",
+        "e7d8",
+        "g6g5",
+        "g1h3",
+        "f8c5",
+        "h4g5",
+        "c8a8",
+        "h1h2",
+        "g8h6",
+        "h3f4"
+      ],
+      "final_fen": "r2Bk2r/p1p2p2/np5n/2bp1bPp/P4N2/N2P2P1/1PP1PP1R/R2QKB2 b Qk - 4 12",
+      "outputs": {
+        "0": -107504,
+        "1": -523431,
+        "2": -553426,
+        "3": -701639,
+        "4": -791396,
+        "5": -1152392,
+        "6": -943252,
+        "7": -927390
+      }
+    },
+    {
+      "name": "random-24",
+      "initial_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "h2h4",
+        "b7b6",
+        "g2g3",
+        "b8a6",
+        "d2d3",
+        "d7d5",
+        "a2a4",
+        "h7h5",
+        "c1g5",
+        "g7g6",
+        "b1a3",
+        "c8f5",
+        "g5e7",
+        "a8c8",
+        "e7d8",
+        "g6g5",
+        "g1h3",
+        "f8c5",
+        "h4g5",
+        "c8a8",
+        "h1h2",
+        "g8h6",
+        "h3f4",
+        "h8h7"
+      ],
+      "final_fen": "r2Bk3/p1p2p1r/np5n/2bp1bPp/P4N2/N2P2P1/1PP1PP1R/R2QKB2 w Q - 5 13",
+      "outputs": {
+        "0": 1189713,
+        "1": 1136781,
+        "2": 1693920,
+        "3": 1743689,
+        "4": 1711424,
+        "5": 1560107,
+        "6": 1592055,
+        "7": 1394447
+      }
+    },
+    {
+      "name": "castling",
+      "initial_fen": "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1",
+      "moves": [
+        "e1g1",
+        "e8c8"
+      ],
+      "final_fen": "2kr3r/8/8/8/8/8/8/R4RK1 w - - 2 2",
+      "outputs": {
+        "0": 263,
+        "1": 31831,
+        "2": 64078,
+        "3": 43533,
+        "4": -93507,
+        "5": -115397,
+        "6": 36549,
+        "7": -13365
+      }
+    },
+    {
+      "name": "en-passant",
+      "initial_fen": "4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1",
+      "moves": [
+        "e5d6"
+      ],
+      "final_fen": "4k3/8/3P4/8/8/8/8/4K3 b - - 0 1",
+      "outputs": {
+        "0": 6912,
+        "1": 3883,
+        "2": 33594,
+        "3": -12772,
+        "4": -337732,
+        "5": 13050,
+        "6": -34454,
+        "7": -136474
+      }
+    },
+    {
+      "name": "underpromotion",
+      "initial_fen": "4k3/P7/8/8/8/8/8/4K3 w - - 0 1",
+      "moves": [
+        "a7a8n"
+      ],
+      "final_fen": "N3k3/8/8/8/8/8/8/4K3 b - - 0 1",
+      "outputs": {
+        "0": -2718,
+        "1": 17333,
+        "2": 25294,
+        "3": -10495,
+        "4": -261048,
+        "5": 27880,
+        "6": -202704,
+        "7": -12129
+      }
+    }
+  ]
+}

@@ -35,6 +35,8 @@ python3 tools/compare_caissa_accumulators.py /path/to/model.pnn /path/to/caissa
 
 `tools/validate_caissa.py` مسیر افزایشی Rust و هر هشت خروجی خام را در برابر برنامهٔ مرجع بررسی و هش مدل و باینری‌ها را در JSON ثبت می‌کند. یک اجرا با seed برابر ۲۰۲۶ شامل موقعیت آغازین، دوازده نیم‌حرکت تولیدشده به‌طور قطعی، قلعهٔ دو طرف، آن‌پاسان و ترفیع به اسب، در مجموع ۱۶ موقعیت، بدون اختلاف بود. این آزمون جایگزین مجموعهٔ گستردهٔ موقعیت‌ها یا بررسی مجوز وزن نیست.
 
+دو اجرای بعدی با seedهای ۲۰۲۶ و ۴۱ به‌ترتیب ۴۴ و ۲۸ مورد، شامل وضعیت آغازین و موارد ویژه، را بدون اختلاف گذراندند. خروجی کامل، مسیر حرکت‌ها و هش باینری‌ها و مدل در `benchmarks/caissa-reference-seed-2026.json` و `benchmarks/caissa-reference-seed-41.json` ذخیره شده‌اند؛ این دو مجموعه موارد تکراری دارند و همچنان نمونهٔ محدودی هستند.
+
 ```sh
 cargo build --release --example caissa_probe --locked
 python3 tools/validate_caissa.py /path/to/model.pnn /path/to/caissa target/release/examples/caissa_probe --json /tmp/caissa-validation.json
