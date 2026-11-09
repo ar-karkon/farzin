@@ -3,7 +3,7 @@ use crate::{
     game::Game,
     tt::{self, Bound, Entry, Table},
 };
-use chess::{BoardStatus, ChessMove, MoveGen, Piece};
+use chess::{Board, BoardStatus, ChessMove, MoveGen, Piece};
 use std::collections::HashMap;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
@@ -91,6 +91,47 @@ struct SearchState<'a> {
     hints: &'a mut HashMap<u64, ChessMove>,
     table: &'a mut Table,
     nodes: &'a mut u64,
+    killers: [[Option<ChessMove>; 2]; 128],
+    history: [[i32; 64]; 64],
+}
+
+fn capture_value(board: &Board, mv: ChessMove) -> Option<i32> {
+    let victim = board.piece_on(mv.get_dest()).or_else(|| {
+        (board.piece_on(mv.get_source()) == Some(Piece::Pawn)
+            && mv.get_source().get_file() != mv.get_dest().get_file())
+        .then_some(Piece::Pawn)
+    })?;
+    let value = |piece| match piece {
+        Piece::Pawn => 100,
+        Piece::Knight => 320,
+        Piece::Bishop => 330,
+        Piece::Rook => 500,
+        Piece::Queen => 900,
+        Piece::King => 20_000,
+    };
+    Some(value(victim) * 10 - value(board.piece_on(mv.get_source()).unwrap()))
+}
+
+fn move_score(
+    board: &Board,
+    mv: ChessMove,
+    hint: Option<ChessMove>,
+    killers: [Option<ChessMove>; 2],
+    history: &[[i32; 64]; 64],
+) -> i32 {
+    if Some(mv) == hint {
+        return 1_000_000;
+    }
+    if let Some(value) = capture_value(board, mv) {
+        return 100_000 + value;
+    }
+    if mv.get_promotion().is_some() {
+        return 90_000;
+    }
+    if killers.contains(&Some(mv)) {
+        return 80_000;
+    }
+    history[mv.get_source().to_index()][mv.get_dest().to_index()]
 }
 
 fn search(
@@ -133,17 +174,18 @@ fn search(
         }
     }
     let mut moves: Vec<_> = MoveGen::new_legal(&board).collect();
-    moves.sort_by_key(|mv| {
-        std::cmp::Reverse((
-            entry.and_then(|e| e.best) == Some(*mv)
-                || state.hints.get(&board.get_hash()) == Some(mv),
-            board.piece_on(mv.get_dest()).is_some(),
-            mv.get_promotion().is_some(),
-        ))
-    });
+    let hint = entry
+        .and_then(|e| e.best)
+        .or_else(|| state.hints.get(&board.get_hash()).copied());
     let mut best = None;
     let mut best_score = -MATE;
-    for mv in moves {
+    for index in 0..moves.len() {
+        let killers = state.killers[(ply as usize).min(127)];
+        let best_index = (index..moves.len())
+            .max_by_key(|&i| move_score(&board, moves[i], hint, killers, &state.history))
+            .unwrap();
+        moves.swap(index, best_index);
+        let mv = moves[index];
         let halfmove = game.halfmove;
         game.play(mv);
         let result = search(game, depth - 1, -beta, -alpha, ply + 1, control, state);
@@ -160,6 +202,16 @@ fn search(
             }
         }
         if alpha >= beta {
+            if capture_value(&board, mv).is_none() && mv.get_promotion().is_none() {
+                let killers = &mut state.killers[(ply as usize).min(127)];
+                if killers[0] != Some(mv) {
+                    killers[1] = killers[0];
+                    killers[0] = Some(mv);
+                }
+                let history =
+                    &mut state.history[mv.get_source().to_index()][mv.get_dest().to_index()];
+                *history = history.saturating_add(i32::from(depth).pow(2)).min(70_000);
+            }
             break;
         }
     }
@@ -202,6 +254,8 @@ pub(crate) fn best_move(
         hints,
         table,
         nodes,
+        killers: [[None; 2]; 128],
+        history: [[0; 64]; 64],
     };
     for mv in MoveGen::new_legal(&board) {
         let halfmove = game.halfmove;
@@ -229,6 +283,24 @@ pub(crate) fn best_move(
 mod tests {
     use super::*;
     use chess::Board;
+    use std::str::FromStr;
+
+    #[test]
+    fn ordering_recognizes_en_passant_and_hash_move() {
+        let game = crate::game::position("fen 4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1").unwrap();
+        let capture = ChessMove::from_str("e5d6").unwrap();
+        let quiet = ChessMove::from_str("e1d1").unwrap();
+        let history = [[0; 64]; 64];
+        assert!(capture_value(&game.board, capture).is_some());
+        assert!(
+            move_score(&game.board, capture, None, [None; 2], &history)
+                > move_score(&game.board, quiet, None, [None; 2], &history)
+        );
+        assert!(
+            move_score(&game.board, quiet, Some(quiet), [None; 2], &history)
+                > move_score(&game.board, capture, None, [None; 2], &history)
+        );
+    }
 
     #[test]
     fn table_bounds_only_cut_off_valid_windows() {
@@ -256,6 +328,8 @@ mod tests {
                 hints: &mut hints,
                 table: &mut table,
                 nodes: &mut nodes,
+                killers: [[None; 2]; 128],
+                history: [[0; 64]; 64],
             };
             let control = SearchControl {
                 stop: Arc::new(AtomicBool::new(false)),
@@ -283,6 +357,8 @@ mod tests {
             hints: &mut hints,
             table: &mut table,
             nodes: &mut nodes,
+            killers: [[None; 2]; 128],
+            history: [[0; 64]; 64],
         };
         let control = SearchControl {
             stop: Arc::new(AtomicBool::new(false)),
