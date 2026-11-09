@@ -1,30 +1,30 @@
 {
   "pentanomial": [
-    4,
-    20,
-    140,
-    22,
-    14
+    5,
+    33,
+    206,
+    35,
+    21
   ],
-  "pairs": 200,
+  "pairs": 300,
   "elo0": 0.0,
   "elo1": 10.0,
   "alpha": 0.05,
   "beta": 0.05,
   "lower_bound": -2.9444389791664403,
   "upper_bound": 2.9444389791664403,
-  "llr": 1.675724139533434,
+  "llr": 2.604651959696486,
   "decision": "continue",
-  "score": 0.5275,
-  "elo": 19.128260449779404,
+  "score": 0.5283333333333333,
+  "elo": 19.709130677384504,
   "elo_95": [
-    1.1259026537225658,
-    37.23390691212139
+    4.9712215229759655,
+    34.518277716423654
   ],
   "games": {
-    "wins": 125,
-    "draws": 172,
-    "losses": 103,
+    "wins": 187,
+    "draws": 260,
+    "losses": 153,
     "unfinished": 0
   },
   "excluded_pairs": 0,
@@ -35,7 +35,10 @@
     "match-lmr-60ms-b1/m-shard2.json.gz",
     "match-lmr-60ms-b2/m-shard0.json.gz",
     "match-lmr-60ms-b2/m-shard1.json.gz",
-    "match-lmr-60ms-b2/m-shard2.json.gz"
+    "match-lmr-60ms-b2/m-shard2.json.gz",
+    "match-lmr-60ms-b3/m-shard0.json.gz",
+    "match-lmr-60ms-b3/m-shard1.json.gz",
+    "match-lmr-60ms-b3/m-shard2.json.gz"
   ],
   "options": [
     {
