@@ -17,6 +17,7 @@ pub(crate) struct SearchControl {
     pub(crate) deadline: Option<Instant>,
     pub(crate) node_limit: Option<u64>,
     pub(crate) exchange_ordering: bool,
+    pub(crate) pvs: bool,
 }
 
 impl SearchControl {
@@ -292,7 +293,16 @@ fn search(
         let mv = moves[index];
         let halfmove = game.halfmove;
         game.play(mv);
-        let result = search(game, depth - 1, -beta, -alpha, ply + 1, control, state);
+        let result = if control.pvs && index > 0 && alpha + 1 < beta {
+            match search(game, depth - 1, -alpha - 1, -alpha, ply + 1, control, state) {
+                Some(probe) if -probe > alpha && -probe < beta => {
+                    search(game, depth - 1, -beta, -alpha, ply + 1, control, state)
+                }
+                other => other,
+            }
+        } else {
+            search(game, depth - 1, -beta, -alpha, ply + 1, control, state)
+        };
         game.unplay(board, halfmove);
         let score = -result?;
         if best.is_none() || score > best_score {
@@ -444,6 +454,7 @@ mod tests {
                 deadline: None,
                 node_limit: None,
                 exchange_ordering: enabled,
+                pvs: false,
             };
             scores.push(
                 best_move(
@@ -462,6 +473,36 @@ mod tests {
     }
 
     #[test]
+    fn pvs_matches_alpha_beta_on_reference_positions() {
+        for fen in ["startpos", "fen 8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1"] {
+            let mut scores = Vec::new();
+            for pvs in [false, true] {
+                let mut game = crate::game::position(fen).unwrap();
+                let control = SearchControl {
+                    stop: Arc::new(AtomicBool::new(false)),
+                    deadline: None,
+                    node_limit: None,
+                    exchange_ordering: false,
+                    pvs,
+                };
+                scores.push(
+                    best_move(
+                        &mut game,
+                        4,
+                        &control,
+                        &mut HashMap::new(),
+                        &mut Table::new(4096),
+                        &mut 0,
+                    )
+                    .unwrap()
+                    .1,
+                );
+            }
+            assert_eq!(scores[0], scores[1], "{fen}");
+        }
+    }
+
+    #[test]
     fn principal_variation_contains_legal_moves() {
         let mut game = Game::new(Board::default(), 0);
         let control = SearchControl {
@@ -469,6 +510,7 @@ mod tests {
             deadline: None,
             node_limit: None,
             exchange_ordering: false,
+            pvs: false,
         };
         let (best, _, pv) = best_move(
             &mut game,
@@ -523,6 +565,7 @@ mod tests {
                 deadline: None,
                 node_limit: None,
                 exchange_ordering: false,
+                pvs: false,
             };
             assert!(search(&mut game, 1, -50, 50, 0, &control, &mut state).is_some());
             assert_eq!(
@@ -555,6 +598,7 @@ mod tests {
             deadline: None,
             node_limit: Some(2),
             exchange_ordering: false,
+            pvs: false,
         };
         assert!(search(&mut game, 4, -MATE, MATE, 0, &control, &mut state).is_none());
         assert_eq!(game.board, original_board);
@@ -582,6 +626,7 @@ mod tests {
             deadline: None,
             node_limit: Some(1),
             exchange_ordering: false,
+            pvs: false,
         };
         assert!(search(&mut game, 0, -MATE, MATE, 0, &control, &mut state).is_some());
         assert_eq!(*state.nodes, 1);
@@ -605,6 +650,7 @@ mod tests {
                     deadline: None,
                     node_limit: None,
                     exchange_ordering: false,
+                    pvs: false,
                 };
                 let depth = if fen == "startpos" { 4 } else { 3 };
                 let score = best_move(
