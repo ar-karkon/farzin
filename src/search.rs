@@ -681,4 +681,79 @@ mod tests {
             assert_eq!(scores[0], scores[1], "{fen}");
         }
     }
+
+    #[test]
+    fn transposition_score_is_not_used_with_nonzero_halfmove_clock() {
+        let mut game = Game::new(Board::default(), 99);
+        let mut table = Table::new(64);
+        table.put(
+            game.board.get_hash(),
+            Entry {
+                depth: 10,
+                score: 12_345,
+                bound: Bound::Exact,
+                best: None,
+            },
+        );
+        let mut hints = HashMap::new();
+        let mut nodes = 0;
+        let mut state = SearchState {
+            hints: &mut hints,
+            table: &mut table,
+            nodes: &mut nodes,
+            killers: [[None; 2]; 128],
+            history: [[0; 64]; 64],
+            pv: [[None; 64]; 65],
+            pv_len: [0; 65],
+        };
+        let control = SearchControl {
+            stop: Arc::new(AtomicBool::new(false)),
+            deadline: None,
+            node_limit: None,
+            exchange_ordering: false,
+            pvs: false,
+            cache: RefCell::new(None),
+        };
+        let score = search(&mut game, 1, -MATE, MATE, 0, &control, &mut state).unwrap();
+        assert_ne!(score, 12_345);
+        assert_eq!(state.table.cutoffs, 0);
+    }
+
+    #[test]
+    fn pvs_and_cache_match_reference_along_legal_game() {
+        let mut game = Game::new(Board::default(), 0);
+        for ply in 0..12 {
+            let legal: Vec<_> = MoveGen::new_legal(&game.board).collect();
+            if legal.is_empty() || game.draw() {
+                break;
+            }
+            let mut scores = Vec::new();
+            for (pvs, capacity) in [(false, 0), (false, 4096), (true, 4096)] {
+                let control = SearchControl {
+                    stop: Arc::new(AtomicBool::new(false)),
+                    deadline: None,
+                    node_limit: None,
+                    exchange_ordering: false,
+                    pvs,
+                    cache: RefCell::new(None),
+                };
+                let mut position = game.clone();
+                scores.push(
+                    best_move(
+                        &mut position,
+                        3,
+                        &control,
+                        &mut HashMap::new(),
+                        &mut Table::new(capacity),
+                        &mut 0,
+                    )
+                    .unwrap()
+                    .1,
+                );
+            }
+            assert_eq!(scores[0], scores[1], "cache at ply {ply}");
+            assert_eq!(scores[0], scores[2], "pvs at ply {ply}");
+            game.play(legal[(ply * 17 + 3) % legal.len()]);
+        }
+    }
 }
