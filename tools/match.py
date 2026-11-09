@@ -63,6 +63,7 @@ def main():
         white = number % 2
         fen = openings[(number // 2) % len(openings)]
         board = chess.Board(fen)
+        searches = []
         start = time.monotonic()
         # Fresh processes ensure each game starts without cached state.
         with chess.engine.SimpleEngine.popen_uci(engines[0], timeout=10) as a:
@@ -73,14 +74,19 @@ def main():
                 while not board.is_game_over(claim_draw=True) and len(board.move_stack) < args.max_plies:
                     player = white if board.turn == chess.WHITE else 1 - white
                     search_limit = chess.engine.Limit(depth=depth, time=args.movetime_ms / 1000 if args.movetime_ms else None)
-                    result = players[player].play(board, search_limit)
+                    move_start = time.monotonic()
+                    result = players[player].play(board, search_limit, info=chess.engine.INFO_ALL)
+                    elapsed_ms = (time.monotonic() - move_start) * 1000
                     if result.move is None or result.move not in board.legal_moves:
                         raise RuntimeError(f"engine {player} returned an illegal or missing move")
+                    searches.append({"engine": player, "depth": result.info.get("depth"),
+                                     "nodes": result.info.get("nodes"), "reported_time_s": result.info.get("time"),
+                                     "elapsed_ms": round(elapsed_ms, 3)})
                     board.push(result.move)
         outcome = board.outcome(claim_draw=True)
         game = {"white_engine": white, "opening_fen": fen, "result": outcome.result() if outcome else "*",
                 "termination": outcome.termination.name if outcome else "PLY_LIMIT",
-                "plies": len(board.move_stack), "moves": [move.uci() for move in board.move_stack],
+                "plies": len(board.move_stack), "moves": [move.uci() for move in board.move_stack], "searches": searches,
                 "elapsed_seconds": round(time.monotonic() - start, 3)}
         report["games"].append(game)
         print(f"game {number + 1}: white={white} result={game['result']} "

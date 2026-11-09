@@ -1,0 +1,3130 @@
+{
+  "engines": [
+    "/workspace/farzin/target/release/farzin",
+    "/workspace/farzin/target/release/farzin"
+  ],
+  "engine_sha256": [
+    "c734003ea7d9fac382fa361be5d3b3404503f4d40a627fe3be1c85abd454ad6a",
+    "c734003ea7d9fac382fa361be5d3b3404503f4d40a627fe3be1c85abd454ad6a"
+  ],
+  "depth": null,
+  "movetime_ms": 30,
+  "pairs": 3,
+  "max_plies": 120,
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "options": [
+    {
+      "EvalFile": "/tmp/farzin-caissa-v15.pnn",
+      "Move Overhead": "5"
+    },
+    {
+      "Move Overhead": "5"
+    }
+  ],
+  "games": [
+    {
+      "white_engine": 0,
+      "opening_fen": "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
+      "result": "0-1",
+      "termination": "CHECKMATE",
+      "plies": 69,
+      "moves": [
+        "d7d6",
+        "d2d4",
+        "e5d4",
+        "f3d4",
+        "g8e7",
+        "e1g1",
+        "d6d5",
+        "b1c3",
+        "d5e4",
+        "f1e1",
+        "a7a6",
+        "b5a4",
+        "f7f5",
+        "c1f4",
+        "a6a5",
+        "d1h5",
+        "g7g6",
+        "a2a3",
+        "g6h5",
+        "d4c6",
+        "b7c6",
+        "f2f3",
+        "d8d4",
+        "g1h1",
+        "d4b6",
+        "a1d1",
+        "e4f3",
+        "c3d5",
+        "f3g2",
+        "h1g2",
+        "b6b8",
+        "d5e7",
+        "f8e7",
+        "a4c6",
+        "e8f7",
+        "e1e7",
+        "f7e7",
+        "g2h1",
+        "c8b7",
+        "d1e1",
+        "e7f7",
+        "e1e7",
+        "f7e7",
+        "f4g5",
+        "e7e6",
+        "c6b7",
+        "b8b7",
+        "h1g1",
+        "a8g8",
+        "b2b3",
+        "g8g5",
+        "g1f1",
+        "a5a4",
+        "f1e1",
+        "a4b3",
+        "c2b3",
+        "b7b3",
+        "h2h3",
+        "b3a3",
+        "e1f2",
+        "f5f4",
+        "f2e1",
+        "h5h4",
+        "e1e2",
+        "f4f3",
+        "e2d1",
+        "g5g2",
+        "d1e1",
+        "a3a1"
+      ],
+      "searches": [
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 25351,
+          "reported_time_s": 0.015,
+          "elapsed_ms": 26.958
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 728,
+          "reported_time_s": 0.019,
+          "elapsed_ms": 38.02
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 29914,
+          "reported_time_s": 0.02,
+          "elapsed_ms": 26.061
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 54,
+          "reported_time_s": 0.005,
+          "elapsed_ms": 25.904
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 33809,
+          "reported_time_s": 0.013,
+          "elapsed_ms": 25.986
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 53,
+          "reported_time_s": 0.001,
+          "elapsed_ms": 26.661
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 30853,
+          "reported_time_s": 0.011,
+          "elapsed_ms": 25.965
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 1049,
+          "reported_time_s": 0.019,
+          "elapsed_ms": 26.048
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 6311,
+          "reported_time_s": 0.005,
+          "elapsed_ms": 26.022
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 172,
+          "reported_time_s": 0.005,
+          "elapsed_ms": 25.997
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 29490,
+          "reported_time_s": 0.011,
+          "elapsed_ms": 26.179
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 861,
+          "reported_time_s": 0.017,
+          "elapsed_ms": 25.859
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 36504,
+          "reported_time_s": 0.011,
+          "elapsed_ms": 26.202
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 478,
+          "reported_time_s": 0.012,
+          "elapsed_ms": 26.025
+        },
+        {
+          "engine": 1,
+          "depth": 2,
+          "nodes": 9388,
+          "reported_time_s": 0.003,
+          "elapsed_ms": 25.855
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 509,
+          "reported_time_s": 0.014,
+          "elapsed_ms": 31.819
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 24185,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 34.964
+        },
+        {
+          "engine": 0,
+          "depth": null,
+          "nodes": null,
+          "reported_time_s": null,
+          "elapsed_ms": 26.008
+        },
+        {
+          "engine": 1,
+          "depth": 2,
+          "nodes": 18701,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 26.052
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 484,
+          "reported_time_s": 0.015,
+          "elapsed_ms": 26.058
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 60260,
+          "reported_time_s": 0.021,
+          "elapsed_ms": 25.948
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 48,
+          "reported_time_s": 0.002,
+          "elapsed_ms": 26.203
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 54551,
+          "reported_time_s": 0.02,
+          "elapsed_ms": 26.118
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 494,
+          "reported_time_s": 0.012,
+          "elapsed_ms": 25.844
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 50215,
+          "reported_time_s": 0.016,
+          "elapsed_ms": 26.103
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 56,
+          "reported_time_s": 0.002,
+          "elapsed_ms": 25.834
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 33420,
+          "reported_time_s": 0.012,
+          "elapsed_ms": 25.906
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 211,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 25.923
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 30615,
+          "reported_time_s": 0.017,
+          "elapsed_ms": 27.426
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 799,
+          "reported_time_s": 0.024,
+          "elapsed_ms": 25.913
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 63153,
+          "reported_time_s": 0.017,
+          "elapsed_ms": 25.954
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 404,
+          "reported_time_s": 0.013,
+          "elapsed_ms": 25.844
+        },
+        {
+          "engine": 1,
+          "depth": 2,
+          "nodes": 45255,
+          "reported_time_s": 0.013,
+          "elapsed_ms": 25.927
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 164,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 27.769
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 26289,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 26.321
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 131,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 25.892
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 25780,
+          "reported_time_s": 0.012,
+          "elapsed_ms": 26.186
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 595,
+          "reported_time_s": 0.016,
+          "elapsed_ms": 25.886
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 49333,
+          "reported_time_s": 0.018,
+          "elapsed_ms": 26.02
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 343,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 26.108
+        },
+        {
+          "engine": 1,
+          "depth": 6,
+          "nodes": 23504,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 26.284
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 502,
+          "reported_time_s": 0.012,
+          "elapsed_ms": 25.927
+        },
+        {
+          "engine": 1,
+          "depth": 6,
+          "nodes": 27088,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 25.824
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 158,
+          "reported_time_s": 0.004,
+          "elapsed_ms": 26.044
+        },
+        {
+          "engine": 1,
+          "depth": 6,
+          "nodes": 17483,
+          "reported_time_s": 0.008,
+          "elapsed_ms": 25.84
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 842,
+          "reported_time_s": 0.019,
+          "elapsed_ms": 25.75
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 29711,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 26.442
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 287,
+          "reported_time_s": 0.008,
+          "elapsed_ms": 25.837
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 12736,
+          "reported_time_s": 0.005,
+          "elapsed_ms": 26.03
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 470,
+          "reported_time_s": 0.011,
+          "elapsed_ms": 25.859
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 61631,
+          "reported_time_s": 0.018,
+          "elapsed_ms": 25.897
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 253,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 25.799
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 9856,
+          "reported_time_s": 0.004,
+          "elapsed_ms": 26.102
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 1108,
+          "reported_time_s": 0.023,
+          "elapsed_ms": 25.667
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 9295,
+          "reported_time_s": 0.004,
+          "elapsed_ms": 26.119
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 600,
+          "reported_time_s": 0.013,
+          "elapsed_ms": 25.885
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 8794,
+          "reported_time_s": 0.005,
+          "elapsed_ms": 26.173
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 580,
+          "reported_time_s": 0.013,
+          "elapsed_ms": 26.875
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 11052,
+          "reported_time_s": 0.005,
+          "elapsed_ms": 28.497
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 592,
+          "reported_time_s": 0.015,
+          "elapsed_ms": 26.093
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 8404,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 26.093
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 445,
+          "reported_time_s": 0.012,
+          "elapsed_ms": 26.044
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 11779,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 26.24
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 840,
+          "reported_time_s": 0.019,
+          "elapsed_ms": 25.906
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 11876,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 26.02
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 374,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 26.073
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 9236,
+          "reported_time_s": 0.005,
+          "elapsed_ms": 26.127
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 173,
+          "reported_time_s": 0.008,
+          "elapsed_ms": 27.308
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 8658,
+          "reported_time_s": 0.004,
+          "elapsed_ms": 26.303
+        }
+      ],
+      "elapsed_seconds": 1.865
+    },
+    {
+      "white_engine": 1,
+      "opening_fen": "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
+      "result": "1/2-1/2",
+      "termination": "THREEFOLD_REPETITION",
+      "plies": 84,
+      "moves": [
+        "g8f6",
+        "d2d3",
+        "c6d4",
+        "f3d4",
+        "a7a6",
+        "d4f3",
+        "a6b5",
+        "f3e5",
+        "d7d5",
+        "f2f3",
+        "f8d6",
+        "c1f4",
+        "f6h5",
+        "g2g3",
+        "h5f4",
+        "g3f4",
+        "d8h4",
+        "e1f1",
+        "h4f4",
+        "d3d4",
+        "d5e4",
+        "c2c4",
+        "c8h3",
+        "f1f2",
+        "f4h4",
+        "f2e3",
+        "h4h6",
+        "e3e4",
+        "h6h4",
+        "e4e3",
+        "h4h6",
+        "e3e2",
+        "e8g8",
+        "c4b5",
+        "a8e8",
+        "e2f2",
+        "h6h4",
+        "f2e2",
+        "f7f6",
+        "a2a3",
+        "h3g2",
+        "h1g1",
+        "g2f3",
+        "e2f3",
+        "f6e5",
+        "f3e2",
+        "f8f2",
+        "e2e1",
+        "e5d4",
+        "d1e2",
+        "e8e2",
+        "e1d1",
+        "e2e1",
+        "d1e1",
+        "f2b2",
+        "e1d1",
+        "h4h5",
+        "d1c1",
+        "h5h6",
+        "c1b2",
+        "h6h2",
+        "b1d2",
+        "h2h4",
+        "a3a4",
+        "h4h2",
+        "a1d1",
+        "d6b4",
+        "g1h1",
+        "b4c3",
+        "b2a2",
+        "h2f4",
+        "d2b1",
+        "f4f2",
+        "a2b3",
+        "f2f7",
+        "b3a3",
+        "f7f8",
+        "a3a2",
+        "f8f2",
+        "a2b3",
+        "f2f7",
+        "b3a3",
+        "f7f8",
+        "a3a2"
+      ],
+      "searches": [
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 775,
+          "reported_time_s": 0.019,
+          "elapsed_ms": 75.857
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 10862,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 26.331
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 858,
+          "reported_time_s": 0.021,
+          "elapsed_ms": 26.13
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 19101,
+          "reported_time_s": 0.011,
+          "elapsed_ms": 26.168
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 328,
+          "reported_time_s": 0.017,
+          "elapsed_ms": 26.242
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 32005,
+          "reported_time_s": 0.012,
+          "elapsed_ms": 25.934
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 235,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 25.933
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 17001,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 25.725
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 55,
+          "reported_time_s": 0.002,
+          "elapsed_ms": 26.122
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 37680,
+          "reported_time_s": 0.013,
+          "elapsed_ms": 25.847
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 114,
+          "reported_time_s": 0.003,
+          "elapsed_ms": 26.014
+        },
+        {
+          "engine": 1,
+          "depth": 2,
+          "nodes": 32291,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 25.689
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 147,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 26.378
+        },
+        {
+          "engine": 1,
+          "depth": 1,
+          "nodes": 37916,
+          "reported_time_s": 0.014,
+          "elapsed_ms": 25.797
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 324,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 26.606
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 70840,
+          "reported_time_s": 0.022,
+          "elapsed_ms": 25.638
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 861,
+          "reported_time_s": 0.023,
+          "elapsed_ms": 25.835
+        },
+        {
+          "engine": 1,
+          "depth": 2,
+          "nodes": 2674,
+          "reported_time_s": 0.001,
+          "elapsed_ms": 26.966
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 162,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 26.672
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 33660,
+          "reported_time_s": 0.013,
+          "elapsed_ms": 25.844
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 849,
+          "reported_time_s": 0.018,
+          "elapsed_ms": 26.344
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 56320,
+          "reported_time_s": 0.018,
+          "elapsed_ms": 25.669
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 156,
+          "reported_time_s": 0.005,
+          "elapsed_ms": 26.084
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 38492,
+          "reported_time_s": 0.012,
+          "elapsed_ms": 26.028
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 156,
+          "reported_time_s": 0.005,
+          "elapsed_ms": 25.948
+        },
+        {
+          "engine": 1,
+          "depth": 2,
+          "nodes": 10930,
+          "reported_time_s": 0.004,
+          "elapsed_ms": 26.084
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 365,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 25.909
+        },
+        {
+          "engine": 1,
+          "depth": 2,
+          "nodes": 5587,
+          "reported_time_s": 0.002,
+          "elapsed_ms": 26.093
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 739,
+          "reported_time_s": 0.019,
+          "elapsed_ms": 26.029
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 26476,
+          "reported_time_s": 0.008,
+          "elapsed_ms": 25.948
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 601,
+          "reported_time_s": 0.02,
+          "elapsed_ms": 25.767
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 67191,
+          "reported_time_s": 0.019,
+          "elapsed_ms": 26.049
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 95,
+          "reported_time_s": 0.004,
+          "elapsed_ms": 26.238
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 48091,
+          "reported_time_s": 0.017,
+          "elapsed_ms": 25.904
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 106,
+          "reported_time_s": 0.003,
+          "elapsed_ms": 26.653
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 56009,
+          "reported_time_s": 0.018,
+          "elapsed_ms": 25.938
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 674,
+          "reported_time_s": 0.018,
+          "elapsed_ms": 25.788
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 33471,
+          "reported_time_s": 0.012,
+          "elapsed_ms": 25.726
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 126,
+          "reported_time_s": 0.003,
+          "elapsed_ms": 26.0
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 8210,
+          "reported_time_s": 0.003,
+          "elapsed_ms": 25.769
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 157,
+          "reported_time_s": 0.004,
+          "elapsed_ms": 26.006
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 56670,
+          "reported_time_s": 0.019,
+          "elapsed_ms": 28.04
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 665,
+          "reported_time_s": 0.014,
+          "elapsed_ms": 26.986
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 75813,
+          "reported_time_s": 0.02,
+          "elapsed_ms": 25.962
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 941,
+          "reported_time_s": 0.023,
+          "elapsed_ms": 25.86
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 15897,
+          "reported_time_s": 0.005,
+          "elapsed_ms": 25.816
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 849,
+          "reported_time_s": 0.022,
+          "elapsed_ms": 26.16
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 43655,
+          "reported_time_s": 0.011,
+          "elapsed_ms": 25.74
+        },
+        {
+          "engine": 0,
+          "depth": null,
+          "nodes": null,
+          "reported_time_s": null,
+          "elapsed_ms": 26.12
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 29782,
+          "reported_time_s": 0.011,
+          "elapsed_ms": 25.71
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 829,
+          "reported_time_s": 0.02,
+          "elapsed_ms": 25.941
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 27494,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 26.01
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 179,
+          "reported_time_s": 0.005,
+          "elapsed_ms": 26.102
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 26404,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 25.878
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 752,
+          "reported_time_s": 0.017,
+          "elapsed_ms": 25.794
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 46363,
+          "reported_time_s": 0.013,
+          "elapsed_ms": 25.857
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 323,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 25.97
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 39680,
+          "reported_time_s": 0.024,
+          "elapsed_ms": 26.055
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 324,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 26.105
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 45482,
+          "reported_time_s": 0.016,
+          "elapsed_ms": 25.939
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 925,
+          "reported_time_s": 0.02,
+          "elapsed_ms": 25.837
+        },
+        {
+          "engine": 1,
+          "depth": 6,
+          "nodes": 29900,
+          "reported_time_s": 0.019,
+          "elapsed_ms": 26.076
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 561,
+          "reported_time_s": 0.013,
+          "elapsed_ms": 25.857
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 39732,
+          "reported_time_s": 0.012,
+          "elapsed_ms": 25.759
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 486,
+          "reported_time_s": 0.012,
+          "elapsed_ms": 26.004
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 22464,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 25.817
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 411,
+          "reported_time_s": 0.012,
+          "elapsed_ms": 26.198
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 31832,
+          "reported_time_s": 0.011,
+          "elapsed_ms": 28.609
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 317,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 26.059
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 17445,
+          "reported_time_s": 0.008,
+          "elapsed_ms": 25.985
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 545,
+          "reported_time_s": 0.013,
+          "elapsed_ms": 26.187
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 52558,
+          "reported_time_s": 0.017,
+          "elapsed_ms": 25.923
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 320,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 25.929
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 16566,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 26.038
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 407,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 26.016
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 18100,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 25.812
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 358,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 26.052
+        },
+        {
+          "engine": 1,
+          "depth": 6,
+          "nodes": 52036,
+          "reported_time_s": 0.015,
+          "elapsed_ms": 25.855
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 306,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 26.093
+        },
+        {
+          "engine": 1,
+          "depth": 6,
+          "nodes": 86494,
+          "reported_time_s": 0.024,
+          "elapsed_ms": 26.497
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 407,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 26.093
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 18126,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 25.924
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 358,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 26.087
+        },
+        {
+          "engine": 1,
+          "depth": 6,
+          "nodes": 56915,
+          "reported_time_s": 0.015,
+          "elapsed_ms": 25.969
+        }
+      ],
+      "elapsed_seconds": 2.279
+    },
+    {
+      "white_engine": 0,
+      "opening_fen": "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
+      "result": "0-1",
+      "termination": "CHECKMATE",
+      "plies": 27,
+      "moves": [
+        "a7a5",
+        "e1g1",
+        "a5a4",
+        "b1c3",
+        "a4a3",
+        "d2d4",
+        "a3b2",
+        "a2a3",
+        "b2a1q",
+        "c4f7",
+        "e8f7",
+        "f3g5",
+        "f7g6",
+        "d1g4",
+        "a1c3",
+        "f2f3",
+        "c3d4",
+        "g1h1",
+        "g8h6",
+        "g5h3",
+        "h6g4",
+        "c2c3",
+        "d4d3",
+        "g2g3",
+        "d3f1",
+        "h3g1",
+        "g4f2"
+      ],
+      "searches": [
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 23807,
+          "reported_time_s": 0.017,
+          "elapsed_ms": 25.706
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 73,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 47.9
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 21490,
+          "reported_time_s": 0.013,
+          "elapsed_ms": 25.86
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 140,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 25.763
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 5591,
+          "reported_time_s": 0.002,
+          "elapsed_ms": 26.26
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 268,
+          "reported_time_s": 0.008,
+          "elapsed_ms": 25.843
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 8202,
+          "reported_time_s": 0.003,
+          "elapsed_ms": 26.065
+        },
+        {
+          "engine": 0,
+          "depth": null,
+          "nodes": null,
+          "reported_time_s": null,
+          "elapsed_ms": 25.95
+        },
+        {
+          "engine": 1,
+          "depth": 1,
+          "nodes": 12905,
+          "reported_time_s": 0.004,
+          "elapsed_ms": 26.003
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 207,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 26.041
+        },
+        {
+          "engine": 1,
+          "depth": 1,
+          "nodes": 6900,
+          "reported_time_s": 0.003,
+          "elapsed_ms": 25.986
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 90,
+          "reported_time_s": 0.003,
+          "elapsed_ms": 25.851
+        },
+        {
+          "engine": 1,
+          "depth": 2,
+          "nodes": 35133,
+          "reported_time_s": 0.016,
+          "elapsed_ms": 26.027
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 767,
+          "reported_time_s": 0.017,
+          "elapsed_ms": 25.685
+        },
+        {
+          "engine": 1,
+          "depth": 1,
+          "nodes": 8230,
+          "reported_time_s": 0.003,
+          "elapsed_ms": 25.945
+        },
+        {
+          "engine": 0,
+          "depth": null,
+          "nodes": null,
+          "reported_time_s": null,
+          "elapsed_ms": 25.992
+        },
+        {
+          "engine": 1,
+          "depth": 1,
+          "nodes": 2681,
+          "reported_time_s": 0.001,
+          "elapsed_ms": 26.015
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 510,
+          "reported_time_s": 0.014,
+          "elapsed_ms": 25.772
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 51871,
+          "reported_time_s": 0.018,
+          "elapsed_ms": 25.965
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 1006,
+          "reported_time_s": 0.022,
+          "elapsed_ms": 26.278
+        },
+        {
+          "engine": 1,
+          "depth": 6,
+          "nodes": 55767,
+          "reported_time_s": 0.02,
+          "elapsed_ms": 26.014
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 462,
+          "reported_time_s": 0.014,
+          "elapsed_ms": 25.782
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 83550,
+          "reported_time_s": 0.021,
+          "elapsed_ms": 26.242
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 115,
+          "reported_time_s": 0.003,
+          "elapsed_ms": 25.992
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 80383,
+          "reported_time_s": 0.023,
+          "elapsed_ms": 25.965
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 645,
+          "reported_time_s": 0.017,
+          "elapsed_ms": 26.291
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 30270,
+          "reported_time_s": 0.008,
+          "elapsed_ms": 25.886
+        }
+      ],
+      "elapsed_seconds": 0.737
+    },
+    {
+      "white_engine": 1,
+      "opening_fen": "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
+      "result": "1-0",
+      "termination": "CHECKMATE",
+      "plies": 42,
+      "moves": [
+        "g8f6",
+        "d2d3",
+        "d7d5",
+        "e4d5",
+        "f6d5",
+        "a2a3",
+        "c8g4",
+        "b2b3",
+        "d8d7",
+        "c2c3",
+        "e8c8",
+        "g2g3",
+        "f7f5",
+        "h2h3",
+        "g4h5",
+        "f3e5",
+        "f5f4",
+        "d1h5",
+        "f4f3",
+        "e5d7",
+        "d5e7",
+        "c4e6",
+        "b7b5",
+        "d7f8",
+        "c8b7",
+        "f8d7",
+        "c6e5",
+        "d7e5",
+        "d8f8",
+        "e5f3",
+        "f8f3",
+        "h5f3",
+        "c7c6",
+        "f3f7",
+        "g7g5",
+        "c1e3",
+        "b7a8",
+        "f7e7",
+        "c6c5",
+        "e3c5",
+        "b5b4",
+        "e7a7"
+      ],
+      "searches": [
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 715,
+          "reported_time_s": 0.024,
+          "elapsed_ms": 65.116
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 13799,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 25.959
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 602,
+          "reported_time_s": 0.02,
+          "elapsed_ms": 25.711
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 32628,
+          "reported_time_s": 0.015,
+          "elapsed_ms": 25.768
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 734,
+          "reported_time_s": 0.015,
+          "elapsed_ms": 25.681
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 8002,
+          "reported_time_s": 0.003,
+          "elapsed_ms": 25.867
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 115,
+          "reported_time_s": 0.004,
+          "elapsed_ms": 26.327
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 23485,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 26.274
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 326,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 25.767
+        },
+        {
+          "engine": 1,
+          "depth": 2,
+          "nodes": 8788,
+          "reported_time_s": 0.004,
+          "elapsed_ms": 25.836
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 154,
+          "reported_time_s": 0.003,
+          "elapsed_ms": 26.001
+        },
+        {
+          "engine": 1,
+          "depth": 2,
+          "nodes": 13453,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 25.785
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 116,
+          "reported_time_s": 0.004,
+          "elapsed_ms": 26.155
+        },
+        {
+          "engine": 1,
+          "depth": 2,
+          "nodes": 14109,
+          "reported_time_s": 0.008,
+          "elapsed_ms": 26.024
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 334,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 25.985
+        },
+        {
+          "engine": 1,
+          "depth": 2,
+          "nodes": 6518,
+          "reported_time_s": 0.002,
+          "elapsed_ms": 25.838
+        },
+        {
+          "engine": 0,
+          "depth": null,
+          "nodes": null,
+          "reported_time_s": null,
+          "elapsed_ms": 25.938
+        },
+        {
+          "engine": 1,
+          "depth": 1,
+          "nodes": 43951,
+          "reported_time_s": 0.013,
+          "elapsed_ms": 25.735
+        },
+        {
+          "engine": 0,
+          "depth": null,
+          "nodes": null,
+          "reported_time_s": null,
+          "elapsed_ms": 25.818
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 47369,
+          "reported_time_s": 0.016,
+          "elapsed_ms": 25.736
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 105,
+          "reported_time_s": 0.003,
+          "elapsed_ms": 25.978
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 34887,
+          "reported_time_s": 0.013,
+          "elapsed_ms": 26.082
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 215,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 26.08
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 64627,
+          "reported_time_s": 0.023,
+          "elapsed_ms": 25.706
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 508,
+          "reported_time_s": 0.014,
+          "elapsed_ms": 25.797
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 39582,
+          "reported_time_s": 0.015,
+          "elapsed_ms": 25.824
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 86,
+          "reported_time_s": 0.003,
+          "elapsed_ms": 25.864
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 56378,
+          "reported_time_s": 0.019,
+          "elapsed_ms": 25.69
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 673,
+          "reported_time_s": 0.016,
+          "elapsed_ms": 25.865
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 25714,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 25.892
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 219,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 26.029
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 25706,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 25.87
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 99,
+          "reported_time_s": 0.005,
+          "elapsed_ms": 26.241
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 19897,
+          "reported_time_s": 0.008,
+          "elapsed_ms": 25.881
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 749,
+          "reported_time_s": 0.022,
+          "elapsed_ms": 25.854
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 21365,
+          "reported_time_s": 0.008,
+          "elapsed_ms": 25.772
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 287,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 26.187
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 33591,
+          "reported_time_s": 0.013,
+          "elapsed_ms": 25.772
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 317,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 25.816
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 30731,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 25.919
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 604,
+          "reported_time_s": 0.011,
+          "elapsed_ms": 26.081
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 20652,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 25.929
+        }
+      ],
+      "elapsed_seconds": 1.149
+    },
+    {
+      "white_engine": 0,
+      "opening_fen": "rnbqkbnr/pp2pppp/3p4/8/3NP3/8/PPP2PPP/RNBQKB1R b KQkq - 0 4",
+      "result": "*",
+      "termination": "PLY_LIMIT",
+      "plies": 120,
+      "moves": [
+        "a7a5",
+        "f1b5",
+        "b8d7",
+        "b1c3",
+        "b7b6",
+        "c1g5",
+        "g7g6",
+        "e4e5",
+        "d6e5",
+        "d4c6",
+        "d8c7",
+        "c3d5",
+        "c7d6",
+        "d5b6",
+        "c8b7",
+        "b6a8",
+        "b7a8",
+        "d1d6",
+        "e7d6",
+        "c6a5",
+        "f7f6",
+        "g5d2",
+        "a8g2",
+        "h1g1",
+        "g2f3",
+        "a2a4",
+        "e5e4",
+        "b2b3",
+        "d6d5",
+        "b3b4",
+        "f6f5",
+        "a1a3",
+        "d5d4",
+        "a5c4",
+        "g8f6",
+        "a4a5",
+        "f5f4",
+        "c4e5",
+        "e4e3",
+        "e5f3",
+        "e3d2",
+        "e1e2",
+        "d2d1q",
+        "e2d1",
+        "f6d5",
+        "d1c1",
+        "d5c3",
+        "g1e1",
+        "e8d8",
+        "f3d4",
+        "c3b5",
+        "d4b5",
+        "f8b4",
+        "a3c3",
+        "f4f3",
+        "c1b2",
+        "g6g5",
+        "a5a6",
+        "g5g4",
+        "a6a7",
+        "b4c3",
+        "b2c3",
+        "d7b6",
+        "c3d4",
+        "h7h5",
+        "e1e6",
+        "b6a8",
+        "c2c4",
+        "h8h7",
+        "d4e5",
+        "h7e7",
+        "e6e7",
+        "d8e7",
+        "b5d4",
+        "a8b6",
+        "c4c5",
+        "b6a8",
+        "d4f5",
+        "e7f7",
+        "e5d6",
+        "h5h4",
+        "f5h6",
+        "f7f6",
+        "h6g4",
+        "f6f5",
+        "g4e3",
+        "f5e4",
+        "d6c6",
+        "e4d3",
+        "c6b7",
+        "d3e2",
+        "e3g4",
+        "h4h3",
+        "b7a8",
+        "e2d1",
+        "g4e5",
+        "d1e1",
+        "c5c6",
+        "e1f1",
+        "c6c7",
+        "f1f2",
+        "c7c8q",
+        "f2e2",
+        "a8b7",
+        "f3f2",
+        "e5c4",
+        "f2f1q",
+        "a7a8q",
+        "f1b1",
+        "b7a7",
+        "b1a1",
+        "c4a3",
+        "a1a3",
+        "a7b6",
+        "a3b2",
+        "b6c7",
+        "b2c1",
+        "a8c6",
+        "c1f4",
+        "c7d7"
+      ],
+      "searches": [
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 16501,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 25.884
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 388,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 34.306
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 9173,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 25.882
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 383,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 25.731
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 10641,
+          "reported_time_s": 0.004,
+          "elapsed_ms": 25.977
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 946,
+          "reported_time_s": 0.014,
+          "elapsed_ms": 25.8
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 20045,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 25.84
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 70,
+          "reported_time_s": 0.002,
+          "elapsed_ms": 25.793
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 22249,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 25.906
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 1060,
+          "reported_time_s": 0.017,
+          "elapsed_ms": 25.754
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 35918,
+          "reported_time_s": 0.012,
+          "elapsed_ms": 25.846
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 103,
+          "reported_time_s": 0.002,
+          "elapsed_ms": 25.787
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 51488,
+          "reported_time_s": 0.015,
+          "elapsed_ms": 26.133
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 464,
+          "reported_time_s": 0.016,
+          "elapsed_ms": 26.045
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 65118,
+          "reported_time_s": 0.02,
+          "elapsed_ms": 25.754
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 312,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 25.836
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 27142,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 25.922
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 1286,
+          "reported_time_s": 0.024,
+          "elapsed_ms": 25.664
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 34400,
+          "reported_time_s": 0.011,
+          "elapsed_ms": 25.68
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 418,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 25.868
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 30160,
+          "reported_time_s": 0.013,
+          "elapsed_ms": 25.931
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 501,
+          "reported_time_s": 0.014,
+          "elapsed_ms": 25.809
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 30057,
+          "reported_time_s": 0.011,
+          "elapsed_ms": 26.143
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 542,
+          "reported_time_s": 0.015,
+          "elapsed_ms": 26.044
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 34192,
+          "reported_time_s": 0.013,
+          "elapsed_ms": 26.231
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 278,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 26.151
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 28468,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 25.778
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 229,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 25.894
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 22898,
+          "reported_time_s": 0.008,
+          "elapsed_ms": 25.985
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 403,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 25.893
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 48224,
+          "reported_time_s": 0.014,
+          "elapsed_ms": 25.862
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 633,
+          "reported_time_s": 0.016,
+          "elapsed_ms": 26.065
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 52307,
+          "reported_time_s": 0.015,
+          "elapsed_ms": 25.928
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 968,
+          "reported_time_s": 0.022,
+          "elapsed_ms": 25.685
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 27740,
+          "reported_time_s": 0.008,
+          "elapsed_ms": 26.12
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 750,
+          "reported_time_s": 0.015,
+          "elapsed_ms": 25.903
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 74651,
+          "reported_time_s": 0.02,
+          "elapsed_ms": 26.05
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 91,
+          "reported_time_s": 0.002,
+          "elapsed_ms": 25.898
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 28680,
+          "reported_time_s": 0.017,
+          "elapsed_ms": 26.532
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 405,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 25.911
+        },
+        {
+          "engine": 1,
+          "depth": 6,
+          "nodes": 46833,
+          "reported_time_s": 0.014,
+          "elapsed_ms": 25.914
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 230,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 25.948
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 16117,
+          "reported_time_s": 0.005,
+          "elapsed_ms": 25.96
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 1079,
+          "reported_time_s": 0.023,
+          "elapsed_ms": 25.707
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 55567,
+          "reported_time_s": 0.017,
+          "elapsed_ms": 26.421
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 240,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 25.876
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 21433,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 26.31
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 570,
+          "reported_time_s": 0.016,
+          "elapsed_ms": 25.949
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 19409,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 26.336
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 437,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 25.75
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 39435,
+          "reported_time_s": 0.013,
+          "elapsed_ms": 25.916
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 410,
+          "reported_time_s": 0.008,
+          "elapsed_ms": 26.159
+        },
+        {
+          "engine": 1,
+          "depth": 6,
+          "nodes": 61784,
+          "reported_time_s": 0.02,
+          "elapsed_ms": 25.91
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 355,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 25.923
+        },
+        {
+          "engine": 1,
+          "depth": 6,
+          "nodes": 45093,
+          "reported_time_s": 0.016,
+          "elapsed_ms": 25.943
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 260,
+          "reported_time_s": 0.004,
+          "elapsed_ms": 25.877
+        },
+        {
+          "engine": 1,
+          "depth": 6,
+          "nodes": 46075,
+          "reported_time_s": 0.02,
+          "elapsed_ms": 25.889
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 341,
+          "reported_time_s": 0.008,
+          "elapsed_ms": 26.37
+        },
+        {
+          "engine": 1,
+          "depth": 6,
+          "nodes": 43830,
+          "reported_time_s": 0.015,
+          "elapsed_ms": 25.757
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 445,
+          "reported_time_s": 0.011,
+          "elapsed_ms": 25.877
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 46670,
+          "reported_time_s": 0.012,
+          "elapsed_ms": 25.899
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 380,
+          "reported_time_s": 0.008,
+          "elapsed_ms": 25.951
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 40063,
+          "reported_time_s": 0.012,
+          "elapsed_ms": 25.846
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 722,
+          "reported_time_s": 0.012,
+          "elapsed_ms": 25.759
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 34356,
+          "reported_time_s": 0.011,
+          "elapsed_ms": 25.851
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 441,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 26.043
+        },
+        {
+          "engine": 1,
+          "depth": 6,
+          "nodes": 79099,
+          "reported_time_s": 0.024,
+          "elapsed_ms": 25.871
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 145,
+          "reported_time_s": 0.003,
+          "elapsed_ms": 26.081
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 15748,
+          "reported_time_s": 0.005,
+          "elapsed_ms": 26.09
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 403,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 25.944
+        },
+        {
+          "engine": 1,
+          "depth": 6,
+          "nodes": 56970,
+          "reported_time_s": 0.017,
+          "elapsed_ms": 25.889
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 778,
+          "reported_time_s": 0.018,
+          "elapsed_ms": 25.837
+        },
+        {
+          "engine": 1,
+          "depth": 6,
+          "nodes": 28772,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 25.819
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 529,
+          "reported_time_s": 0.011,
+          "elapsed_ms": 26.142
+        },
+        {
+          "engine": 1,
+          "depth": 6,
+          "nodes": 21540,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 25.972
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 846,
+          "reported_time_s": 0.017,
+          "elapsed_ms": 25.797
+        },
+        {
+          "engine": 1,
+          "depth": 6,
+          "nodes": 20588,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 25.932
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 731,
+          "reported_time_s": 0.014,
+          "elapsed_ms": 25.762
+        },
+        {
+          "engine": 1,
+          "depth": 7,
+          "nodes": 49385,
+          "reported_time_s": 0.015,
+          "elapsed_ms": 25.799
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 835,
+          "reported_time_s": 0.02,
+          "elapsed_ms": 25.745
+        },
+        {
+          "engine": 1,
+          "depth": 7,
+          "nodes": 47150,
+          "reported_time_s": 0.015,
+          "elapsed_ms": 25.919
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 559,
+          "reported_time_s": 0.012,
+          "elapsed_ms": 25.986
+        },
+        {
+          "engine": 1,
+          "depth": 8,
+          "nodes": 22353,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 26.267
+        },
+        {
+          "engine": 0,
+          "depth": 4,
+          "nodes": 913,
+          "reported_time_s": 0.019,
+          "elapsed_ms": 25.855
+        },
+        {
+          "engine": 1,
+          "depth": 8,
+          "nodes": 33131,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 25.977
+        },
+        {
+          "engine": 0,
+          "depth": 4,
+          "nodes": 1111,
+          "reported_time_s": 0.022,
+          "elapsed_ms": 25.853
+        },
+        {
+          "engine": 1,
+          "depth": 8,
+          "nodes": 52553,
+          "reported_time_s": 0.016,
+          "elapsed_ms": 26.235
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 681,
+          "reported_time_s": 0.014,
+          "elapsed_ms": 25.871
+        },
+        {
+          "engine": 1,
+          "depth": 8,
+          "nodes": 64122,
+          "reported_time_s": 0.021,
+          "elapsed_ms": 25.857
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 569,
+          "reported_time_s": 0.013,
+          "elapsed_ms": 25.893
+        },
+        {
+          "engine": 1,
+          "depth": 8,
+          "nodes": 50102,
+          "reported_time_s": 0.015,
+          "elapsed_ms": 25.926
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 611,
+          "reported_time_s": 0.019,
+          "elapsed_ms": 26.064
+        },
+        {
+          "engine": 1,
+          "depth": 8,
+          "nodes": 24001,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 26.112
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 388,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 25.847
+        },
+        {
+          "engine": 1,
+          "depth": 8,
+          "nodes": 22171,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 26.423
+        },
+        {
+          "engine": 0,
+          "depth": 4,
+          "nodes": 881,
+          "reported_time_s": 0.017,
+          "elapsed_ms": 27.193
+        },
+        {
+          "engine": 1,
+          "depth": 8,
+          "nodes": 70377,
+          "reported_time_s": 0.021,
+          "elapsed_ms": 26.081
+        },
+        {
+          "engine": 0,
+          "depth": 4,
+          "nodes": 1253,
+          "reported_time_s": 0.023,
+          "elapsed_ms": 25.757
+        },
+        {
+          "engine": 1,
+          "depth": 8,
+          "nodes": 84979,
+          "reported_time_s": 0.023,
+          "elapsed_ms": 25.817
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 446,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 25.835
+        },
+        {
+          "engine": 1,
+          "depth": 7,
+          "nodes": 72365,
+          "reported_time_s": 0.023,
+          "elapsed_ms": 25.742
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 876,
+          "reported_time_s": 0.016,
+          "elapsed_ms": 26.024
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 14906,
+          "reported_time_s": 0.005,
+          "elapsed_ms": 25.824
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 392,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 25.84
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 17609,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 26.114
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 1076,
+          "reported_time_s": 0.018,
+          "elapsed_ms": 25.832
+        },
+        {
+          "engine": 1,
+          "depth": 6,
+          "nodes": 66608,
+          "reported_time_s": 0.018,
+          "elapsed_ms": 25.895
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 78,
+          "reported_time_s": 0.002,
+          "elapsed_ms": 26.043
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 21003,
+          "reported_time_s": 0.008,
+          "elapsed_ms": 25.853
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 511,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 25.792
+        },
+        {
+          "engine": 1,
+          "depth": 6,
+          "nodes": 44361,
+          "reported_time_s": 0.016,
+          "elapsed_ms": 25.901
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 1102,
+          "reported_time_s": 0.019,
+          "elapsed_ms": 25.829
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 29010,
+          "reported_time_s": 0.011,
+          "elapsed_ms": 25.855
+        },
+        {
+          "engine": 0,
+          "depth": 3,
+          "nodes": 1104,
+          "reported_time_s": 0.019,
+          "elapsed_ms": 26.036
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 22751,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 25.797
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 404,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 25.889
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 30610,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 25.858
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 166,
+          "reported_time_s": 0.004,
+          "elapsed_ms": 26.057
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 21567,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 25.873
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 446,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 25.965
+        }
+      ],
+      "elapsed_seconds": 3.172
+    },
+    {
+      "white_engine": 1,
+      "opening_fen": "rnbqkbnr/pp2pppp/3p4/8/3NP3/8/PPP2PPP/RNBQKB1R b KQkq - 0 4",
+      "result": "0-1",
+      "termination": "CHECKMATE",
+      "plies": 37,
+      "moves": [
+        "g8f6",
+        "f2f3",
+        "a7a6",
+        "a2a3",
+        "e7e5",
+        "d4e2",
+        "d6d5",
+        "f3f4",
+        "f6e4",
+        "f4e5",
+        "b8c6",
+        "b1c3",
+        "e4c3",
+        "e2c3",
+        "c8e6",
+        "c1f4",
+        "f8c5",
+        "b2b3",
+        "c5d4",
+        "f4d2",
+        "d4e5",
+        "h2h3",
+        "e5g3",
+        "e1e2",
+        "d5d4",
+        "c3b1",
+        "a8c8",
+        "a3a4",
+        "d4d3",
+        "e2e3",
+        "d8d4",
+        "e3f3",
+        "d4f2",
+        "f3e4",
+        "f7f5",
+        "e4d3",
+        "c6e5"
+      ],
+      "searches": [
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 441,
+          "reported_time_s": 0.011,
+          "elapsed_ms": 66.265
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 23454,
+          "reported_time_s": 0.014,
+          "elapsed_ms": 26.776
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 483,
+          "reported_time_s": 0.012,
+          "elapsed_ms": 25.834
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 39931,
+          "reported_time_s": 0.017,
+          "elapsed_ms": 25.689
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 552,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 25.905
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 19601,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 25.689
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 515,
+          "reported_time_s": 0.011,
+          "elapsed_ms": 25.853
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 5726,
+          "reported_time_s": 0.002,
+          "elapsed_ms": 25.887
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 838,
+          "reported_time_s": 0.016,
+          "elapsed_ms": 25.749
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 21708,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 25.816
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 758,
+          "reported_time_s": 0.013,
+          "elapsed_ms": 25.775
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 4339,
+          "reported_time_s": 0.003,
+          "elapsed_ms": 25.888
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 955,
+          "reported_time_s": 0.024,
+          "elapsed_ms": 25.971
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 18955,
+          "reported_time_s": 0.007,
+          "elapsed_ms": 25.777
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 631,
+          "reported_time_s": 0.013,
+          "elapsed_ms": 26.083
+        },
+        {
+          "engine": 1,
+          "depth": 2,
+          "nodes": 28968,
+          "reported_time_s": 0.009,
+          "elapsed_ms": 25.841
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 80,
+          "reported_time_s": 0.002,
+          "elapsed_ms": 25.957
+        },
+        {
+          "engine": 1,
+          "depth": 1,
+          "nodes": 6585,
+          "reported_time_s": 0.003,
+          "elapsed_ms": 25.858
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 156,
+          "reported_time_s": 0.004,
+          "elapsed_ms": 26.029
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 36771,
+          "reported_time_s": 0.014,
+          "elapsed_ms": 25.718
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 989,
+          "reported_time_s": 0.02,
+          "elapsed_ms": 26.369
+        },
+        {
+          "engine": 1,
+          "depth": 3,
+          "nodes": 52039,
+          "reported_time_s": 0.016,
+          "elapsed_ms": 25.722
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 641,
+          "reported_time_s": 0.012,
+          "elapsed_ms": 26.083
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 40584,
+          "reported_time_s": 0.014,
+          "elapsed_ms": 25.941
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 360,
+          "reported_time_s": 0.006,
+          "elapsed_ms": 26.002
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 48580,
+          "reported_time_s": 0.018,
+          "elapsed_ms": 25.839
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 750,
+          "reported_time_s": 0.014,
+          "elapsed_ms": 26.136
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 62090,
+          "reported_time_s": 0.019,
+          "elapsed_ms": 25.933
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 560,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 26.277
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 43887,
+          "reported_time_s": 0.013,
+          "elapsed_ms": 25.872
+        },
+        {
+          "engine": 0,
+          "depth": 2,
+          "nodes": 823,
+          "reported_time_s": 0.015,
+          "elapsed_ms": 25.932
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 42555,
+          "reported_time_s": 0.013,
+          "elapsed_ms": 25.77
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 729,
+          "reported_time_s": 0.015,
+          "elapsed_ms": 26.232
+        },
+        {
+          "engine": 1,
+          "depth": 4,
+          "nodes": 45414,
+          "reported_time_s": 0.014,
+          "elapsed_ms": 25.886
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 160,
+          "reported_time_s": 0.004,
+          "elapsed_ms": 26.088
+        },
+        {
+          "engine": 1,
+          "depth": 5,
+          "nodes": 29522,
+          "reported_time_s": 0.01,
+          "elapsed_ms": 26.014
+        },
+        {
+          "engine": 0,
+          "depth": 1,
+          "nodes": 99,
+          "reported_time_s": 0.002,
+          "elapsed_ms": 26.023
+        }
+      ],
+      "elapsed_seconds": 1.019
+    }
+  ]
+}
