@@ -38,8 +38,9 @@ python3 tools/bench.py target/release/farzin --depth 4 --json /tmp/farzin-bench.
 ```sh
 python3 -m pip install python-chess==1.999
 python3 tools/match.py /path/to/engine-a /path/to/engine-b --pairs 1 --depth 3 --json match.json
+python3 tools/match.py /path/to/engine-a /path/to/engine-b --pairs 3 --movetime-ms 100 --openings tools/openings-smoke.fen --json match-time.json
 ```
 
-ابزار رنگ‌ها را جابه‌جا، قانونی‌بودن حرکت‌ها را کنترل و نتیجه و حرکت‌های هر بازی را ثبت می‌کند. بازی‌هایی که به سقف حرکت می‌رسند ناتمام ثبت می‌شوند. چند بازی آزمایشی معیار معتبری برای تخمین Elo نیستند.
+ابزار رنگ‌ها را جابه‌جا، قانونی‌بودن حرکت‌ها را کنترل و نتیجه و حرکت‌های هر بازی را ثبت می‌کند. گشایش‌های نمونه صرفاً برای بررسی ابزار هستند و مجموعهٔ آماری متوازن محسوب نمی‌شوند. هر دو موتور باید محدودیت انتخاب‌شده را واقعاً پشتیبانی کنند؛ مثلاً نسخهٔ پایهٔ اولیهٔ فرزین `movetime` را پشتیبانی نمی‌کند. بازی‌هایی که به سقف حرکت می‌رسند ناتمام ثبت می‌شوند. چند بازی آزمایشی معیار معتبری برای تخمین Elo نیستند.
 
 جزئیات طراحی و مسیر توسعه در [docs/architecture.md](docs/architecture.md) آمده است.
