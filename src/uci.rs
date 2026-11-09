@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::io::{self, BufRead, Write};
 use std::sync::{
     atomic::{AtomicBool, AtomicU64, Ordering},
-    mpsc, Arc,
+    mpsc, Arc, Mutex,
 };
 use std::thread::{self, JoinHandle};
 use std::time::{Duration, Instant};
@@ -13,8 +13,27 @@ use std::time::{Duration, Instant};
 const MATE: i32 = 30_000;
 
 use crate::game::{position, Game};
-use crate::search::{best_move, best_move_window, SearchControl};
+use crate::search::{root_search, Heuristics, SearchControl, SearchFeatures};
 type Worker = (Arc<AtomicBool>, Arc<AtomicBool>, JoinHandle<()>);
+
+/// Ownership of the transposition table between successive `go` commands.
+///
+/// The table is moved into a single-threaded search and returned when the
+/// search finishes. Any clear increments `epoch`, so a search that started
+/// before the clear can never return a stale table.
+#[derive(Default)]
+struct HashSlot {
+    epoch: u64,
+    table: Option<Table>,
+}
+
+type SharedHash = Arc<Mutex<HashSlot>>;
+
+fn clear_hash(slot: &SharedHash) {
+    let mut slot = slot.lock().unwrap_or_else(|poison| poison.into_inner());
+    slot.epoch = slot.epoch.wrapping_add(1);
+    slot.table = None;
+}
 
 #[derive(Clone, Copy)]
 struct SearchOptions {
@@ -25,6 +44,8 @@ struct SearchOptions {
     aspiration: bool,
     positional: bool,
     threads: usize,
+    features: SearchFeatures,
+    persistent_hash: bool,
     #[cfg(feature = "nnue-stack")]
     nnue_stack: bool,
     nnue_simd: bool,
@@ -33,15 +54,21 @@ struct SearchOptions {
 struct IterationState {
     hints: HashMap<u64, chess::ChessMove>,
     table: Table,
+    heuristics: Box<Heuristics>,
     nodes: u64,
     previous_score: Option<i32>,
 }
 
 impl IterationState {
     fn new(entries: usize) -> Self {
+        Self::with_table(Table::new(entries))
+    }
+
+    fn with_table(table: Table) -> Self {
         Self {
             hints: HashMap::new(),
-            table: Table::new(entries),
+            table,
+            heuristics: Box::new(Heuristics::new()),
             nodes: 0,
             previous_score: None,
         }
@@ -55,39 +82,63 @@ impl IterationState {
         aspiration: bool,
     ) -> Option<(chess::ChessMove, i32, Vec<chess::ChessMove>)> {
         self.table.next_generation();
+        let persistent = control.features.persistent_history;
+        // Without persistence every root call starts from empty heuristics,
+        // exactly as in Phase 3. With it, history is aged once per depth and
+        // shared by the aspiration trial and its re-search.
+        if persistent {
+            self.heuristics.age();
+        }
         let window = self
             .previous_score
             .filter(|score| aspiration && score.abs() < MATE - 100)
             .map(|score| ((score - 50).max(-MATE), (score + 50).min(MATE)));
+        let full = (-MATE, MATE);
         let result = if let Some(bounds) = window {
-            let trial = best_move_window(
+            if !persistent {
+                self.heuristics.reset();
+            }
+            let trial = root_search(
                 game,
                 depth,
                 control,
                 &mut self.hints,
                 &mut self.table,
                 &mut self.nodes,
+                &mut self.heuristics,
                 bounds,
             );
             match trial {
-                Some((_, score, _)) if score <= bounds.0 || score >= bounds.1 => best_move(
-                    game,
-                    depth,
-                    control,
-                    &mut self.hints,
-                    &mut self.table,
-                    &mut self.nodes,
-                ),
+                Some((_, score, _)) if score <= bounds.0 || score >= bounds.1 => {
+                    if !persistent {
+                        self.heuristics.reset();
+                    }
+                    root_search(
+                        game,
+                        depth,
+                        control,
+                        &mut self.hints,
+                        &mut self.table,
+                        &mut self.nodes,
+                        &mut self.heuristics,
+                        full,
+                    )
+                }
                 _ => trial,
             }
         } else {
-            best_move(
+            if !persistent {
+                self.heuristics.reset();
+            }
+            root_search(
                 game,
                 depth,
                 control,
                 &mut self.hints,
                 &mut self.table,
                 &mut self.nodes,
+                &mut self.heuristics,
+                full,
             )
         };
         if let Some((_, score, _)) = &result {
@@ -112,6 +163,7 @@ fn start_search(
     args: &str,
     options: SearchOptions,
     network: Option<Arc<farzin::caissa::Network>>,
+    hash: &SharedHash,
 ) -> Worker {
     let words: Vec<_> = args.split_whitespace().collect();
     let number = |key: &str| {
@@ -146,6 +198,7 @@ fn start_search(
         exchange_ordering: options.exchange_ordering,
         pvs: options.pvs,
         positional: options.positional,
+        features: options.features,
         #[cfg(feature = "nnue-stack")]
         stack: RefCell::new(if options.nnue_stack {
             network
@@ -169,9 +222,22 @@ fn start_search(
                 .map(|net| farzin::caissa::CachedEvaluator::new(net, &game.board)),
         ),
     };
+    let hash = Arc::clone(hash);
+    let hash_return = Arc::clone(&hash);
     let handle = thread::spawn(move || {
         let mut best = MoveGen::new_legal(&game.board).next();
-        let mut state = IterationState::new(Table::entries_for_megabytes(options.hash_mb));
+        let entries = Table::entries_for_megabytes(options.hash_mb);
+        let (epoch, reused) = {
+            let mut slot = hash.lock().unwrap_or_else(|poison| poison.into_inner());
+            let reused = slot
+                .table
+                .take()
+                .filter(|table| options.persistent_hash && table.capacity() == entries);
+            (slot.epoch, reused)
+        };
+        let reused_table = reused.is_some();
+        let mut state = IterationState::with_table(reused.unwrap_or_else(|| Table::new(entries)));
+        state.table.reset_stats();
         for current_depth in 1..=depth {
             let result = state.search(&mut game, current_depth, &control, options.aspiration);
             if let Some((mv, score, pv)) = result {
@@ -203,11 +269,23 @@ fn start_search(
                 state.table.probes, state.table.hits, state.table.cutoffs
             );
             println!(
+                "info string tt reused {reused_table} hashfull {}",
+                state.table.hashfull()
+            );
+            println!(
                 "bestmove {}",
                 best.map(|m| m.to_string()).unwrap_or_else(|| "0000".into())
             );
         }
         let _ = io::stdout().flush();
+        if options.persistent_hash {
+            let mut slot = hash_return
+                .lock()
+                .unwrap_or_else(|poison| poison.into_inner());
+            if slot.epoch == epoch {
+                slot.table = Some(state.table);
+            }
+        }
     });
     (stop, suppress, handle)
 }
@@ -264,6 +342,7 @@ fn start_parallel_search(
                     exchange_ordering: options.exchange_ordering,
                     pvs: options.pvs,
                     positional: options.positional,
+                    features: options.features,
                     #[cfg(feature = "nnue-stack")]
                     stack: RefCell::new(if options.nnue_stack {
                         local_network.as_ref().map(|net| {
@@ -404,32 +483,41 @@ pub(crate) fn run() {
         aspiration: false,
         positional: false,
         threads: 1,
+        features: SearchFeatures::default(),
+        persistent_hash: false,
         #[cfg(feature = "nnue-stack")]
         nnue_stack: false,
         nnue_simd: false,
     };
     let mut network: Option<Arc<farzin::caissa::Network>> = None;
+    let hash: SharedHash = Arc::default();
     for line in stdin.lock().lines() {
         let Ok(line) = line else { break };
         let line = line.trim();
+        if line.starts_with("setoption ") {
+            // Stored scores depend on the evaluator and search configuration,
+            // so any option change invalidates a persistent table.
+            clear_hash(&hash);
+        }
         if line == "uci" {
             let stack_option = if cfg!(feature = "nnue-stack") {
                 "option name NNUE Stack type check default false\n"
             } else {
                 ""
             };
-            println!("id name Farzin 0.1.0\nid author Farzin contributors\noption name Hash type spin default 16 min 1 max 256\noption name Clear Hash type button\noption name Threads type spin default 1 min 1 max 8\noption name Move Overhead type spin default 20 min 0 max 5000\noption name Exchange Ordering type check default false\noption name PVS type check default false\noption name Aspiration type check default false\noption name Positional type check default false\noption name NNUE SIMD type check default false\n{stack_option}option name EvalFile type string default <empty>\nuciok");
+            println!("id name Farzin 0.1.0\nid author Farzin contributors\noption name Hash type spin default 16 min 1 max 256\noption name Clear Hash type button\noption name Threads type spin default 1 min 1 max 8\noption name Move Overhead type spin default 20 min 0 max 5000\noption name Exchange Ordering type check default false\noption name PVS type check default false\noption name Aspiration type check default false\noption name Positional type check default false\noption name NNUE SIMD type check default false\noption name LMR type check default false\noption name Null Move type check default false\noption name Persistent History type check default false\noption name Persistent Hash type check default false\n{stack_option}option name EvalFile type string default <empty>\nuciok");
         } else if line == "isready" {
             println!("readyok");
         } else if line == "ucinewgame" {
             stop_search(&mut worker, true);
+            clear_hash(&hash);
             game = Game::new(Board::default(), 0);
         } else if let Some(value) = line.strip_prefix("setoption name Hash value ") {
             if let Ok(value) = value.parse::<usize>() {
                 options.hash_mb = value.clamp(1, 256);
             }
         } else if line == "setoption name Clear Hash" {
-            // Tables are per-search, so no state survives a completed search.
+            clear_hash(&hash);
         } else if let Some(value) = line.strip_prefix("setoption name Threads value ") {
             if let Ok(value) = value.parse::<usize>() {
                 options.threads = value.clamp(1, 8);
@@ -449,6 +537,22 @@ pub(crate) fn run() {
         } else if let Some(value) = line.strip_prefix("setoption name Aspiration value ") {
             if value == "true" || value == "false" {
                 options.aspiration = value == "true";
+            }
+        } else if let Some(value) = line.strip_prefix("setoption name LMR value ") {
+            if value == "true" || value == "false" {
+                options.features.lmr = value == "true";
+            }
+        } else if let Some(value) = line.strip_prefix("setoption name Null Move value ") {
+            if value == "true" || value == "false" {
+                options.features.null_move = value == "true";
+            }
+        } else if let Some(value) = line.strip_prefix("setoption name Persistent History value ") {
+            if value == "true" || value == "false" {
+                options.features.persistent_history = value == "true";
+            }
+        } else if let Some(value) = line.strip_prefix("setoption name Persistent Hash value ") {
+            if value == "true" || value == "false" {
+                options.persistent_hash = value == "true";
             }
         } else if let Some(value) = line.strip_prefix("setoption name Positional value ") {
             if value == "true" || value == "false" {
@@ -499,7 +603,13 @@ pub(crate) fn run() {
             }
         } else if line == "go" || line.starts_with("go ") {
             stop_search(&mut worker, true);
-            worker = Some(start_search(game.clone(), line, options, network.clone()));
+            worker = Some(start_search(
+                game.clone(),
+                line,
+                options,
+                network.clone(),
+                &hash,
+            ));
         } else if line == "stop" {
             stop_search(&mut worker, false);
         } else if line == "quit" {
@@ -514,7 +624,7 @@ pub(crate) fn run() {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::search::{quiescence, MAX_QPLY};
+    use crate::search::{best_move, quiescence, MAX_QPLY};
     use chess::{BoardStatus, ChessMove};
     use std::str::FromStr;
     fn perft(board: &Board, depth: u8) -> u64 {
@@ -625,6 +735,7 @@ mod tests {
             exchange_ordering: false,
             pvs: false,
             positional: false,
+            features: crate::search::SearchFeatures::default(),
             cache: RefCell::new(None),
             #[cfg(feature = "nnue-stack")]
             stack: RefCell::new(None),
@@ -648,6 +759,7 @@ mod tests {
             exchange_ordering: false,
             pvs: false,
             positional: false,
+            features: crate::search::SearchFeatures::default(),
             cache: RefCell::new(None),
             #[cfg(feature = "nnue-stack")]
             stack: RefCell::new(None),
@@ -667,6 +779,7 @@ mod tests {
             exchange_ordering: false,
             pvs: false,
             positional: false,
+            features: crate::search::SearchFeatures::default(),
             cache: RefCell::new(None),
             #[cfg(feature = "nnue-stack")]
             stack: RefCell::new(None),

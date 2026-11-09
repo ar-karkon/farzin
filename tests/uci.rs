@@ -365,3 +365,107 @@ fn experimental_network_loads_and_can_be_disabled() {
     child.wait().unwrap();
     std::fs::remove_file(path).unwrap();
 }
+
+/// Runs a UCI script line by line, waiting for `bestmove` after each `go`, and
+/// returns every output line up to the final `readyok`.
+fn transcript(script: &str) -> Vec<String> {
+    let mut child = Command::new(env!("CARGO_BIN_EXE_farzin"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let mut input = child.stdin.take().unwrap();
+    let mut output = BufReader::new(child.stdout.take().unwrap());
+    let mut lines = Vec::new();
+    let mut read_until = |prefix: &str, lines: &mut Vec<String>| loop {
+        let mut line = String::new();
+        assert_ne!(output.read_line(&mut line).unwrap(), 0);
+        let line = line.trim().to_string();
+        let done = line.starts_with(prefix);
+        lines.push(line);
+        if done {
+            break;
+        }
+    };
+    for command in script.lines().chain(["isready"]) {
+        writeln!(input, "{}", command.trim()).unwrap();
+        input.flush().unwrap();
+        if command.trim().starts_with("go") {
+            read_until("bestmove ", &mut lines);
+        } else if command.trim() == "isready" {
+            read_until("readyok", &mut lines);
+        }
+    }
+    writeln!(input, "quit").unwrap();
+    child.wait().unwrap();
+    lines
+}
+
+#[test]
+fn persistent_hash_is_reused_only_until_cleared() {
+    let lines = transcript(
+        "uci\nsetoption name Persistent Hash value true\nposition startpos\ngo depth 4\n\
+         position startpos moves e2e4\ngo depth 4\nposition startpos moves e2e4 e7e5\ngo depth 4\n\
+         ucinewgame\nposition startpos\ngo depth 4\nsetoption name Clear Hash\nposition startpos\n\
+         go depth 4\nsetoption name Hash value 8\nposition startpos\ngo depth 4\n\
+         position startpos moves d2d4\ngo depth 3",
+    );
+    for option in ["LMR", "Null Move", "Persistent History", "Persistent Hash"] {
+        assert!(lines.contains(&format!("option name {option} type check default false")));
+    }
+    let reuse: Vec<_> = lines
+        .iter()
+        .filter_map(|line| line.strip_prefix("info string tt reused "))
+        .map(|rest| rest.starts_with("true"))
+        .collect();
+    assert_eq!(
+        reuse,
+        [false, true, true, false, false, false, true],
+        "{lines:#?}"
+    );
+    assert_eq!(
+        lines.iter().filter(|l| l.starts_with("bestmove ")).count(),
+        7
+    );
+}
+
+#[test]
+fn hash_is_not_reused_by_default() {
+    let lines =
+        transcript("position startpos\ngo depth 3\nposition startpos moves e2e4\ngo depth 3");
+    assert_eq!(
+        lines
+            .iter()
+            .filter(|line| line.starts_with("info string tt reused false"))
+            .count(),
+        2
+    );
+}
+
+#[test]
+fn pruning_options_search_and_replay_legally() {
+    let lines = transcript(
+        "setoption name LMR value true\nsetoption name Null Move value true\n\
+         setoption name Persistent History value true\nsetoption name PVS value true\n\
+         setoption name Aspiration value true\n\
+         position fen r1bq1rk1/ppp2ppp/2n2n2/3pp3/3PP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 6\n\
+         go depth 6",
+    );
+    let board =
+        chess::Board::from_str("r1bq1rk1/ppp2ppp/2n2n2/3pp3/3PP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 6")
+            .unwrap();
+    let infos: Vec<_> = lines
+        .iter()
+        .filter(|line| line.starts_with("info depth "))
+        .collect();
+    assert_eq!(infos.len(), 6);
+    for info in infos {
+        let pv = info.split(" pv ").nth(1).unwrap();
+        let mut position = board;
+        for mv in pv.split_whitespace() {
+            let mv = chess::ChessMove::from_str(mv).unwrap();
+            assert!(chess::MoveGen::new_legal(&position).any(|legal| legal == mv));
+            position = position.make_move_new(mv);
+        }
+    }
+}

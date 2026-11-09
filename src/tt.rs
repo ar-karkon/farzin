@@ -55,6 +55,14 @@ impl Table {
         }
         entry
     }
+    pub fn capacity(&self) -> usize {
+        self.entries.len()
+    }
+    pub fn reset_stats(&mut self) {
+        self.hits = 0;
+        self.probes = 0;
+        self.cutoffs = 0;
+    }
     pub fn hashfull(&self) -> usize {
         self.used.saturating_mul(1000) / self.entries.len().max(1)
     }
