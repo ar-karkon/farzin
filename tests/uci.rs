@@ -58,3 +58,30 @@ fn terminal_position_reports_no_move() {
     writeln!(input, "quit").unwrap();
     child.wait().unwrap();
 }
+
+#[test]
+fn stop_infinite_search_produces_one_bestmove() {
+    let mut child = Command::new(env!("CARGO_BIN_EXE_farzin"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let mut input = child.stdin.take().unwrap();
+    let mut output = BufReader::new(child.stdout.take().unwrap());
+    writeln!(input, "position startpos\ngo infinite\nstop\nisready").unwrap();
+    input.flush().unwrap();
+    let mut bestmoves = 0;
+    loop {
+        let mut line = String::new();
+        assert_ne!(output.read_line(&mut line).unwrap(), 0);
+        if line.starts_with("bestmove ") {
+            bestmoves += 1;
+        }
+        if line.trim() == "readyok" {
+            break;
+        }
+    }
+    assert_eq!(bestmoves, 1);
+    writeln!(input, "quit").unwrap();
+    child.wait().unwrap();
+}

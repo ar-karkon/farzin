@@ -186,6 +186,21 @@ mod tests {
         assert_eq!(perft(&board, 3), 2812);
     }
     #[test]
+    fn kiwipete_perft() {
+        let board =
+            position("fen r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1")
+                .unwrap()
+                .board;
+        assert_eq!(perft(&board, 1), 48);
+        assert_eq!(perft(&board, 2), 2039);
+        assert_eq!(perft(&board, 3), 97862);
+    }
+    #[test]
+    fn recognizes_stalemate() {
+        let game = position("fen 7k/5Q2/6K1/8/8/8/8/8 b - - 0 1").unwrap();
+        assert_eq!(game.board.status(), BoardStatus::Stalemate);
+    }
+    #[test]
     fn rejects_illegal_move() {
         assert!(position("startpos moves e2e5").is_err());
     }
