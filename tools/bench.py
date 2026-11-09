@@ -57,6 +57,9 @@ def main():
                 if line.startswith("info "):
                     infos.append(line.strip())
             elapsed = (time.monotonic() - start) * 1000
+            completed = [int(line.split()[2]) for line in infos if line.startswith("info depth ")]
+            if not completed or max(completed) < args.depth:
+                raise RuntimeError(f"search did not complete depth {args.depth}: {position}")
             report["positions"].append({"position": position, "bestmove": move.split()[1], "elapsed_ms": elapsed, "info": infos})
             print(f"{position}: {move} elapsed_ms={elapsed:.1f}")
         send("quit")

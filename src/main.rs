@@ -262,7 +262,7 @@ mod tests {
             deadline: None,
             node_limit: None,
         };
-        assert!(quiescence(&mut game, -MATE, MATE, 0, MAX_QPLY, &control, &mut 0).is_none());
+        assert!(quiescence(&mut game, -MATE, MATE, 0, MAX_QPLY, &control, &mut 0).is_some());
         assert_eq!(game.board, original);
     }
     #[test]

@@ -52,13 +52,31 @@ pub(crate) fn quiescence(
     }
     let in_check = board.checkers().popcnt() > 0;
     if qply >= MAX_QPLY {
-        // A static score while in check would illegally allow the side to pass.
-        // Abort this iteration instead; iterative deepening retains its last result.
-        return if in_check {
-            None
-        } else {
-            Some(evaluate(&board))
-        };
+        if !in_check {
+            return Some(evaluate(&board));
+        }
+        // At the hard limit, examine every legal evasion once rather than
+        // pretending that passing in check is legal or aborting the iteration.
+        for mv in MoveGen::new_legal(&board) {
+            if control.stopped(*nodes) {
+                return None;
+            }
+            let halfmove = game.halfmove;
+            game.play(mv);
+            *nodes += 1;
+            let score = match game.board.status() {
+                BoardStatus::Checkmate => MATE - ply - 1,
+                BoardStatus::Stalemate => 0,
+                BoardStatus::Ongoing if game.draw() => 0,
+                BoardStatus::Ongoing => -evaluate(&game.board),
+            };
+            game.unplay(board, halfmove);
+            alpha = alpha.max(score);
+            if alpha >= beta {
+                break;
+            }
+        }
+        return Some(alpha);
     }
     if !in_check {
         let stand_pat = evaluate(&board);
