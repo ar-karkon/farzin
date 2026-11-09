@@ -1,0 +1,8 @@
+[package]
+name = "farzin"
+version = "0.1.0"
+edition = "2021"
+description = "A small UCI chess engine written in Rust"
+
+[dependencies]
+chess = "3.2.0"
