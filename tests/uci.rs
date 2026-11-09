@@ -190,6 +190,34 @@ fn reported_principal_variation_replays_legally() {
 }
 
 #[test]
+fn aspiration_option_completes_search() {
+    let mut child = Command::new(env!("CARGO_BIN_EXE_farzin"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let mut input = child.stdin.take().unwrap();
+    let mut output = BufReader::new(child.stdout.take().unwrap());
+    writeln!(input, "uci\nsetoption name Aspiration value true\nsetoption name PVS value true\nposition startpos\ngo depth 3").unwrap();
+    input.flush().unwrap();
+    let mut advertised = false;
+    let mut depth_three = false;
+    loop {
+        let mut line = String::new();
+        assert_ne!(output.read_line(&mut line).unwrap(), 0);
+        advertised |= line.starts_with("option name Aspiration ");
+        depth_three |= line.starts_with("info depth 3 ");
+        if line.starts_with("bestmove ") {
+            assert!(!line.contains("0000"));
+            break;
+        }
+    }
+    assert!(advertised && depth_three);
+    writeln!(input, "quit").unwrap();
+    child.wait().unwrap();
+}
+
+#[test]
 fn experimental_network_loads_and_can_be_disabled() {
     use std::fs::OpenOptions;
     let path = std::env::temp_dir().join(format!("farzin-uci-network-{}.pnn", std::process::id()));

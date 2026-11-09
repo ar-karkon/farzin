@@ -13,8 +13,17 @@ use std::time::{Duration, Instant};
 const MATE: i32 = 30_000;
 
 use crate::game::{position, Game};
-use crate::search::{best_move, SearchControl};
+use crate::search::{best_move, best_move_window, SearchControl};
 type Worker = (Arc<AtomicBool>, Arc<AtomicBool>, JoinHandle<()>);
+
+#[derive(Clone, Copy)]
+struct SearchOptions {
+    hash_mb: usize,
+    overhead: u64,
+    exchange_ordering: bool,
+    pvs: bool,
+    aspiration: bool,
+}
 
 fn stop_search(worker: &mut Option<Worker>, discard: bool) {
     if let Some((stop, suppress, handle)) = worker.take() {
@@ -29,10 +38,7 @@ fn stop_search(worker: &mut Option<Worker>, discard: bool) {
 fn start_search(
     mut game: Game,
     args: &str,
-    hash_mb: usize,
-    overhead: u64,
-    exchange_ordering: bool,
-    pvs: bool,
+    options: SearchOptions,
     network: Option<Arc<farzin::caissa::Network>>,
 ) -> Worker {
     let words: Vec<_> = args.split_whitespace().collect();
@@ -42,7 +48,7 @@ fn start_search(
             .find(|w| w[0] == key)
             .and_then(|w| w[1].parse::<u64>().ok())
     };
-    let millis = crate::time::budget_ms(&words, game.board.side_to_move(), overhead);
+    let millis = crate::time::budget_ms(&words, game.board.side_to_move(), options.overhead);
     let depth = number("depth")
         .unwrap_or(
             if words.contains(&"infinite") || millis.is_some() || number("nodes").is_some() {
@@ -61,8 +67,8 @@ fn start_search(
         stop: Arc::clone(&stop),
         deadline: time.and_then(|t| Instant::now().checked_add(t)),
         node_limit: number("nodes"),
-        exchange_ordering,
-        pvs,
+        exchange_ordering: options.exchange_ordering,
+        pvs: options.pvs,
         cache: RefCell::new(
             network.map(|net| farzin::caissa::CachedEvaluator::new(net, &game.board)),
         ),
@@ -70,19 +76,48 @@ fn start_search(
     let handle = thread::spawn(move || {
         let mut best = MoveGen::new_legal(&game.board).next();
         let mut hints = HashMap::new();
-        let mut table = Table::new(Table::entries_for_megabytes(hash_mb));
+        let mut table = Table::new(Table::entries_for_megabytes(options.hash_mb));
         let mut nodes = 0;
+        let mut previous_score: Option<i32> = None;
         for current_depth in 1..=depth {
             table.next_generation();
-            if let Some((mv, score, pv)) = best_move(
-                &mut game,
-                current_depth,
-                &control,
-                &mut hints,
-                &mut table,
-                &mut nodes,
-            ) {
+            let window = previous_score
+                .filter(|score| options.aspiration && score.abs() < MATE - 100)
+                .map(|score| ((score - 50).max(-MATE), (score + 50).min(MATE)));
+            let result = if let Some(bounds) = window {
+                let trial = best_move_window(
+                    &mut game,
+                    current_depth,
+                    &control,
+                    &mut hints,
+                    &mut table,
+                    &mut nodes,
+                    bounds,
+                );
+                match trial {
+                    Some((_, score, _)) if score <= bounds.0 || score >= bounds.1 => best_move(
+                        &mut game,
+                        current_depth,
+                        &control,
+                        &mut hints,
+                        &mut table,
+                        &mut nodes,
+                    ),
+                    _ => trial,
+                }
+            } else {
+                best_move(
+                    &mut game,
+                    current_depth,
+                    &control,
+                    &mut hints,
+                    &mut table,
+                    &mut nodes,
+                )
+            };
+            if let Some((mv, score, pv)) = result {
                 best = Some(mv);
+                previous_score = Some(score);
                 let uci_score = if score.abs() > MATE - 100 {
                     let moves = (MATE - score.abs() + 1) / 2;
                     format!("mate {}", if score > 0 { moves } else { -moves })
@@ -122,16 +157,19 @@ pub(crate) fn run() {
     let stdin = io::stdin();
     let mut game = Game::new(Board::default(), 0);
     let mut worker = None;
-    let mut hash_mb = 16usize;
-    let mut overhead = 20u64;
-    let mut exchange_ordering = false;
-    let mut pvs = false;
+    let mut options = SearchOptions {
+        hash_mb: 16,
+        overhead: 20,
+        exchange_ordering: false,
+        pvs: false,
+        aspiration: false,
+    };
     let mut network = None;
     for line in stdin.lock().lines() {
         let Ok(line) = line else { break };
         let line = line.trim();
         if line == "uci" {
-            println!("id name Farzin 0.1.0\nid author Farzin contributors\noption name Hash type spin default 16 min 1 max 256\noption name Clear Hash type button\noption name Move Overhead type spin default 20 min 0 max 5000\noption name Exchange Ordering type check default false\noption name PVS type check default false\noption name EvalFile type string default <empty>\nuciok");
+            println!("id name Farzin 0.1.0\nid author Farzin contributors\noption name Hash type spin default 16 min 1 max 256\noption name Clear Hash type button\noption name Move Overhead type spin default 20 min 0 max 5000\noption name Exchange Ordering type check default false\noption name PVS type check default false\noption name Aspiration type check default false\noption name EvalFile type string default <empty>\nuciok");
         } else if line == "isready" {
             println!("readyok");
         } else if line == "ucinewgame" {
@@ -139,21 +177,25 @@ pub(crate) fn run() {
             game = Game::new(Board::default(), 0);
         } else if let Some(value) = line.strip_prefix("setoption name Hash value ") {
             if let Ok(value) = value.parse::<usize>() {
-                hash_mb = value.clamp(1, 256);
+                options.hash_mb = value.clamp(1, 256);
             }
         } else if line == "setoption name Clear Hash" {
             // Tables are per-search, so no state survives a completed search.
         } else if let Some(value) = line.strip_prefix("setoption name Move Overhead value ") {
             if let Ok(value) = value.parse::<u64>() {
-                overhead = value.min(5000);
+                options.overhead = value.min(5000);
             }
         } else if let Some(value) = line.strip_prefix("setoption name Exchange Ordering value ") {
             if value == "true" || value == "false" {
-                exchange_ordering = value == "true";
+                options.exchange_ordering = value == "true";
             }
         } else if let Some(value) = line.strip_prefix("setoption name PVS value ") {
             if value == "true" || value == "false" {
-                pvs = value == "true";
+                options.pvs = value == "true";
+            }
+        } else if let Some(value) = line.strip_prefix("setoption name Aspiration value ") {
+            if value == "true" || value == "false" {
+                options.aspiration = value == "true";
             }
         } else if let Some(value) = line.strip_prefix("setoption name EvalFile value ") {
             stop_search(&mut worker, true);
@@ -177,15 +219,7 @@ pub(crate) fn run() {
             }
         } else if line == "go" || line.starts_with("go ") {
             stop_search(&mut worker, true);
-            worker = Some(start_search(
-                game.clone(),
-                line,
-                hash_mb,
-                overhead,
-                exchange_ordering,
-                pvs,
-                network.clone(),
-            ));
+            worker = Some(start_search(game.clone(), line, options, network.clone()));
         } else if line == "stop" {
             stop_search(&mut worker, false);
         } else if line == "quit" {

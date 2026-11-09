@@ -373,6 +373,18 @@ pub(crate) fn best_move(
     table: &mut Table,
     nodes: &mut u64,
 ) -> Option<(ChessMove, i32, Vec<ChessMove>)> {
+    best_move_window(game, depth, control, hints, table, nodes, (-MATE, MATE))
+}
+
+pub(crate) fn best_move_window(
+    game: &mut Game,
+    depth: u8,
+    control: &SearchControl,
+    hints: &mut HashMap<u64, ChessMove>,
+    table: &mut Table,
+    nodes: &mut u64,
+    window: (i32, i32),
+) -> Option<(ChessMove, i32, Vec<ChessMove>)> {
     let board = game.board;
     if game.draw() {
         return MoveGen::new_legal(&board)
@@ -380,7 +392,7 @@ pub(crate) fn best_move(
             .map(|mv| (mv, 0, vec![mv]));
     }
     let mut best = None;
-    let mut alpha = -MATE;
+    let (mut alpha, beta) = window;
     let mut state = SearchState {
         hints,
         table,
@@ -397,7 +409,7 @@ pub(crate) fn best_move(
         let result = search(
             game,
             depth.saturating_sub(1),
-            -MATE,
+            -beta,
             -alpha,
             1,
             control,
@@ -407,10 +419,13 @@ pub(crate) fn best_move(
         let score = -result?;
         if best.is_none() || score > alpha {
             best = Some(mv);
-            alpha = score;
+            alpha = alpha.max(score);
             best_pv.clear();
             best_pv.push(mv);
             best_pv.extend(state.pv[1][..state.pv_len[1]].iter().flatten().copied());
+        }
+        if alpha >= beta {
+            break;
         }
     }
     best.map(|mv| (mv, alpha, best_pv))
@@ -755,5 +770,77 @@ mod tests {
             assert_eq!(scores[0], scores[2], "pvs at ply {ply}");
             game.play(legal[(ply * 17 + 3) % legal.len()]);
         }
+    }
+
+    #[test]
+    fn aspiration_failures_research_to_full_window_score() {
+        for pvs in [false, true] {
+            for window in [(-200, -100), (100, 200)] {
+                let mut game = Game::new(Board::default(), 0);
+                let control = SearchControl {
+                    stop: Arc::new(AtomicBool::new(false)),
+                    deadline: None,
+                    node_limit: None,
+                    exchange_ordering: false,
+                    pvs,
+                    cache: RefCell::new(None),
+                };
+                let mut table = Table::new(4096);
+                let mut hints = HashMap::new();
+                let mut nodes = 0;
+                let trial = best_move_window(
+                    &mut game, 3, &control, &mut hints, &mut table, &mut nodes, window,
+                )
+                .unwrap();
+                assert!(
+                    trial.1 <= window.0 || trial.1 >= window.1,
+                    "expected window failure: {window:?} score {}",
+                    trial.1
+                );
+                let researched =
+                    best_move(&mut game, 3, &control, &mut hints, &mut table, &mut nodes)
+                        .unwrap()
+                        .1;
+                let reference = best_move(
+                    &mut game,
+                    3,
+                    &control,
+                    &mut HashMap::new(),
+                    &mut Table::new(0),
+                    &mut 0,
+                )
+                .unwrap()
+                .1;
+                assert_eq!(researched, reference, "window {window:?}, pvs {pvs}");
+            }
+        }
+    }
+
+    #[test]
+    fn interrupted_aspiration_preserves_game() {
+        let mut game = Game::new(Board::default(), 0);
+        let board = game.board;
+        let history = game.history.clone();
+        let control = SearchControl {
+            stop: Arc::new(AtomicBool::new(false)),
+            deadline: None,
+            node_limit: Some(2),
+            exchange_ordering: false,
+            pvs: true,
+            cache: RefCell::new(None),
+        };
+        assert!(best_move_window(
+            &mut game,
+            4,
+            &control,
+            &mut HashMap::new(),
+            &mut Table::new(128),
+            &mut 0,
+            (-50, 50)
+        )
+        .is_none());
+        assert_eq!(game.board, board);
+        assert_eq!(game.history, history);
+        assert_eq!(game.halfmove, 0);
     }
 }
