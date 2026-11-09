@@ -1,6 +1,6 @@
 # معماری Phase 4 — وضعیت جست‌وجو، هرس و چرخهٔ عمر جدول انتقال
 
-این سند تغییرات ساختاری Phase 4 را توضیح می‌دهد. همهٔ قابلیت‌های جدید گزینهٔ UCI با پیش‌فرض `false` هستند. با خاموش‌بودن همهٔ آن‌ها، امضای جست‌وجو (گره، امتیاز، بهترین حرکت) روی ۲۲ موقعیت `tools/positions-v3.fen` در عمق ۵ با baseline `11bf331` دقیقاً یکسان است (`benchmarks/v4-baseline/classical-depth5.json` در برابر `benchmarks/v4-experiments/depth5-off.json`).
+این سند تغییرات ساختاری Phase 4 را توضیح می‌دهد. همهٔ قابلیت‌های جدید گزینهٔ UCI هستند. از `db8c5d0`، `PVS`، `LMR`، `Null Move` و `Persistent Hash` پس از آزمون جفتی پیش‌فرض فعال‌اند و `Persistent History` خاموش است. با خاموش‌کردن همهٔ آن‌ها، امضای جست‌وجو (گره، امتیاز، بهترین حرکت) روی ۲۲ موقعیت `tools/positions-v3.fen` در عمق ۵ با baseline `11bf331` دقیقاً یکسان است (`benchmarks/v4-baseline/classical-depth5.json` در برابر `benchmarks/v4-experiments/depth5-off.json`).
 
 ## مالکیت وضعیت
 
