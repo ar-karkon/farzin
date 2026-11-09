@@ -47,9 +47,14 @@ fn terminal_position_reports_no_move() {
     )
     .unwrap();
     input.flush().unwrap();
-    let mut line = String::new();
-    output.read_line(&mut line).unwrap();
-    assert_eq!(line.trim(), "bestmove 0000");
+    loop {
+        let mut line = String::new();
+        assert_ne!(output.read_line(&mut line).unwrap(), 0);
+        if line.starts_with("bestmove ") {
+            assert_eq!(line.trim(), "bestmove 0000");
+            break;
+        }
+    }
     writeln!(input, "quit").unwrap();
     child.wait().unwrap();
 }

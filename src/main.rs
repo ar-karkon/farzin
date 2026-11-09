@@ -186,6 +186,7 @@ fn search(
                 || (entry.bound == Bound::Lower && score >= beta)
                 || (entry.bound == Bound::Upper && score <= alpha)
             {
+                state.table.cutoffs += 1;
                 return Some(score);
             }
         }
@@ -295,7 +296,7 @@ fn stop_search(worker: &mut Option<Worker>, discard: bool) {
     }
 }
 
-fn start_search(mut game: Game, args: &str) -> Worker {
+fn start_search(mut game: Game, args: &str, hash_mb: usize) -> Worker {
     let words: Vec<_> = args.split_whitespace().collect();
     let number = |key: &str| {
         words
@@ -342,7 +343,8 @@ fn start_search(mut game: Game, args: &str) -> Worker {
     let handle = thread::spawn(move || {
         let mut best = MoveGen::new_legal(&game.board).next();
         let mut hints = HashMap::new();
-        let mut table = Table::new(200_000);
+        // HashMap overhead is implementation-dependent; reserve conservatively per entry.
+        let mut table = Table::new(hash_mb.saturating_mul(1024 * 1024) / 128);
         let mut nodes = 0;
         for current_depth in 1..=depth {
             if let Some((mv, score)) = best_move(
@@ -363,13 +365,17 @@ fn start_search(mut game: Game, args: &str) -> Worker {
                 let elapsed = started.elapsed().as_millis();
                 let nps = (nodes as u128 * 1000) / elapsed.max(1);
                 if !suppress_worker.load(Ordering::Relaxed) {
-                    println!("info depth {current_depth} score {uci_score} nodes {nodes} nps {nps} time {elapsed} pv {mv}");
+                    println!("info depth {current_depth} score {uci_score} nodes {nodes} nps {nps} time {elapsed} hashfull {} pv {mv}", table.hashfull());
                 }
             } else {
                 break;
             }
         }
         if !suppress_worker.load(Ordering::Relaxed) {
+            println!(
+                "info string tt hits {} cutoffs {}",
+                table.hits, table.cutoffs
+            );
             println!(
                 "bestmove {}",
                 best.map(|m| m.to_string()).unwrap_or_else(|| "0000".into())
@@ -414,16 +420,23 @@ fn main() {
     let stdin = io::stdin();
     let mut game = Game::new(Board::default(), 0);
     let mut worker = None;
+    let mut hash_mb = 16usize;
     for line in stdin.lock().lines() {
         let Ok(line) = line else { break };
         let line = line.trim();
         if line == "uci" {
-            println!("id name Farzin 0.1.0\nid author Farzin contributors\nuciok");
+            println!("id name Farzin 0.1.0\nid author Farzin contributors\noption name Hash type spin default 16 min 1 max 256\noption name Clear Hash type button\nuciok");
         } else if line == "isready" {
             println!("readyok");
         } else if line == "ucinewgame" {
             stop_search(&mut worker, true);
             game = Game::new(Board::default(), 0);
+        } else if let Some(value) = line.strip_prefix("setoption name Hash value ") {
+            if let Ok(value) = value.parse::<usize>() {
+                hash_mb = value.clamp(1, 256);
+            }
+        } else if line == "setoption name Clear Hash" {
+            // Tables are per-search, so no state survives a completed search.
         } else if let Some(args) = line.strip_prefix("position ") {
             stop_search(&mut worker, true);
             match position(args) {
@@ -432,7 +445,7 @@ fn main() {
             }
         } else if line == "go" || line.starts_with("go ") {
             stop_search(&mut worker, true);
-            worker = Some(start_search(game.clone(), line));
+            worker = Some(start_search(game.clone(), line, hash_mb));
         } else if line == "stop" {
             stop_search(&mut worker, false);
         } else if line == "quit" {

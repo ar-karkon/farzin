@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run a fixed-depth UCI benchmark on known positions; no third-party packages."""
 import argparse
+import json
 import platform
 import subprocess
 import time
@@ -16,9 +17,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("engine", help="path to UCI engine executable")
     parser.add_argument("--depth", type=int, default=4)
+    parser.add_argument("--json", help="write results as JSON")
     args = parser.parse_args()
     if not 1 <= args.depth <= 64:
         parser.error("depth must be between 1 and 64")
+    report = {"platform": platform.platform(), "engine": args.engine, "depth": args.depth, "positions": []}
     print(f"platform={platform.platform()} engine={args.engine} depth={args.depth}")
     with subprocess.Popen([args.engine], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                           text=True, bufsize=1) as engine:
@@ -43,10 +46,25 @@ def main():
             send("position " + position)
             start = time.monotonic()
             send(f"go depth {args.depth}")
-            move = until("bestmove ")
-            print(f"{position}: {move} elapsed_ms={(time.monotonic()-start)*1000:.1f}")
+            infos = []
+            while True:
+                line = engine.stdout.readline()
+                if not line:
+                    raise RuntimeError("engine exited unexpectedly")
+                if line.startswith("bestmove "):
+                    move = line.strip()
+                    break
+                if line.startswith("info "):
+                    infos.append(line.strip())
+            elapsed = (time.monotonic() - start) * 1000
+            report["positions"].append({"position": position, "bestmove": move.split()[1], "elapsed_ms": elapsed, "info": infos})
+            print(f"{position}: {move} elapsed_ms={elapsed:.1f}")
         send("quit")
         engine.wait(timeout=5)
+    if args.json:
+        with open(args.json, "w", encoding="utf-8") as result:
+            json.dump(report, result, indent=2, ensure_ascii=False)
+            result.write("\n")
 
 
 if __name__ == "__main__":

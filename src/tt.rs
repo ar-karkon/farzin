@@ -19,6 +19,8 @@ pub struct Entry {
 pub struct Table {
     entries: HashMap<u64, Entry>,
     capacity: usize,
+    pub hits: u64,
+    pub cutoffs: u64,
 }
 
 impl Table {
@@ -26,10 +28,19 @@ impl Table {
         Self {
             entries: HashMap::new(),
             capacity,
+            hits: 0,
+            cutoffs: 0,
         }
     }
-    pub fn get(&self, key: u64) -> Option<Entry> {
-        self.entries.get(&key).copied()
+    pub fn get(&mut self, key: u64) -> Option<Entry> {
+        let entry = self.entries.get(&key).copied();
+        if entry.is_some() {
+            self.hits += 1;
+        }
+        entry
+    }
+    pub fn hashfull(&self) -> usize {
+        self.entries.len().saturating_mul(1000) / self.capacity.max(1)
     }
     pub fn put(&mut self, key: u64, entry: Entry) {
         if let Some(old) = self.entries.get(&key) {
