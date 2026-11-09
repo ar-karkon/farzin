@@ -7,7 +7,7 @@ use chess::{BitBoard, Board, BoardStatus, ChessMove, MoveGen, Piece, Square};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::sync::{
-    atomic::{AtomicBool, Ordering},
+    atomic::{AtomicBool, AtomicU64, Ordering},
     Arc,
 };
 use std::time::Instant;
@@ -17,6 +17,7 @@ pub(crate) struct SearchControl {
     pub(crate) stop: Arc<AtomicBool>,
     pub(crate) deadline: Option<Instant>,
     pub(crate) node_limit: Option<u64>,
+    pub(crate) shared_nodes: Option<Arc<AtomicU64>>,
     pub(crate) exchange_ordering: bool,
     pub(crate) pvs: bool,
     pub(crate) positional: bool,
@@ -39,7 +40,40 @@ impl SearchControl {
     fn stopped(&self, nodes: u64) -> bool {
         self.stop.load(Ordering::Relaxed)
             || self.deadline.is_some_and(|d| Instant::now() >= d)
-            || self.node_limit.is_some_and(|limit| nodes >= limit)
+            || self.node_limit.is_some_and(|limit| {
+                self.shared_nodes
+                    .as_ref()
+                    .map_or(nodes, |shared| shared.load(Ordering::Relaxed))
+                    >= limit
+            })
+    }
+    fn visit_node(&self, nodes: &mut u64) -> bool {
+        if self.stopped(*nodes) {
+            return false;
+        }
+        if let Some(shared) = &self.shared_nodes {
+            if let Some(limit) = self.node_limit {
+                let mut count = shared.load(Ordering::Relaxed);
+                loop {
+                    if count >= limit {
+                        return false;
+                    }
+                    match shared.compare_exchange_weak(
+                        count,
+                        count + 1,
+                        Ordering::Relaxed,
+                        Ordering::Relaxed,
+                    ) {
+                        Ok(_) => break,
+                        Err(actual) => count = actual,
+                    }
+                }
+            } else {
+                shared.fetch_add(1, Ordering::Relaxed);
+            }
+        }
+        *nodes += 1;
+        true
     }
 }
 
@@ -54,10 +88,9 @@ pub(crate) fn quiescence(
     control: &SearchControl,
     nodes: &mut u64,
 ) -> Option<i32> {
-    if control.stopped(*nodes) {
+    if !control.visit_node(nodes) {
         return None;
     }
-    *nodes += 1;
     let board = game.board;
     match board.status() {
         BoardStatus::Checkmate => return Some(-MATE + ply),
@@ -75,12 +108,11 @@ pub(crate) fn quiescence(
         // At the hard limit, examine every legal evasion once rather than
         // pretending that passing in check is legal or aborting the iteration.
         for mv in MoveGen::new_legal(&board) {
-            if control.stopped(*nodes) {
+            if !control.visit_node(nodes) {
                 return None;
             }
             let halfmove = game.halfmove;
             game.play(mv);
-            *nodes += 1;
             let score = match game.board.status() {
                 BoardStatus::Checkmate => MATE - ply - 1,
                 BoardStatus::Stalemate => 0,
@@ -244,7 +276,9 @@ fn search(
     if depth == 0 {
         return quiescence(game, alpha, beta, ply, 0, control, state.nodes);
     }
-    *state.nodes += 1;
+    if !control.visit_node(state.nodes) {
+        return None;
+    }
     let board = game.board;
     match board.status() {
         BoardStatus::Checkmate => return Some(-MATE + ply),
@@ -495,6 +529,7 @@ mod tests {
                 stop: Arc::new(AtomicBool::new(false)),
                 deadline: None,
                 node_limit: None,
+                shared_nodes: None,
                 exchange_ordering: enabled,
                 pvs: false,
                 positional: false,
@@ -526,6 +561,7 @@ mod tests {
                     stop: Arc::new(AtomicBool::new(false)),
                     deadline: None,
                     node_limit: None,
+                    shared_nodes: None,
                     exchange_ordering: false,
                     pvs,
                     positional: false,
@@ -555,6 +591,7 @@ mod tests {
             stop: Arc::new(AtomicBool::new(false)),
             deadline: None,
             node_limit: None,
+            shared_nodes: None,
             exchange_ordering: false,
             pvs: false,
             positional: false,
@@ -584,6 +621,7 @@ mod tests {
             stop: Arc::new(AtomicBool::new(false)),
             deadline: None,
             node_limit: None,
+            shared_nodes: None,
             exchange_ordering: false,
             pvs: false,
             positional: false,
@@ -652,6 +690,7 @@ mod tests {
                 stop: Arc::new(AtomicBool::new(false)),
                 deadline: None,
                 node_limit: None,
+                shared_nodes: None,
                 exchange_ordering: false,
                 pvs: false,
                 positional: false,
@@ -687,6 +726,7 @@ mod tests {
             stop: Arc::new(AtomicBool::new(false)),
             deadline: None,
             node_limit: Some(2),
+            shared_nodes: None,
             exchange_ordering: false,
             pvs: false,
             positional: false,
@@ -717,6 +757,7 @@ mod tests {
             stop: Arc::new(AtomicBool::new(false)),
             deadline: None,
             node_limit: Some(1),
+            shared_nodes: None,
             exchange_ordering: false,
             pvs: false,
             positional: false,
@@ -724,6 +765,36 @@ mod tests {
         };
         assert!(search(&mut game, 0, -MATE, MATE, 0, &control, &mut state).is_some());
         assert_eq!(*state.nodes, 1);
+    }
+
+    #[test]
+    fn shared_node_limit_is_exact_under_contention() {
+        let shared = Arc::new(AtomicU64::new(0));
+        let mut workers = Vec::new();
+        for _ in 0..4 {
+            let counter = Arc::clone(&shared);
+            workers.push(std::thread::spawn(move || {
+                let control = SearchControl {
+                    stop: Arc::new(AtomicBool::new(false)),
+                    deadline: None,
+                    node_limit: Some(1000),
+                    shared_nodes: Some(counter),
+                    exchange_ordering: false,
+                    pvs: false,
+                    positional: false,
+                    cache: RefCell::new(None),
+                };
+                let mut nodes = 0;
+                while control.visit_node(&mut nodes) {}
+                nodes
+            }));
+        }
+        let total: u64 = workers
+            .into_iter()
+            .map(|worker| worker.join().unwrap())
+            .sum();
+        assert_eq!(total, 1000);
+        assert_eq!(shared.load(Ordering::Relaxed), 1000);
     }
 
     #[test]
@@ -743,6 +814,7 @@ mod tests {
                     stop: Arc::new(AtomicBool::new(false)),
                     deadline: None,
                     node_limit: None,
+                    shared_nodes: None,
                     exchange_ordering: false,
                     pvs: false,
                     positional: false,
@@ -791,6 +863,7 @@ mod tests {
             stop: Arc::new(AtomicBool::new(false)),
             deadline: None,
             node_limit: None,
+            shared_nodes: None,
             exchange_ordering: false,
             pvs: false,
             positional: false,
@@ -815,6 +888,7 @@ mod tests {
                     stop: Arc::new(AtomicBool::new(false)),
                     deadline: None,
                     node_limit: None,
+                    shared_nodes: None,
                     exchange_ordering: false,
                     pvs,
                     positional: false,
@@ -849,6 +923,7 @@ mod tests {
                     stop: Arc::new(AtomicBool::new(false)),
                     deadline: None,
                     node_limit: None,
+                    shared_nodes: None,
                     exchange_ordering: false,
                     pvs,
                     positional: false,
@@ -894,6 +969,7 @@ mod tests {
             stop: Arc::new(AtomicBool::new(false)),
             deadline: None,
             node_limit: Some(2),
+            shared_nodes: None,
             exchange_ordering: false,
             pvs: true,
             positional: false,
