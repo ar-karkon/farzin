@@ -18,10 +18,19 @@ def main():
     parser.add_argument("engine", help="path to UCI engine executable")
     parser.add_argument("--depth", type=int, default=4)
     parser.add_argument("--json", help="write results as JSON")
+    parser.add_argument("--option", action="append", default=[], metavar="NAME=VALUE")
     args = parser.parse_args()
     if not 1 <= args.depth <= 64:
         parser.error("depth must be between 1 and 64")
-    report = {"platform": platform.platform(), "engine": args.engine, "depth": args.depth, "positions": []}
+    options = []
+    for option in args.option:
+        if "=" not in option or "\n" in option or "\r" in option:
+            parser.error("options must be NAME=VALUE on one line")
+        name, value = option.split("=", 1)
+        if not name.strip():
+            parser.error("option name cannot be empty")
+        options.append((name.strip(), value))
+    report = {"platform": platform.platform(), "engine": args.engine, "depth": args.depth, "options": options, "positions": []}
     print(f"platform={platform.platform()} engine={args.engine} depth={args.depth}")
     with subprocess.Popen([args.engine], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                           text=True, bufsize=1) as engine:
@@ -39,6 +48,8 @@ def main():
 
         send("uci")
         until("uciok")
+        for name, value in options:
+            send(f"setoption name {name} value {value}")
         send("isready")
         until("readyok")
         for position in POSITIONS:

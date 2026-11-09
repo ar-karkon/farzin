@@ -20,6 +20,8 @@ def main():
     limit.add_argument("--movetime-ms", type=int, help="fixed time per move in milliseconds")
     parser.add_argument("--max-plies", type=int, default=200)
     parser.add_argument("--openings", help="UTF-8 file with one FEN per line; # starts a comment")
+    parser.add_argument("--option-a", action="append", default=[], metavar="NAME=VALUE")
+    parser.add_argument("--option-b", action="append", default=[], metavar="NAME=VALUE")
     parser.add_argument("--json", required=True, help="output report path")
     args = parser.parse_args()
     depth = args.depth if args.depth is not None else (None if args.movetime_ms else 3)
@@ -35,8 +37,19 @@ def main():
             if not chess.Board(fen).is_valid():
                 parser.error(f"invalid opening FEN: {fen}")
     engines = [os.path.abspath(args.engine_a), os.path.abspath(args.engine_b)]
+    options = []
+    for raw_options in [args.option_a, args.option_b]:
+        parsed = {}
+        for option in raw_options:
+            if "=" not in option or "\n" in option or "\r" in option:
+                parser.error("engine options must be NAME=VALUE on one line")
+            name, value = option.split("=", 1)
+            if not name.strip():
+                parser.error("option name cannot be empty")
+            parsed[name.strip()] = value
+        options.append(parsed)
     report = {"engines": engines, "depth": depth, "movetime_ms": args.movetime_ms, "pairs": args.pairs,
-              "max_plies": args.max_plies, "platform": platform.platform(), "games": []}
+              "max_plies": args.max_plies, "platform": platform.platform(), "options": options, "games": []}
     for number in range(args.pairs * 2):
         white = number % 2
         fen = openings[(number // 2) % len(openings)]
@@ -46,6 +59,8 @@ def main():
         with chess.engine.SimpleEngine.popen_uci(engines[0], timeout=10) as a:
             with chess.engine.SimpleEngine.popen_uci(engines[1], timeout=10) as b:
                 players = [a, b]
+                for player, requested in zip(players, options):
+                    player.configure(requested)
                 while not board.is_game_over(claim_draw=True) and len(board.move_stack) < args.max_plies:
                     player = white if board.turn == chess.WHITE else 1 - white
                     search_limit = chess.engine.Limit(depth=depth, time=args.movetime_ms / 1000 if args.movetime_ms else None)
