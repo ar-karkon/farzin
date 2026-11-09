@@ -411,4 +411,31 @@ mod tests {
         assert!(search(&mut game, 0, -MATE, MATE, 0, &control, &mut state).is_some());
         assert_eq!(*state.nodes, 1);
     }
+
+    #[test]
+    fn transposition_cache_preserves_search_scores() {
+        for fen in [
+            "startpos",
+            "fen r1bq1rk1/ppp2ppp/2n2n2/3pp3/3PP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 6",
+            "fen 8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1",
+        ] {
+            let mut scores = Vec::new();
+            for capacity in [0, 4096] {
+                let mut game = crate::game::position(fen).unwrap();
+                let mut table = Table::new(capacity);
+                let mut hints = HashMap::new();
+                let mut nodes = 0;
+                let control = SearchControl {
+                    stop: Arc::new(AtomicBool::new(false)),
+                    deadline: None,
+                    node_limit: None,
+                };
+                let score = best_move(&mut game, 3, &control, &mut hints, &mut table, &mut nodes)
+                    .unwrap()
+                    .1;
+                scores.push(score);
+            }
+            assert_eq!(scores[0], scores[1], "{fen}");
+        }
+    }
 }

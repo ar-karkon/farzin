@@ -33,7 +33,7 @@ pub struct Table {
 impl Table {
     pub fn new(capacity: usize) -> Self {
         Self {
-            entries: vec![None; capacity.max(1)],
+            entries: vec![None; capacity],
             used: 0,
             generation: 0,
             hits: 0,
@@ -41,6 +41,9 @@ impl Table {
         }
     }
     pub fn get(&mut self, key: u64) -> Option<Entry> {
+        if self.entries.is_empty() {
+            return None;
+        }
         let entry = self.entries[(key % self.entries.len() as u64) as usize]
             .filter(|slot| slot.key == key)
             .map(|slot| slot.entry);
@@ -50,9 +53,12 @@ impl Table {
         entry
     }
     pub fn hashfull(&self) -> usize {
-        self.used.saturating_mul(1000) / self.entries.len()
+        self.used.saturating_mul(1000) / self.entries.len().max(1)
     }
     pub fn put(&mut self, key: u64, entry: Entry) {
+        if self.entries.is_empty() {
+            return;
+        }
         let index = (key % self.entries.len() as u64) as usize;
         if let Some(old) = self.entries[index] {
             if old.generation == self.generation && old.entry.depth > entry.depth {
