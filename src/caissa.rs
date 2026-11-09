@@ -1,4 +1,4 @@
-//! Experimental Caissa v15 scalar inference; not connected to the engine.
+//! Experimental Caissa v15 scalar inference.
 //!
 //! File layout and mathematics refer to Caissa commit 395c2e6 by Michał
 //! Witanowski (MIT); see THIRD_PARTY_NOTICES.md. Weights are not distributed.
@@ -117,6 +117,25 @@ impl Network {
 
     /// All raw subnet outputs; these are not centipawn evaluations.
     pub fn raw_outputs(&self, board: &Board) -> [i32; 8] {
+        let inputs = self.inputs(board);
+        std::array::from_fn(|bucket| self.raw_bucket(&inputs, bucket))
+    }
+
+    /// Approximate search score in centipawns, from the side-to-move perspective.
+    /// Unlike Caissa's full evaluator this excludes its endgame and castling adjustments.
+    pub fn evaluate(&self, board: &Board) -> i32 {
+        let pieces = board.combined().popcnt().saturating_sub(2) as usize;
+        let bucket = (pieces / 4).min(7);
+        let raw = self.raw_bucket(&self.inputs(board), bucket);
+        let phase = board.pieces(Piece::Knight).popcnt()
+            + board.pieces(Piece::Bishop).popcnt()
+            + 2 * board.pieces(Piece::Rook).popcnt()
+            + 4 * board.pieces(Piece::Queen).popcnt();
+        let scaled = i64::from(raw / 1506) * i64::from(52 + phase) / 64;
+        scaled.clamp(-29_000, 29_000) as i32
+    }
+
+    fn inputs(&self, board: &Board) -> [u8; WIDTH] {
         let ours = self.accumulator(board, board.side_to_move());
         let theirs = self.accumulator(board, !board.side_to_move());
         let mut inputs = [0u8; WIDTH];
@@ -127,14 +146,16 @@ impl Network {
                 inputs[perspective * WIDTH / 2 + i] = ((a * b) >> 9) as u8;
             }
         }
-        std::array::from_fn(|bucket| {
-            let offset = SUBNET_OFFSET + bucket * SUBNET_SIZE;
-            let l1 = self.hidden(&inputs, offset, offset + 24576, 16);
-            let l2 = self.hidden(&l1, offset + 24640, offset + 25152, 32);
-            let bias = self.i32_at(offset + 25344);
-            l2.iter().enumerate().fold(bias, |sum, (i, &v)| {
-                sum.wrapping_add(i32::from(v) * i32::from(self.i16_at(offset + 25280 + i * 2)))
-            })
+        inputs
+    }
+
+    fn raw_bucket(&self, inputs: &[u8; WIDTH], bucket: usize) -> i32 {
+        let offset = SUBNET_OFFSET + bucket * SUBNET_SIZE;
+        let l1 = self.hidden(inputs, offset, offset + 24576, 16);
+        let l2 = self.hidden(&l1, offset + 24640, offset + 25152, 32);
+        let bias = self.i32_at(offset + 25344);
+        l2.iter().enumerate().fold(bias, |sum, (i, &v)| {
+            sum.wrapping_add(i32::from(v) * i32::from(self.i16_at(offset + 25280 + i * 2)))
         })
     }
 

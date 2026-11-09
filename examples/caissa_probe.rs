@@ -33,5 +33,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for (bucket, output) in network.raw_outputs(&board).iter().enumerate() {
         println!("bucket={bucket} raw={output}");
     }
+    eprintln!("approximate centipawns={}", network.evaluate(&board));
     Ok(())
 }
