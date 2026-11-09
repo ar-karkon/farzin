@@ -111,6 +111,8 @@ struct SearchState<'a> {
     nodes: &'a mut u64,
     killers: [[Option<ChessMove>; 2]; 128],
     history: [[i32; 64]; 64],
+    pv: [[Option<ChessMove>; 64]; 65],
+    pv_len: [usize; 65],
 }
 
 fn capture_value(board: &Board, mv: ChessMove) -> Option<i32> {
@@ -164,6 +166,8 @@ fn search(
     if control.stopped(*state.nodes) {
         return None;
     }
+    let pv_index = (ply as usize).min(64);
+    state.pv_len[pv_index] = 0;
     // Quiescence counts and validates its own entry node.
     if depth == 0 {
         return quiescence(game, alpha, beta, ply, 0, control, state.nodes);
@@ -216,6 +220,13 @@ fn search(
         }
         if score > alpha {
             alpha = score;
+            let child = (pv_index + 1).min(64);
+            let count = state.pv_len[child].min(63);
+            state.pv[pv_index][0] = Some(mv);
+            for i in 0..count {
+                state.pv[pv_index][i + 1] = state.pv[child][i];
+            }
+            state.pv_len[pv_index] = count + 1;
             if state.hints.len() < 200_000 {
                 state.hints.insert(board.get_hash(), mv);
             }
@@ -262,10 +273,12 @@ pub(crate) fn best_move(
     hints: &mut HashMap<u64, ChessMove>,
     table: &mut Table,
     nodes: &mut u64,
-) -> Option<(ChessMove, i32)> {
+) -> Option<(ChessMove, i32, Vec<ChessMove>)> {
     let board = game.board;
     if game.draw() {
-        return MoveGen::new_legal(&board).next().map(|mv| (mv, 0));
+        return MoveGen::new_legal(&board)
+            .next()
+            .map(|mv| (mv, 0, vec![mv]));
     }
     let mut best = None;
     let mut alpha = -MATE;
@@ -275,7 +288,10 @@ pub(crate) fn best_move(
         nodes,
         killers: [[None; 2]; 128],
         history: [[0; 64]; 64],
+        pv: [[None; 64]; 65],
+        pv_len: [0; 65],
     };
+    let mut best_pv = Vec::new();
     for mv in MoveGen::new_legal(&board) {
         let halfmove = game.halfmove;
         game.play(mv);
@@ -293,9 +309,12 @@ pub(crate) fn best_move(
         if best.is_none() || score > alpha {
             best = Some(mv);
             alpha = score;
+            best_pv.clear();
+            best_pv.push(mv);
+            best_pv.extend(state.pv[1][..state.pv_len[1]].iter().flatten().copied());
         }
     }
-    best.map(|mv| (mv, alpha))
+    best.map(|mv| (mv, alpha, best_pv))
 }
 
 #[cfg(test)]
@@ -319,6 +338,31 @@ mod tests {
             move_score(&game.board, quiet, Some(quiet), [None; 2], &history)
                 > move_score(&game.board, capture, None, [None; 2], &history)
         );
+    }
+
+    #[test]
+    fn principal_variation_contains_legal_moves() {
+        let mut game = Game::new(Board::default(), 0);
+        let control = SearchControl {
+            stop: Arc::new(AtomicBool::new(false)),
+            deadline: None,
+            node_limit: None,
+        };
+        let (best, _, pv) = best_move(
+            &mut game,
+            3,
+            &control,
+            &mut HashMap::new(),
+            &mut Table::new(1024),
+            &mut 0,
+        )
+        .unwrap();
+        assert_eq!(pv.first(), Some(&best));
+        assert!(pv.len() >= 2);
+        for mv in pv {
+            assert!(MoveGen::new_legal(&game.board).any(|legal| legal == mv));
+            game.play(mv);
+        }
     }
 
     #[test]
@@ -349,6 +393,8 @@ mod tests {
                 nodes: &mut nodes,
                 killers: [[None; 2]; 128],
                 history: [[0; 64]; 64],
+                pv: [[None; 64]; 65],
+                pv_len: [0; 65],
             };
             let control = SearchControl {
                 stop: Arc::new(AtomicBool::new(false)),
@@ -378,6 +424,8 @@ mod tests {
             nodes: &mut nodes,
             killers: [[None; 2]; 128],
             history: [[0; 64]; 64],
+            pv: [[None; 64]; 65],
+            pv_len: [0; 65],
         };
         let control = SearchControl {
             stop: Arc::new(AtomicBool::new(false)),
@@ -402,6 +450,8 @@ mod tests {
             nodes: &mut nodes,
             killers: [[None; 2]; 128],
             history: [[0; 64]; 64],
+            pv: [[None; 64]; 65],
+            pv_len: [0; 65],
         };
         let control = SearchControl {
             stop: Arc::new(AtomicBool::new(false)),

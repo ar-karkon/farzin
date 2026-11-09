@@ -60,7 +60,7 @@ fn start_search(mut game: Game, args: &str, hash_mb: usize, overhead: u64) -> Wo
         let mut nodes = 0;
         for current_depth in 1..=depth {
             table.next_generation();
-            if let Some((mv, score)) = best_move(
+            if let Some((mv, score, pv)) = best_move(
                 &mut game,
                 current_depth,
                 &control,
@@ -78,7 +78,12 @@ fn start_search(mut game: Game, args: &str, hash_mb: usize, overhead: u64) -> Wo
                 let elapsed = started.elapsed().as_millis();
                 let nps = (nodes as u128 * 1000) / elapsed.max(1);
                 if !suppress_worker.load(Ordering::Relaxed) {
-                    println!("info depth {current_depth} score {uci_score} nodes {nodes} nps {nps} time {elapsed} hashfull {} pv {mv}", table.hashfull());
+                    let pv = pv
+                        .iter()
+                        .map(ToString::to_string)
+                        .collect::<Vec<_>>()
+                        .join(" ");
+                    println!("info depth {current_depth} score {uci_score} nodes {nodes} nps {nps} time {elapsed} hashfull {} pv {pv}", table.hashfull());
                 }
             } else {
                 break;
