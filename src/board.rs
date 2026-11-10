@@ -505,7 +505,6 @@ impl Board {
             return false;
         }
         let us = self.stm;
-        let them = us ^ 1;
         let from = mv.from();
         let to = mv.to();
         let flag = mv.flag();

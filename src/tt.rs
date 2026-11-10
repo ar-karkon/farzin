@@ -75,7 +75,9 @@ pub fn score_to_tt(score: i32, ply: usize) -> i32 {
 }
 
 pub fn score_from_tt(score: i32, ply: usize, halfmove: u16) -> i32 {
-    if score >= MATE_BOUND {
+    if score == NO_SCORE {
+        NO_SCORE
+    } else if score >= MATE_BOUND {
         // A mate found beyond the 50-move horizon may not be reachable.
         if MATE - score > 100 - i32::from(halfmove) {
             return MATE_BOUND - 1;

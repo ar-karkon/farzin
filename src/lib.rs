@@ -1,6 +1,7 @@
 //! Farzin chess engine library.
 pub mod attacks;
 pub mod board;
+pub mod datagen;
 pub mod eval;
 pub mod movegen;
 pub mod movepick;

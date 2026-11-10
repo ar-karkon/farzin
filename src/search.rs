@@ -675,7 +675,7 @@ impl Thread {
                     Move::NONE,
                     NO_SCORE,
                     raw_eval,
-                    -1i32.max(0),
+                    0,
                     BOUND_NONE,
                     tt_pv,
                 );
@@ -1076,7 +1076,7 @@ impl Thread {
                 None
             },
         ];
-        let mut apply = |h: &mut Histories, mv: Move, b: i32| {
+        let apply = |h: &mut Histories, mv: Move, b: i32| {
             gravity(&mut h.main[stm][mv.from()][mv.to()], b);
             let idx = board.mailbox[mv.from()] as usize * 64 + mv.to();
             for c in conts.iter().flatten() {

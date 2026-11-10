@@ -32,15 +32,6 @@ impl std::ops::Mul<i32> for S {
     }
 }
 
-const MATERIAL: [S; 6] = [
-    S(85, 110),
-    S(330, 300),
-    S(350, 320),
-    S(470, 540),
-    S(1000, 980),
-    S(0, 0),
-];
-
 pub const PHASE_WEIGHT: [i32; 6] = [0, 1, 1, 2, 4, 0];
 
 // Piece-square tables from White's point of view, index a1 = 0 .. h8 = 63
@@ -285,10 +276,9 @@ fn rel(sq: Square, color: usize) -> Square {
 }
 
 pub fn game_phase(board: &Board) -> i32 {
-    let mut phase = 0;
-    for p in KNIGHT..=QUEEN {
-        phase += board.pieces[p].count_ones() as i32 * PHASE_WEIGHT[p];
-    }
+    let phase: i32 = (KNIGHT..=QUEEN)
+        .map(|p| board.pieces[p].count_ones() as i32 * PHASE_WEIGHT[p])
+        .sum();
     phase.min(24)
 }
 
@@ -502,17 +492,6 @@ pub fn evaluate(board: &Board) -> i32 {
     let score = (s.0 * phase + eg * (24 - phase)) / 24;
     let score = if board.stm == WHITE { score } else { -score };
     score + TEMPO
-}
-
-#[allow(dead_code)]
-fn material_only(board: &Board) -> S {
-    let mut s = S(0, 0);
-    for p in PAWN..QUEEN + 1 {
-        let diff = board.piece_bb(WHITE, p).count_ones() as i32
-            - board.piece_bb(BLACK, p).count_ones() as i32;
-        s += MATERIAL[p] * diff;
-    }
-    s
 }
 
 #[cfg(test)]

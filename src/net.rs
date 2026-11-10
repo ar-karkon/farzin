@@ -301,3 +301,76 @@ impl Accumulators {
         self.stack[ply].output(net, board)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::movegen::legal_moves;
+
+    fn random_net(hidden: usize, buckets: usize) -> Network {
+        let mut s = 0x1234_5678u64;
+        let mut next = move || {
+            s ^= s << 13;
+            s ^= s >> 7;
+            s ^= s << 17;
+            ((s >> 40) % 200) as i16 - 100
+        };
+        Network {
+            hidden,
+            buckets,
+            ft_weights: (0..INPUTS * hidden).map(|_| next()).collect(),
+            ft_bias: (0..hidden).map(|_| next()).collect(),
+            out_weights: (0..buckets * 2 * hidden).map(|_| next() / 2).collect(),
+            out_bias: (0..buckets).map(|_| i32::from(next()) * 100).collect(),
+        }
+    }
+
+    #[test]
+    fn incremental_updates_match_refresh_and_serialization_round_trips() {
+        let net = random_net(32, 8);
+        let reloaded = Network::from_bytes(&net.to_bytes()).unwrap();
+        assert_eq!(reloaded.ft_weights, net.ft_weights);
+        assert_eq!(reloaded.out_bias, net.out_bias);
+        let mut acc = Accumulators::new();
+        for fen in [
+            "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
+            "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1",
+            "rnbqkbnr/ppp1p1pp/8/3pPp2/8/8/PPPP1PPP/RNBQKBNR w KQkq f6 0 3",
+        ] {
+            let mut board = Board::from_fen(fen).unwrap();
+            acc.refresh(&net, &board, 0);
+            let mut seed = 7usize;
+            for ply in 1..40 {
+                let moves = legal_moves(&board);
+                if moves.is_empty() {
+                    break;
+                }
+                // Prefer special moves to exercise castling, ep and promotion paths.
+                let special: Vec<_> = moves
+                    .iter()
+                    .copied()
+                    .filter(|m| m.is_noisy() || m.is_castle())
+                    .collect();
+                seed = seed
+                    .wrapping_mul(6364136223846793005)
+                    .wrapping_add(1442695040888963407);
+                let pool = if !special.is_empty() && seed.is_multiple_of(3) {
+                    &special
+                } else {
+                    &moves
+                };
+                let mv = pool[(seed >> 33) % pool.len()];
+                let child = board.make_move(mv);
+                acc.push(&net, &board, &child, mv, ply);
+                assert_eq!(
+                    acc.evaluate(&net, &child, ply),
+                    net.evaluate(&child),
+                    "{} {}",
+                    fen,
+                    mv.to_uci()
+                );
+                board = child;
+            }
+        }
+    }
+}

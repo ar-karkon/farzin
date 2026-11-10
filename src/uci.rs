@@ -462,6 +462,31 @@ pub fn run() {
         bench(depth, default_network());
         return;
     }
+    if args.get(1).map(String::as_str) == Some("datagen") {
+        let get = |key: &str| {
+            args.iter()
+                .find_map(|a| a.strip_prefix(&format!("{key}=")))
+                .map(str::to_string)
+        };
+        let num =
+            |key: &str, default: u64| get(key).and_then(|v| v.parse().ok()).unwrap_or(default);
+        let net = match get("evalfile") {
+            Some(path) if path == "none" => None,
+            Some(path) => Some(Arc::new(Network::load(&path).expect("load network"))),
+            None => default_network(),
+        };
+        crate::datagen::run(crate::datagen::Config {
+            threads: num("threads", 1) as usize,
+            games: num("games", 1000),
+            soft_nodes: num("soft_nodes", 5000),
+            hard_nodes: num("hard_nodes", 100_000),
+            random_plies: num("random_plies", 8) as usize,
+            out: get("out").unwrap_or_else(|| "farzin.data".to_string()),
+            seed: num("seed", 1),
+            net,
+        });
+        return;
+    }
     let mut engine = Engine::new();
     let stdin = std::io::stdin();
     for line in stdin.lock().lines() {
