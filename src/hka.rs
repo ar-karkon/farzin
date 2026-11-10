@@ -173,10 +173,18 @@ impl Network {
             let per_l1 = 2 + 2 * INPUTS + STACKS * FC0_OUT;
             let rest = bytes.len() - header;
             if rest < fixed || !(rest - fixed).is_multiple_of(per_l1) {
-                return Err(format!("unsupported HalfKAv2_hm layout ({} bytes)", bytes.len()));
+                return Err(format!(
+                    "unsupported HalfKAv2_hm layout ({} bytes)",
+                    bytes.len()
+                ));
             }
             let l1 = (rest - fixed) / per_l1;
-            (l1, r.i16s(l1)?, r.i16s(INPUTS * l1)?, r.i32s(INPUTS * PSQT_BUCKETS)?)
+            (
+                l1,
+                r.i16s(l1)?,
+                r.i16s(INPUTS * l1)?,
+                r.i32s(INPUTS * PSQT_BUCKETS)?,
+            )
         };
         if l1 == 0 || !l1.is_multiple_of(64) || l1 > 4096 {
             return Err(format!("unsupported L1 = {l1}"));
@@ -206,7 +214,15 @@ impl Network {
             }
             let b2 = r.i32s(1)?[0];
             let w2: [i8; FC1_OUT] = r.i8s(FC1_OUT)?.try_into().unwrap();
-            stacks.push(Stack { b0, w0, b1, w1, w1s, b2, w2 });
+            stacks.push(Stack {
+                b0,
+                w0,
+                b1,
+                w1,
+                w1s,
+                b2,
+                w2,
+            });
         }
         if r.o != bytes.len() {
             return Err("trailing bytes in network".into());
@@ -406,7 +422,11 @@ fn find_nonzero_chunks(input: &[u8], nz: &mut [u16], n: &mut usize) {
 /// `b0 + W0 * input` over the listed non-zero chunks.
 #[inline(always)]
 fn fc0_sparse(input: &[u8], nz: &[u16], w0: &[i8], b0: &[i32; FC0_OUT]) -> [i32; FC0_OUT] {
-    #[cfg(all(target_arch = "x86_64", target_feature = "avx512vnni", target_feature = "avx512bw"))]
+    #[cfg(all(
+        target_arch = "x86_64",
+        target_feature = "avx512vnni",
+        target_feature = "avx512bw"
+    ))]
     {
         // SAFETY: features are enabled at compile time; every chunk index is < L1/4
         // so all loads stay within `input` and `w0`.
@@ -437,7 +457,10 @@ fn fc0_sparse(input: &[u8], nz: &[u16], w0: &[i8], b0: &[i32; FC0_OUT]) -> [i32;
             for &c in it.remainder() {
                 acc[0] = step(acc[0], c);
             }
-            let acc = _mm512_add_epi32(_mm512_add_epi32(acc[0], acc[1]), _mm512_add_epi32(acc[2], acc[3]));
+            let acc = _mm512_add_epi32(
+                _mm512_add_epi32(acc[0], acc[1]),
+                _mm512_add_epi32(acc[2], acc[3]),
+            );
             let mut out = [0i32; FC0_OUT];
             _mm512_storeu_si512(out.as_mut_ptr().cast(), acc);
             out
@@ -507,7 +530,10 @@ fn fc0_sparse(input: &[u8], nz: &[u16], w0: &[i8], b0: &[i32; FC0_OUT]) -> [i32;
 
 #[inline(always)]
 fn dot_u8_i8(a: &[u8], w: &[i8]) -> i32 {
-    a.iter().zip(w).map(|(&x, &y)| i32::from(x) * i32::from(y)).sum()
+    a.iter()
+        .zip(w)
+        .map(|(&x, &y)| i32::from(x) * i32::from(y))
+        .sum()
 }
 
 /// One position's accumulators: `[2][L1]` int16 plus `[2][8]` PSQT sums.
@@ -606,7 +632,11 @@ fn update(dst: &mut [i16], src: &[i16], adds: &[&[i16]], subs: &[&[i16]]) {
             for (((((d, &x), &a1), &a2), &s1), &s2) in
                 dst.iter_mut().zip(src).zip(a1).zip(a2).zip(s1).zip(s2)
             {
-                *d = x.wrapping_add(a1).wrapping_add(a2).wrapping_sub(s1).wrapping_sub(s2);
+                *d = x
+                    .wrapping_add(a1)
+                    .wrapping_add(a2)
+                    .wrapping_sub(s1)
+                    .wrapping_sub(s2);
             }
         }
         _ => {
@@ -656,7 +686,9 @@ impl Accumulators {
     fn ensure(&mut self, net: &Network) {
         if self.l1 != net.l1 || self.stack.is_empty() {
             self.l1 = net.l1;
-            self.stack = (0..crate::search::MAX_PLY + 8).map(|_| Acc::new(net.l1)).collect();
+            self.stack = (0..crate::search::MAX_PLY + 8)
+                .map(|_| Acc::new(net.l1))
+                .collect();
             self.reset_cache(net);
         }
     }
@@ -719,7 +751,11 @@ impl Accumulators {
         let from = mv.from();
         let to = mv.to();
         let code = parent.mailbox[from] as usize;
-        let placed = if mv.is_promotion() { us * 6 + mv.promotion() } else { code };
+        let placed = if mv.is_promotion() {
+            us * 6 + mv.promotion()
+        } else {
+            code
+        };
         let mut d = Dirty {
             adds: [(placed, to), (0, 0)],
             subs: [(code, from), (0, 0)],
@@ -728,7 +764,11 @@ impl Accumulators {
             king_side: if code % 6 == KING { us } else { 2 },
         };
         if mv.is_castle() {
-            let (rf, rt) = if mv.flag() == KING_CASTLE { (to + 1, to - 1) } else { (to - 2, to + 1) };
+            let (rf, rt) = if mv.flag() == KING_CASTLE {
+                (to + 1, to - 1)
+            } else {
+                (to - 2, to + 1)
+            };
             d.adds[1] = (us * 6 + ROOK, rt);
             d.subs[1] = (us * 6 + ROOK, rf);
             d.na = 2;
@@ -750,7 +790,10 @@ impl Accumulators {
     pub fn push_null(&mut self, ply: usize) {
         let parent_board = self.stack[ply - 1].board;
         let e = &mut self.stack[ply];
-        e.dirty = Dirty { king_side: 2, ..Dirty::default() };
+        e.dirty = Dirty {
+            king_side: 2,
+            ..Dirty::default()
+        };
         e.computed = [false; 2];
         e.board = parent_board.map(|b| b.make_null());
     }
@@ -767,7 +810,12 @@ impl Accumulators {
         let (prev, rest) = self.stack.split_at_mut(ply);
         let src = &prev[ply - 1];
         let dst = &mut rest[0];
-        update(dst.side_mut(p, l1), src.side(p, l1), &ra[..d.na], &rs[..d.ns]);
+        update(
+            dst.side_mut(p, l1),
+            src.side(p, l1),
+            &ra[..d.na],
+            &rs[..d.ns],
+        );
         let mut ps = src.psqt[p];
         for &f in &fa[..d.na] {
             for (a, w) in ps.iter_mut().zip(net.prow(f)) {
@@ -807,6 +855,57 @@ impl Accumulators {
         self.materialize(net, ply, BLACK);
         net.output(&self.stack[ply], board)
     }
+}
+
+#[doc(hidden)]
+pub fn profile(net: &Network, board: &Board) {
+    use std::hint::black_box;
+    use std::time::Instant;
+    let mut acc = Acc::new(net.l1);
+    for p in [WHITE, BLACK] {
+        acc.refresh_from_scratch(net, board, p);
+    }
+    let l1 = net.l1;
+    let half = l1 / 2;
+    let n_iter = 1_000_000;
+    let mut input = Aligned([0u8; 4096]);
+    let t = Instant::now();
+    for _ in 0..n_iter {
+        for (k, p) in [WHITE, BLACK].into_iter().enumerate() {
+            let a = black_box(&acc).side(p, l1);
+            let (lo, hi) = a.split_at(half);
+            transform_half(lo, hi, &mut input.0[k * half..(k + 1) * half]);
+        }
+        black_box(&input);
+    }
+    let tt = t.elapsed().as_nanos() as f64 / n_iter as f64;
+    let mut nz = [0u16; 1024 + 16];
+    let mut n = 0;
+    let t = Instant::now();
+    for _ in 0..n_iter {
+        n = 0;
+        find_nonzero_chunks(black_box(&input.0[..l1]), &mut nz, &mut n);
+        black_box(&nz);
+    }
+    let tn = t.elapsed().as_nanos() as f64 / n_iter as f64;
+    let st = &net.stacks[0];
+    let t = Instant::now();
+    let mut s = 0;
+    for _ in 0..n_iter {
+        s += fc0_sparse(
+            black_box(&input.0[..l1]),
+            black_box(&nz[..n]),
+            &st.w0,
+            &st.b0,
+        )[3];
+    }
+    let tf = t.elapsed().as_nanos() as f64 / n_iter as f64;
+    let t = Instant::now();
+    for _ in 0..n_iter {
+        s += net.propagate(black_box(&acc), WHITE, 0);
+    }
+    let tp = t.elapsed().as_nanos() as f64 / n_iter as f64;
+    eprintln!("transform {tt:.1} ns, nonzero {tn:.1} ns ({n} chunks), fc0 {tf:.1} ns, propagate {tp:.1} ns [{s}]");
 }
 
 #[cfg(test)]
@@ -851,7 +950,11 @@ mod tests {
                 b.extend_from_slice(&(next(2000) as i32).to_le_bytes());
             }
             for j in 0..FC1_OUT * FC1_IN {
-                b.push(if j % FC1_IN < 30 { next(60) as i8 as u8 } else { 0 });
+                b.push(if j % FC1_IN < 30 {
+                    next(60) as i8 as u8
+                } else {
+                    0
+                });
             }
             b.extend_from_slice(&(next(2000) as i32).to_le_bytes());
             for _ in 0..FC1_OUT {
@@ -880,14 +983,28 @@ mod tests {
                 if moves.is_empty() {
                     break;
                 }
-                seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
-                let special: Vec<_> =
-                    moves.iter().copied().filter(|m| m.is_noisy() || m.is_castle()).collect();
-                let pool = if !special.is_empty() && (seed >> 20) % 3 == 0 { &special } else { &moves };
+                seed = seed
+                    .wrapping_mul(6364136223846793005)
+                    .wrapping_add(1442695040888963407);
+                let special: Vec<_> = moves
+                    .iter()
+                    .copied()
+                    .filter(|m| m.is_noisy() || m.is_castle())
+                    .collect();
+                let pool = if !special.is_empty() && (seed >> 20).is_multiple_of(3) {
+                    &special
+                } else {
+                    &moves
+                };
                 let mv = pool[(seed >> 33) as usize % pool.len()];
                 let child = board.make_move(mv);
                 acc.push(&net, &board, &child, mv, ply);
-                assert_eq!(acc.evaluate(&net, &child, ply), net.evaluate(&child), "{fen} {}", mv.to_uci());
+                assert_eq!(
+                    acc.evaluate(&net, &child, ply),
+                    net.evaluate(&child),
+                    "{fen} {}",
+                    mv.to_uci()
+                );
                 board = child;
             }
         }
@@ -897,16 +1014,20 @@ mod tests {
     fn lazy_chains_with_skipped_evals_and_null_moves() {
         let net = Network::from_bytes(&synthetic(64)).unwrap();
         let mut acc = Accumulators::new();
-        let mut board = Board::from_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1").unwrap();
+        let mut board =
+            Board::from_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1")
+                .unwrap();
         acc.refresh(&net, &board, 0);
         let mut seed = 5u64;
         for ply in 1..100 {
-            seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+            seed = seed
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
             let moves = legal_moves(&board);
             if moves.is_empty() {
                 break;
             }
-            let child = if (seed >> 40) % 5 == 0 && !board.in_check() {
+            let child = if (seed >> 40).is_multiple_of(5) && !board.in_check() {
                 acc.push_null(ply);
                 board.make_null()
             } else {
@@ -915,8 +1036,12 @@ mod tests {
                 acc.push(&net, &board, &c, mv, ply);
                 c
             };
-            if (seed >> 50) % 4 == 0 {
-                assert_eq!(acc.evaluate(&net, &child, ply), net.evaluate(&child), "ply {ply}");
+            if (seed >> 50).is_multiple_of(4) {
+                assert_eq!(
+                    acc.evaluate(&net, &child, ply),
+                    net.evaluate(&child),
+                    "ply {ply}"
+                );
             }
             board = child;
         }
@@ -947,50 +1072,4 @@ mod tests {
         // Black king as seen by white.
         assert_eq!(feature(WHITE, 4, 6 + KING, 60), 60 + 640 + 31 * 704);
     }
-}
-
-#[doc(hidden)]
-pub fn profile(net: &Network, board: &Board) {
-    use std::hint::black_box;
-    use std::time::Instant;
-    let mut acc = Acc::new(net.l1);
-    for p in [WHITE, BLACK] {
-        acc.refresh_from_scratch(net, board, p);
-    }
-    let l1 = net.l1;
-    let half = l1 / 2;
-    let n_iter = 1_000_000;
-    let mut input = Aligned([0u8; 4096]);
-    let t = Instant::now();
-    for _ in 0..n_iter {
-        for (k, p) in [WHITE, BLACK].into_iter().enumerate() {
-            let a = black_box(&acc).side(p, l1);
-            let (lo, hi) = a.split_at(half);
-            transform_half(lo, hi, &mut input.0[k * half..(k + 1) * half]);
-        }
-        black_box(&input);
-    }
-    let tt = t.elapsed().as_nanos() as f64 / n_iter as f64;
-    let mut nz = [0u16; 1024 + 16];
-    let mut n = 0;
-    let t = Instant::now();
-    for _ in 0..n_iter {
-        n = 0;
-        find_nonzero_chunks(black_box(&input.0[..l1]), &mut nz, &mut n);
-        black_box(&nz);
-    }
-    let tn = t.elapsed().as_nanos() as f64 / n_iter as f64;
-    let st = &net.stacks[0];
-    let t = Instant::now();
-    let mut s = 0;
-    for _ in 0..n_iter {
-        s += fc0_sparse(black_box(&input.0[..l1]), black_box(&nz[..n]), &st.w0, &st.b0)[3];
-    }
-    let tf = t.elapsed().as_nanos() as f64 / n_iter as f64;
-    let t = Instant::now();
-    for _ in 0..n_iter {
-        s += net.propagate(black_box(&acc), WHITE, 0);
-    }
-    let tp = t.elapsed().as_nanos() as f64 / n_iter as f64;
-    eprintln!("transform {tt:.1} ns, nonzero {tn:.1} ns ({n} chunks), fc0 {tf:.1} ns, propagate {tp:.1} ns [{s}]");
 }

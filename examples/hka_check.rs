@@ -24,8 +24,17 @@ fn main() {
         seed
     };
     let mut checked = 0usize;
-    for line in book.lines().filter(|l| !l.trim().is_empty() && !l.starts_with('#')).take(n) {
-        let fen: String = line.split_whitespace().take(4).collect::<Vec<_>>().join(" ") + " 0 1";
+    for line in book
+        .lines()
+        .filter(|l| !l.trim().is_empty() && !l.starts_with('#'))
+        .take(n)
+    {
+        let fen: String = line
+            .split_whitespace()
+            .take(4)
+            .collect::<Vec<_>>()
+            .join(" ")
+            + " 0 1";
         let mut board = Board::from_fen(&fen).unwrap();
         acc.refresh(&net, &board, 0);
         let plies = 20 + (rnd() % 140) as usize;
@@ -46,7 +55,13 @@ fn main() {
             acc.push(&net, &board, &child, mv, ply);
             let inc = acc.evaluate(&net, &child, ply);
             let full = net.evaluate(&child);
-            assert_eq!(inc, full, "incremental mismatch at {} after {}", board.to_fen(), mv.to_uci());
+            assert_eq!(
+                inc,
+                full,
+                "incremental mismatch at {} after {}",
+                board.to_fen(),
+                mv.to_uci()
+            );
             checked += 1;
             if ply % 7 == 0 {
                 println!("{}\t{}", child.to_fen(), full);
@@ -62,7 +77,9 @@ fn main() {
 #[allow(dead_code)]
 pub fn micro(net: &Network) {
     use std::time::Instant;
-    let board = Board::from_fen("r1bqkb1r/pp2pppp/2n2n2/2pp4/2P5/P3PN2/1P1P1PPP/RNBQKB1R w KQkq - 0 1").unwrap();
+    let board =
+        Board::from_fen("r1bqkb1r/pp2pppp/2n2n2/2pp4/2P5/P3PN2/1P1P1PPP/RNBQKB1R w KQkq - 0 1")
+            .unwrap();
     let moves = legal_moves(&board);
     let mut acc = Accumulators::new();
     acc.refresh(net, &board, 0);

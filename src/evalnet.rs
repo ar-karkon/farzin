@@ -58,16 +58,12 @@ impl EvalNet {
     }
 }
 
+#[derive(Default)]
 pub enum EvalAccs {
+    #[default]
     None,
     Fzn1(net::Accumulators),
     Hka(Box<hka::Accumulators>),
-}
-
-impl Default for EvalAccs {
-    fn default() -> Self {
-        EvalAccs::None
-    }
 }
 
 impl EvalAccs {
@@ -83,7 +79,7 @@ impl EvalAccs {
             }
             EvalNet::Hka(n) => {
                 if !matches!(self, EvalAccs::Hka(_)) {
-                    *self = EvalAccs::Hka(Box::new(hka::Accumulators::new()));
+                    *self = EvalAccs::Hka(Box::default());
                 }
                 if let EvalAccs::Hka(a) = self {
                     a.refresh(n, board, ply);

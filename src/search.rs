@@ -1,8 +1,8 @@
 //! Principal variation search with Lazy SMP.
 use crate::board::Board;
+use crate::evalnet::{EvalAccs, EvalNet};
 use crate::movegen::{legal_moves, MoveList};
 use crate::movepick::{MovePicker, OrderingContext};
-use crate::evalnet::{EvalAccs, EvalNet};
 use crate::tt::*;
 use crate::types::*;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};

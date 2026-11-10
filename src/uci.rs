@@ -1,7 +1,7 @@
 //! UCI protocol front end.
 use crate::board::Board;
-use crate::movegen::perft;
 use crate::evalnet::EvalNet as Network;
+use crate::movegen::perft;
 use crate::search::{search, Limits, Params, Shared, Thread};
 use crate::tt::TranspositionTable;
 use crate::types::*;
@@ -289,10 +289,7 @@ impl Engine {
                 } else {
                     match Network::load(value) {
                         Ok(net) => {
-                            println!(
-                                "info string loaded network {value}: {}",
-                                net.describe()
-                            );
+                            println!("info string loaded network {value}: {}", net.describe());
                             self.opts.net = Some(Arc::new(net));
                         }
                         Err(e) => println!("info string failed to load network: {e}"),

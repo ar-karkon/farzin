@@ -4,8 +4,8 @@
 //! soft node limit. Quiet positions are written as 32-byte records with the
 //! search score and the final game result (both from White's view).
 use crate::board::Board;
-use crate::movegen::legal_moves;
 use crate::evalnet::EvalNet as Network;
+use crate::movegen::legal_moves;
 use crate::search::{Limits, Shared, Thread};
 use crate::tt::{TranspositionTable, MATE_BOUND};
 use crate::types::*;
