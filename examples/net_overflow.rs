@@ -8,7 +8,13 @@ fn main() {
     let data = std::fs::read(&args[2]).unwrap();
     let h = net.hidden;
     let (mut n, mut overflow, mut max_abs) = (0u64, 0u64, 0i64);
-    for rec in data.chunks_exact(RECORD_SIZE).step_by(97).take(20000) {
+    for rec in data
+        .as_chunks::<RECORD_SIZE>()
+        .0
+        .iter()
+        .step_by(97)
+        .take(20000)
+    {
         let r = unpack(rec);
         let mut acc = [net.ft_bias.clone(), net.ft_bias.clone()];
         for &(code, sq) in &r.pieces {

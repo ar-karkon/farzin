@@ -58,8 +58,10 @@ impl Network {
         let mut offset = 12;
         let mut read_i16 = |n: usize| {
             let v: Vec<i16> = bytes[offset..offset + 2 * n]
-                .chunks_exact(2)
-                .map(|c| i16::from_le_bytes([c[0], c[1]]))
+                .as_chunks::<2>()
+                .0
+                .iter()
+                .map(|c| i16::from_le_bytes(*c))
                 .collect();
             offset += 2 * n;
             v
@@ -68,8 +70,10 @@ impl Network {
         let ft_bias = read_i16(hidden);
         let out_weights = read_i16(buckets * 2 * hidden);
         let out_bias = bytes[offset..offset + 4 * buckets]
-            .chunks_exact(4)
-            .map(|c| i32::from_le_bytes(c.try_into().unwrap()))
+            .as_chunks::<4>()
+            .0
+            .iter()
+            .map(|c| i32::from_le_bytes(*c))
             .collect();
         Ok(Network {
             hidden,

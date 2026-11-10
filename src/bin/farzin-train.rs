@@ -133,7 +133,7 @@ fn load(paths: &str, wdl: f32, buckets: usize, eval_scale: f32) -> Vec<Sample> {
     let mut samples = Vec::new();
     for path in paths.split(',') {
         let bytes = std::fs::read(path).unwrap_or_else(|e| panic!("{path}: {e}"));
-        for rec in bytes.chunks_exact(RECORD_SIZE) {
+        for rec in bytes.as_chunks::<RECORD_SIZE>().0 {
             let r = unpack(rec);
             if r.pieces.len() > 32 {
                 continue;

@@ -130,11 +130,10 @@ const fn ray_tables() -> ([[Bitboard; 64]; 64], [[Bitboard; 64]; 64]) {
     (between, line)
 }
 
-const RAYS: ([[Bitboard; 64]; 64], [[Bitboard; 64]; 64]) = ray_tables();
 /// Squares strictly between two aligned squares (empty if not aligned).
-pub static BETWEEN: [[Bitboard; 64]; 64] = RAYS.0;
+pub static BETWEEN: [[Bitboard; 64]; 64] = ray_tables().0;
 /// Full board line through two aligned squares (empty if not aligned).
-pub static LINE: [[Bitboard; 64]; 64] = RAYS.1;
+pub static LINE: [[Bitboard; 64]; 64] = ray_tables().1;
 
 #[inline(always)]
 pub fn piece_attacks(piece: usize, sq: Square, occ: Bitboard) -> Bitboard {

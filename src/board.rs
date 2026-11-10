@@ -601,7 +601,7 @@ impl Board {
         }
         let from = mv.from();
         let to = mv.to();
-        let mut swap = SEE_VALUES[self.piece_on(to).map_or(6, |p| p)] - threshold;
+        let mut swap = SEE_VALUES[self.piece_on(to).unwrap_or(6)] - threshold;
         if swap < 0 {
             return false;
         }
@@ -642,7 +642,7 @@ impl Board {
                 break;
             }
             let lowest = mine & self.pieces[piece];
-            occ ^= lowest & lowest.wrapping_neg();
+            occ ^= 1u64 << lowest.trailing_zeros();
             if piece == PAWN || piece == BISHOP || piece == QUEEN {
                 attackers |= bishop_attacks(to, occ) & bishops;
             }
