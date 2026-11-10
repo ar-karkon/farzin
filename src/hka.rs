@@ -37,6 +37,10 @@ pub struct Stack {
     #[cfg_attr(all(target_arch = "x86_64", target_feature = "avx2"), allow(dead_code))]
     w1: [[i8; FC1_IN]; FC1_OUT],
     /// `w1` as `[FC1_IN / 4][32][4]` for broadcast multiply-add.
+    #[cfg_attr(
+        not(all(target_arch = "x86_64", target_feature = "avx2")),
+        allow(dead_code)
+    )]
     w1s: [i8; FC1_IN * FC1_OUT],
     b2: i32,
     w2: [i8; FC1_OUT],
@@ -114,15 +118,19 @@ impl Reader<'_> {
     fn i16s(&mut self, n: usize) -> Result<Vec<i16>, String> {
         Ok(self
             .take(2 * n)?
-            .chunks_exact(2)
-            .map(|c| i16::from_le_bytes([c[0], c[1]]))
+            .as_chunks::<2>()
+            .0
+            .iter()
+            .map(|c| i16::from_le_bytes(*c))
             .collect())
     }
     fn i32s(&mut self, n: usize) -> Result<Vec<i32>, String> {
         Ok(self
             .take(4 * n)?
-            .chunks_exact(4)
-            .map(|c| i32::from_le_bytes(c.try_into().unwrap()))
+            .as_chunks::<4>()
+            .0
+            .iter()
+            .map(|c| i32::from_le_bytes(*c))
             .collect())
     }
     /// One signed-LEB128 block: magic, u32 byte count, payload.
@@ -393,6 +401,10 @@ fn fc1_dense(x: &[u8; FC1_IN], st: &Stack) -> [i32; FC1_OUT] {
 }
 
 /// For each 8-bit mask, the positions of its set bits (padded).
+#[cfg_attr(
+    not(all(target_arch = "x86_64", target_feature = "avx2")),
+    allow(dead_code)
+)]
 const NZ_TABLE: [[u16; 8]; 256] = {
     let mut t = [[0u16; 8]; 256];
     let mut m = 0;
@@ -434,9 +446,9 @@ fn find_nonzero_chunks(input: &[u8], nz: &mut [u16], n: &mut usize) {
             return;
         }
     }
-    for (c, w) in input.chunks_exact(4).enumerate() {
+    for (c, w) in input.as_chunks::<4>().0.iter().enumerate() {
         nz[*n] = c as u16;
-        *n += usize::from(u32::from_ne_bytes([w[0], w[1], w[2], w[3]]) != 0);
+        *n += usize::from(u32::from_ne_bytes(*w) != 0);
     }
 }
 
@@ -468,14 +480,14 @@ fn fc0_sparse(input: &[u8], nz: &[u16], w0: &[i8], b0: &[i32; FC0_OUT]) -> [i32;
                 let w = _mm512_loadu_si512(wp.add(c * 64).cast());
                 _mm512_dpbusd_epi32(a, x, w)
             };
-            let mut it = nz.chunks_exact(4);
-            for q in &mut it {
+            let (quads, rest) = nz.as_chunks::<4>();
+            for q in quads {
                 acc[0] = step(acc[0], q[0]);
                 acc[1] = step(acc[1], q[1]);
                 acc[2] = step(acc[2], q[2]);
                 acc[3] = step(acc[3], q[3]);
             }
-            for &c in it.remainder() {
+            for &c in rest {
                 acc[0] = step(acc[0], c);
             }
             let acc = _mm512_add_epi32(
@@ -512,8 +524,8 @@ fn fc0_sparse(input: &[u8], nz: &[u16], w0: &[i8], b0: &[i32; FC0_OUT]) -> [i32;
                     _mm256_madd_epi16(_mm256_maddubs_epi16(x, w_hi), ones),
                 )
             };
-            let mut it = nz.chunks_exact(2);
-            for q in &mut it {
+            let (pairs, rest) = nz.as_chunks::<2>();
+            for q in pairs {
                 let (l, h) = prod(q[0]);
                 a0 = _mm256_add_epi32(a0, l);
                 a1 = _mm256_add_epi32(a1, h);
@@ -521,7 +533,7 @@ fn fc0_sparse(input: &[u8], nz: &[u16], w0: &[i8], b0: &[i32; FC0_OUT]) -> [i32;
                 c0 = _mm256_add_epi32(c0, l);
                 c1 = _mm256_add_epi32(c1, h);
             }
-            for &c in it.remainder() {
+            for &c in rest {
                 let (l, h) = prod(c);
                 a0 = _mm256_add_epi32(a0, l);
                 a1 = _mm256_add_epi32(a1, h);
