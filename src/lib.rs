@@ -3,6 +3,8 @@ pub mod attacks;
 pub mod board;
 pub mod datagen;
 pub mod eval;
+pub mod evalnet;
+pub mod hka;
 pub mod movegen;
 pub mod movepick;
 pub mod net;

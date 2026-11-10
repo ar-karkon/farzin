@@ -2,7 +2,7 @@
 use crate::board::Board;
 use crate::movegen::{legal_moves, MoveList};
 use crate::movepick::{MovePicker, OrderingContext};
-use crate::net::{Accumulators, Network};
+use crate::evalnet::{EvalAccs, EvalNet};
 use crate::tt::*;
 use crate::types::*;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
@@ -212,8 +212,8 @@ pub struct Thread {
     root_nodes: Box<[[u64; 64]; 64]>,
     pub params: Params,
     lmr: Box<[[[i32; 64]; 64]; 2]>,
-    pub net: Option<Arc<Network>>,
-    acc: Accumulators,
+    pub net: Option<Arc<EvalNet>>,
+    acc: EvalAccs,
     pub silent: bool,
 }
 
@@ -264,7 +264,7 @@ impl Thread {
             lmr: init_lmr(&params),
             params,
             net: None,
-            acc: Accumulators::new(),
+            acc: EvalAccs::default(),
             silent: false,
         }
     }

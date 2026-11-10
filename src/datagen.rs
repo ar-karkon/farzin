@@ -5,7 +5,7 @@
 //! search score and the final game result (both from White's view).
 use crate::board::Board;
 use crate::movegen::legal_moves;
-use crate::net::Network;
+use crate::evalnet::EvalNet as Network;
 use crate::search::{Limits, Shared, Thread};
 use crate::tt::{TranspositionTable, MATE_BOUND};
 use crate::types::*;

@@ -1,7 +1,7 @@
 //! UCI protocol front end.
 use crate::board::Board;
 use crate::movegen::perft;
-use crate::net::Network;
+use crate::evalnet::EvalNet as Network;
 use crate::search::{search, Limits, Params, Shared, Thread};
 use crate::tt::TranspositionTable;
 use crate::types::*;
@@ -266,6 +266,11 @@ impl Engine {
                     self.opts.overhead = ms;
                 }
             }
+            "evalscale" => {
+                if let Ok(v) = value.parse() {
+                    crate::evalnet::set_hka_scale(v);
+                }
+            }
             "clear hash" => self.new_game(),
             "evalfile" => {
                 if value.is_empty() || value == "<empty>" {
@@ -285,8 +290,8 @@ impl Engine {
                     match Network::load(value) {
                         Ok(net) => {
                             println!(
-                                "info string loaded network {value} hidden {} buckets {}",
-                                net.hidden, net.buckets
+                                "info string loaded network {value}: {}",
+                                net.describe()
                             );
                             self.opts.net = Some(Arc::new(net));
                         }
@@ -324,6 +329,10 @@ impl Engine {
                 println!("option name Move Overhead type spin default 20 min 0 max 5000");
                 println!("option name Clear Hash type button");
                 println!("option name EvalFile type string default <default>");
+                println!(
+                    "option name EvalScale type spin default {} min 1 max 4096",
+                    crate::evalnet::DEFAULT_HKA_SCALE
+                );
                 for (name, value) in param_list(&self.opts.params) {
                     println!(
                         "option name tune_{name} type spin default {value} min -100000 max 100000"
@@ -359,6 +368,9 @@ impl Engine {
                 );
                 if let Some(net) = &self.opts.net {
                     println!("info string network {}", net.evaluate(&self.board));
+                    if let Network::Hka(h) = net.as_ref() {
+                        println!("info string raw {}", h.evaluate(&self.board));
+                    }
                 }
             }
             "bench" => {
