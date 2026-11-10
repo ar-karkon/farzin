@@ -26,3 +26,16 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## Stockfish NNUE network weights (CC0-1.0)
+
+`nets/default.nnue` is `nn-ad9b42354671.nnue` from
+<https://github.com/official-stockfish/networks>. That repository states that
+all its networks were uploaded by their authors under the CC0 1.0 Universal
+public-domain dedication. The file is redistributed unmodified
+(sha256 `ad9b423546714137916bd38978af6fd68d7b8951bef25ff76bf43da72d6cb786`).
+
+Farzin's inference for this format (`src/hka.rs`) is an independent Rust
+implementation written from the file layout; it contains no Stockfish
+(GPL-3.0) source code. A locally built, unmodified-except-for-one-debug-print
+Stockfish binary was used only as a test oracle and is not distributed.
