@@ -10,10 +10,11 @@ use crate::types::Move;
 use crate::{hka, net};
 
 /// Multiplier (/1024) from HalfKAv2_hm internal units to Farzin centipawns.
-/// Default fitted by least squares against Farzin's own search scores
+/// A least-squares fit against Farzin's g2 evaluations gives ~425; matches
+/// showed 560 is +37.8 Elo stronger than 425 and 700 no better than 560
 /// (see `docs/v6-report.md`).
 static HKA_SCALE: AtomicI32 = AtomicI32::new(DEFAULT_HKA_SCALE);
-pub const DEFAULT_HKA_SCALE: i32 = 425;
+pub const DEFAULT_HKA_SCALE: i32 = 560;
 
 pub fn hka_scale() -> i32 {
     HKA_SCALE.load(Ordering::Relaxed)
