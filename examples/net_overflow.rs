@@ -1,4 +1,5 @@
 //! Diagnostic: compare i32 and i64 output sums of a network over a data file.
+#![allow(clippy::needless_range_loop)]
 use farzin::datagen::{unpack, RECORD_SIZE};
 use farzin::net::{feature, Network, QA};
 fn main() {
