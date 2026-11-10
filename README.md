@@ -1,82 +1,56 @@
 # فرزین | Farzin
 
-فرزین یک موتور شطرنج آزمایشی با Rust است. نسخهٔ کنونی از کتابخانهٔ `chess` برای قوانین و تولید حرکت قانونی، جست‌وجوی negamax با alpha-beta و PVS، هرس null move، LMR، جدول انتقال پایدار، جست‌وجوی آرام محدود و ارزیابی سادهٔ ارزش مهره‌ها استفاده می‌کند. این نسخه هنوز موتور رقابتی نیست.
+فرزین یک موتور شطرنج UCI به زبان Rust است. از نسخهٔ ۰.۲ هستهٔ موتور کاملاً بازنویسی شده و دیگر به کتابخانهٔ `chess` وابسته نیست (آن کتابخانه فقط برای کد آزمایشی قدیمی Caissa در `src/caissa.rs` باقی مانده است).
 
-## اجرا
+گزارش کامل این مرحله، نتایج اندازه‌گیری و راهنمای اجرا روی سرور: [docs/v5-report.md](docs/v5-report.md).
 
-Rust و Cargo را نصب کنید، سپس:
+## وضعیت فعلی (برآورد محلی، نه رتبهٔ رسمی CCRL)
 
-```sh
-cargo test
-cargo run --release
-```
+| نسخه | رتبه روی مقیاس `UCI_Elo` استاک‌فیش ۱۷.۱ در 10+0.1 | ۹۵٪ |
+|---|---|---|
+| main قدیمی `65ec72a` | حدود ۱۶۷۷ | [۱۵۹۲, ۱۷۵۲] |
+| هستهٔ جدید + ارزیاب کلاسیک | حدود ۲۹۹۱ | [۲۹۳۴, ۳۰۴۳] |
+| هستهٔ جدید + NNUE نسل ۱ | ارزیاب کلاسیک + ۵۰٫۸ | [+۱۶٫۸, +۸۵٫۹] |
+| هستهٔ جدید + NNUE نسل ۲ (پیش‌فرض) | نسل ۱ + ۱۶۲٫۴ | [+۱۱۸٫۱, +۲۱۲٫۴] |
 
-موتور از ورودی و خروجی استاندارد با زیرمجموعه‌ای از UCI صحبت می‌کند:
-
-```text
-uci
-isready
-position startpos moves e2e4 e7e5
-go depth 3
-quit
-```
-
-`position fen` با شش فیلد FEN و حرکت‌های اختیاری نیز پشتیبانی می‌شود. جست‌وجو به‌صورت تدریجی اجرا می‌شود؛ `go depth N`، `go nodes N`، `go movetime N` (میلی‌ثانیه)، ساعت‌های `wtime`/`btime` و افزایش‌های `winc`/`binc`، `movestogo`، `go infinite` و `stop` پشتیبانی می‌شوند. عمق پیش‌فرض ۳ و سقف آن ۶۴ است. گزینهٔ `Hash` اندازهٔ جدول انتقال را تعیین می‌کند. با `Persistent Hash` (پیش‌فرض فعال) جدول جست‌وجوی تک‌نخی بین `go`های پیاپی حفظ و با `ucinewgame`، `Clear Hash` یا هر `setoption` پاک می‌شود؛ با `false` در هر جست‌وجو از نو ساخته می‌شود. تخصیص زمان ساده و آزمایشی است. موتور تکرار سه‌باره را از تاریخچهٔ حرکت‌های ارائه‌شده و قانون ۵۰ حرکت را از شمارندهٔ FEN و حرکت‌های بعدی تشخیص می‌دهد؛ FEN تاریخچهٔ قبل از خود را در بر ندارد. Chess960 پشتیبانی نمی‌شود.
-
-گزینهٔ آزمایشی `Threads` از ۱ تا ۸ نخ جست‌وجو را انتخاب می‌کند (پیش‌فرض ۱). نخ‌ها مستقل جست‌وجو می‌کنند، بودجهٔ گره و زمان را به اشتراک می‌گذارند و حافظهٔ `Hash` بین جدول‌های مستقل تقسیم می‌شود. افزایش سرعت یا قدرت بازی هنوز اثبات نشده است.
-
-## گزینه‌های آزمایشی جست‌وجو (Phase 4)
-
-از Phase 4، `PVS`، `LMR`، `Null Move` و `Persistent Hash` به‌طور پیش‌فرض فعال‌اند. این همان ترکیبی است که در آزمون جفتی خود-بازی در برابر پیش‌فرض‌های Phase 3 با 60 ms، +87.8 Elo [+69.0, +107.1] و با 250 ms، +186.2 Elo [+152.5, +223.5] گرفت. با `false` کردن هر چهار گزینه، جست‌وجو گره‌به‌گره با Phase 3 برابر می‌شود. موتور همچنان آزمایشی است و ارزیاب پیش‌فرض فقط ارزش مهره است.
-
-| گزینه | پیش‌فرض | کار | نتیجهٔ آزمون جداگانه (60 ms) |
-|---|---|---|---|
-| `PVS` | true | جست‌وجوی principal variation | پیش‌نیاز عملی `Null Move` |
-| `Null Move` | true | هرس null move با محافظ zugzwang | SPRT پذیرفته در برابر PVS، +34.9 Elo [+17.1, +52.8] |
-| `Persistent Hash` | true | حفظ TT بین حرکت‌ها | SPRT پذیرفته، +22.6 Elo [+7.9, +37.4] |
-| `LMR` | true | کاهش حرکت‌های آرام دیررس | +19.7 Elo [+5.0, +34.5] پس از ۳۰۰ جفت؛ SPRT جداگانه به مرز نرسید |
-| `Persistent History` | false | history و killer پایدار در یک جست‌وجو | بدون بهبود قابل‌مشاهده |
-
-جزئیات در [معماری Phase 4](docs/v4-architecture.md)، [نتایج جست‌وجو](docs/v4-search-results.md) و [وضعیت NNUE](docs/v4-nnue-validation.md). این اعداد Elo مطلق یا قابل مقایسه با موتورهای دیگر نیستند.
-
-برای آزمون آماری جفتی:
+## ساخت و اجرا
 
 ```sh
-python3 tools/sharded_match.py ENGINE ENGINE --openings tools/openings-v4-random8.fen --count 100 \
-  --shards 3 --cpus 1,2,3 --movetime-ms 60 --option-a "Null Move=true" --option-a PVS=true \
-  --option-b PVS=true --prefix out/nmp/m
-python3 tools/sprt.py out/nmp/m-shard*.json --unfinished-as-draw
+cargo build --release
+./target/release/farzin            # حالت UCI
+./target/release/farzin bench 12   # امضای گره و سرعت
+cargo test --release
 ```
 
-## بنچمارک
+ساخت با `-C target-cpu=native` انجام می‌شود (`.cargo/config.toml`). شبکهٔ `nets/default.nnue` هنگام ساخت داخل باینری قرار می‌گیرد.
+
+### گزینه‌های UCI
+
+| گزینه | پیش‌فرض | توضیح |
+|---|---|---|
+| `Hash` | 16 | اندازهٔ جدول انتقال (MB) |
+| `Threads` | 1 | Lazy SMP با جدول مشترک |
+| `Move Overhead` | 20 | حاشیهٔ زمانی (ms) |
+| `Clear Hash` | — | پاک کردن جدول و historyها |
+| `EvalFile` | `<default>` | مسیر شبکهٔ FZN1؛ `<empty>` = ارزیاب کلاسیک |
+| `tune_*` | — | پارامترهای جست‌وجو برای SPSA |
+
+فرمان‌های اضافه: `bench [depth]`، `go perft N`، `eval`، `d`.
+
+## زنجیرهٔ ابزار
 
 ```sh
-cargo build --release --locked
-python3 tools/bench.py target/release/farzin --depth 4
-python3 tools/bench.py target/release/farzin --depth 4 --json /tmp/farzin-bench.json
+# تولید داده با self-play
+./target/release/farzin datagen threads=4 games=50000 soft_nodes=4000 hard_nodes=12000 out=gen.data
+# آموزش شبکه
+./target/release/farzin-train data=gen.data out=net.nnue hidden=256 epochs=12 wdl=0.0 threads=4
+# مسابقه و SPRT (نیازمند pip install chess)
+python3 tools/arena.py --engine name=new,cmd=./target/release/farzin,opt.EvalFile=net.nnue \
+    --engine name=base,cmd=./target/release/farzin --tc 10+0.1 --pairs 200 --sprt 0 5
+# برآورد رتبه با لنگرهای ثابت
+python3 tools/rating.py results/*.json --anchor sf2800=2800 --anchor sf3000=3000
+# یک نسل کامل NNUE روی سرور
+tools/pipeline.sh 2 20000000 64
 ```
 
-این ابزار سه موقعیت ثابت را با عمق ثابت اجرا و زمان هرکدام را ثبت می‌کند و بررسی می‌کند عمق خواسته‌شده واقعاً کامل شده باشد؛ برای مقایسه، همین دستور را با مسیر موتور UCI دیگر و سخت‌افزار یکسان تکرار کنید. این اندازه‌گیری قدرت بازی یا Elo نیست. گزینهٔ UCI با نام `Move Overhead` زمان احتیاط را بر حسب میلی‌ثانیه تنظیم می‌کند.
-
-گزارش‌های JSON ابزارهای بنچمارک و مسابقه SHA-256 باینری‌های اجراشده را ثبت می‌کنند. هر دو ابزار برای `EvalFile` فرزین پیام موفقیت را بررسی و هش فایل را ثبت می‌کنند؛ شکست یا نبود پیام موفقیت از ثبت نتیجه جلوگیری می‌کند. بارگذاری مدل در موتورهای دیگر به‌طور مستقل تأیید نمی‌شود.
-
-برای بازی‌های آزمایشی جفتی میان دو موتور UCI، ابزار مستقل `tools/match.py` به `python-chess==1.999` نیاز دارد (مجوز GPL کتابخانه را جداگانه بررسی کنید):
-
-```sh
-python3 -m pip install python-chess==1.999
-python3 tools/match.py /path/to/engine-a /path/to/engine-b --pairs 1 --depth 3 --json match.json
-python3 tools/match.py /path/to/engine-a /path/to/engine-b --pairs 3 --movetime-ms 100 --openings tools/openings-smoke.fen --json match-time.json
-python3 tools/analyze_match.py match-time.json
-```
-
-ابزار رنگ‌ها را جابه‌جا، قانونی‌بودن حرکت‌ها را کنترل و نتیجه و حرکت‌های هر بازی را ثبت می‌کند. گشایش‌های نمونه صرفاً برای بررسی ابزار هستند و مجموعهٔ آماری متوازن محسوب نمی‌شوند. هر دو موتور باید محدودیت انتخاب‌شده را واقعاً پشتیبانی کنند؛ مثلاً نسخهٔ پایهٔ اولیهٔ فرزین `movetime` را پشتیبانی نمی‌کند. بازی‌هایی که به سقف حرکت می‌رسند ناتمام ثبت می‌شوند. چند بازی آزمایشی معیار معتبری برای تخمین Elo نیستند.
-
-تحلیل‌گر جفت‌های دارای بازی ناتمام را از میانگین جفتی کنار می‌گذارد و یک کران محافظه‌کارانه با فرض استقلال و توزیع یکسان جفت‌ها گزارش می‌کند. گشایش دست‌چین یا حذف بازی ناتمام می‌تواند این فرض را نقض کند؛ خروجی SPRT یا تخمین Elo نیست.
-
-جزئیات طراحی و مسیر توسعه در [docs/architecture.md](docs/architecture.md) آمده است.
-
-## ارزیاب شبکهٔ آزمایشی
-
-ارزیاب پیش‌فرض کلاسیک است. برای آزمون یک فایل محلی سازگار با Caissa PNN نسخهٔ ۱۵ می‌توان پس از `uci` فرمان `setoption name EvalFile value /path/to/model.pnn` را فرستاد؛ پاسخ موفق `info string experimental network loaded` است. برای بازگشت به حالت کلاسیک مقدار `<empty>` را تنظیم کنید. شبکه همراه پروژه توزیع نمی‌شود و شرایط استفاده از فایل وزن باید جداگانه بررسی شود.
-
-این مسیر اسکالر و آزمایشی از cache افزایشی در هر جست‌وجو استفاده می‌کند و همچنان ممکن است کند باشد. امتیاز شامل برخی تعدیلات اختصاصی Caissa نیست؛ برای سنجش قدرت یا بازی رقابتی به آزمایش بیشتر نیاز دارد. شرح تطبیق با مرجع در [بررسی NNUE](docs/nnue-investigation.md) آمده است.
+ابزارهای قدیمی‌تر (`tools/match.py`، `tools/sprt.py`، `tools/bench.py` و …) برای بازتولید نتایج مراحل قبل نگه داشته شده‌اند.
