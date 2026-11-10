@@ -288,6 +288,21 @@ fn sub_row(acc: &mut [i16], row: &[i16]) {
 /// multiply-add of i16 pairs into i32 lanes.
 #[inline]
 fn screlu_dot(acc: &[i16], weights: &[i16]) -> i32 {
+    #[cfg(all(target_arch = "x86_64", target_feature = "avx2"))]
+    {
+        // SAFETY: AVX2 is enabled at compile time; slices have equal length,
+        // a multiple of 32, and unaligned loads are used.
+        unsafe { screlu_dot_avx2(acc, weights) }
+    }
+    #[cfg(not(all(target_arch = "x86_64", target_feature = "avx2")))]
+    {
+        screlu_dot_scalar(acc, weights)
+    }
+}
+
+#[cfg_attr(all(target_arch = "x86_64", target_feature = "avx2"), allow(dead_code))]
+#[inline]
+fn screlu_dot_scalar(acc: &[i16], weights: &[i16]) -> i32 {
     let mut sums = [0i32; 32];
     for (a, w) in acc.chunks_exact(32).zip(weights.chunks_exact(32)) {
         for i in 0..32 {
@@ -297,6 +312,37 @@ fn screlu_dot(acc: &[i16], weights: &[i16]) -> i32 {
         }
     }
     sums.iter().sum()
+}
+
+#[cfg(all(target_arch = "x86_64", target_feature = "avx2"))]
+#[inline]
+unsafe fn screlu_dot_avx2(acc: &[i16], weights: &[i16]) -> i32 {
+    use std::arch::x86_64::*;
+    let zero = _mm256_setzero_si256();
+    let qa = _mm256_set1_epi16(QA as i16);
+    let mut s0 = _mm256_setzero_si256();
+    let mut s1 = _mm256_setzero_si256();
+    let n = acc.len();
+    let (a, w) = (acc.as_ptr(), weights.as_ptr());
+    let mut i = 0;
+    while i < n {
+        let x0 = _mm256_loadu_si256(a.add(i) as *const __m256i);
+        let x1 = _mm256_loadu_si256(a.add(i + 16) as *const __m256i);
+        let w0 = _mm256_loadu_si256(w.add(i) as *const __m256i);
+        let w1 = _mm256_loadu_si256(w.add(i + 16) as *const __m256i);
+        let c0 = _mm256_min_epi16(_mm256_max_epi16(x0, zero), qa);
+        let c1 = _mm256_min_epi16(_mm256_max_epi16(x1, zero), qa);
+        s0 = _mm256_add_epi32(s0, _mm256_madd_epi16(_mm256_mullo_epi16(c0, w0), c0));
+        s1 = _mm256_add_epi32(s1, _mm256_madd_epi16(_mm256_mullo_epi16(c1, w1), c1));
+        i += 32;
+    }
+    let s = _mm256_add_epi32(s0, s1);
+    let lo = _mm256_castsi256_si128(s);
+    let hi = _mm256_extracti128_si256::<1>(s);
+    let x = _mm_add_epi32(lo, hi);
+    let x = _mm_add_epi32(x, _mm_shuffle_epi32::<0b0100_1110>(x));
+    let x = _mm_add_epi32(x, _mm_shuffle_epi32::<0b1011_0001>(x));
+    _mm_cvtsi128_si32(x)
 }
 
 #[inline]
@@ -518,6 +564,18 @@ mod tests {
             out_weights: (0..out_buckets * 2 * hidden).map(|_| next() / 2).collect(),
             out_bias: (0..out_buckets).map(|_| i32::from(next()) * 100).collect(),
         }
+    }
+
+    #[test]
+    fn simd_matches_scalar() {
+        let mut x = 99u32;
+        let mut r = || {
+            x = x.wrapping_mul(1_103_515_245).wrapping_add(12345);
+            ((x >> 16) % 700) as i16 - 200
+        };
+        let a: Vec<i16> = (0..256).map(|_| r()).collect();
+        let w: Vec<i16> = (0..256).map(|_| r() % 128).collect();
+        assert_eq!(screlu_dot(&a, &w), screlu_dot_scalar(&a, &w));
     }
 
     #[test]

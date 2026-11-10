@@ -256,7 +256,8 @@ pub struct Sampler {
     pub out: Vec<[u8; crate::datagen::RECORD_SIZE]>,
 }
 
-fn is_quiet(board: &Board) -> bool {
+/// Not in check and no capture/promotion with positive SEE.
+pub fn is_quiet(board: &Board) -> bool {
     if board.in_check() {
         return false;
     }
