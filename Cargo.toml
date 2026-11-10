@@ -10,3 +10,9 @@ nnue-stack = []
 
 [dependencies]
 chess = "3.2.0"
+
+# Debug builds keep overflow checks and debug assertions but are optimised:
+# an unoptimised engine with the embedded 22528x1024 network is too slow for
+# the UCI integration tests.
+[profile.dev]
+opt-level = 3
