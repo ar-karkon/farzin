@@ -6,6 +6,9 @@ pub(crate) struct Game {
     pub(crate) board: Board,
     pub(crate) history: Vec<u64>,
     pub(crate) halfmove: u32,
+    /// Index in `history` of the first position that may be repeated. A null
+    /// move is a repetition barrier: positions before it are never counted.
+    pub(crate) barrier: usize,
 }
 
 impl Game {
@@ -14,6 +17,7 @@ impl Game {
             board,
             history: vec![repetition_hash(&board)],
             halfmove,
+            barrier: 0,
         }
     }
     pub(crate) fn play(&mut self, mv: ChessMove) {
@@ -33,11 +37,24 @@ impl Game {
         self.halfmove = halfmove;
         self.history.pop();
     }
+    /// Pass the move. Returns the state that `unplay_null` restores.
+    pub(crate) fn play_null(&mut self, board: Board) -> (u32, usize) {
+        let saved = (self.halfmove, self.barrier);
+        self.board = board;
+        self.halfmove = self.halfmove.saturating_add(1);
+        self.history.push(repetition_hash(&self.board));
+        self.barrier = self.history.len() - 1;
+        saved
+    }
+    pub(crate) fn unplay_null(&mut self, board: Board, saved: (u32, usize)) {
+        self.board = board;
+        (self.halfmove, self.barrier) = saved;
+        self.history.pop();
+    }
     pub(crate) fn draw(&self) -> bool {
         self.halfmove >= 100
             || self.insufficient_material()
-            || self
-                .history
+            || self.history[self.barrier..]
                 .iter()
                 .filter(|&&hash| Some(&hash) == self.history.last())
                 .count()

@@ -1,0 +1,112 @@
+++ cargo fmt --check
+++ cargo clippy --all-targets --locked -- -D warnings
+    Updating crates.io index
+ Downloading crates ...
+  Downloaded failure v0.1.8
+  Downloaded cfg-if v1.0.5
+  Downloaded adler2 v2.0.1
+  Downloaded addr2line v0.27.1
+  Downloaded memchr v2.8.3
+  Downloaded failure_derive v0.1.8
+  Downloaded arrayvec v0.5.2
+  Downloaded chess v3.2.0
+  Downloaded miniz_oxide v0.9.1
+  Downloaded quote v1.0.47
+  Downloaded backtrace v0.3.77
+  Downloaded nodrop v0.1.14
+  Downloaded rand_chacha v0.2.2
+  Downloaded rustc-demangle v0.1.28
+  Downloaded unicode-ident v1.0.27
+  Downloaded gimli v0.34.0
+  Downloaded unicode-xid v0.2.6
+  Downloaded ppv-lite86 v0.2.21
+  Downloaded rand_core v0.5.1
+  Downloaded synstructure v0.12.6
+  Downloaded proc-macro2 v1.0.107
+  Downloaded libc v0.2.191
+  Downloaded rand_pcg v0.2.1
+  Downloaded zerocopy v0.8.63
+  Downloaded syn v1.0.109
+  Downloaded object v0.40.0
+  Downloaded rand v0.7.3
+   Compiling proc-macro2 v1.0.107
+   Compiling libc v0.2.191
+   Compiling unicode-ident v1.0.27
+   Compiling quote v1.0.47
+   Compiling syn v1.0.109
+   Compiling zerocopy v0.8.63
+   Compiling unicode-xid v0.2.6
+   Compiling failure_derive v0.1.8
+   Compiling rand_core v0.5.1
+   Compiling gimli v0.34.0
+   Compiling adler2 v2.0.1
+   Compiling memchr v2.8.3
+   Compiling object v0.40.0
+   Compiling addr2line v0.27.1
+   Compiling miniz_oxide v0.9.1
+   Compiling synstructure v0.12.6
+   Compiling ppv-lite86 v0.2.21
+   Compiling rustc-demangle v0.1.28
+   Compiling cfg-if v1.0.5
+   Compiling rand_chacha v0.2.2
+   Compiling rand_pcg v0.2.1
+   Compiling rand v0.7.3
+   Compiling backtrace v0.3.77
+    Checking nodrop v0.1.14
+    Checking arrayvec v0.5.2
+   Compiling failure v0.1.8
+   Compiling chess v3.2.0
+    Checking farzin v0.1.0 (/home/user/farzin)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 40.93s
+++ cargo test --locked
+++ grep -E 'test result|FAILED|panicked'
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 23.01s
+test result: ok. 34 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.41s
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.97s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+++ cargo build --release --locked
+   Compiling libc v0.2.191
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.27
+   Compiling syn v1.0.109
+   Compiling zerocopy v0.8.63
+   Compiling unicode-xid v0.2.6
+   Compiling failure_derive v0.1.8
+   Compiling memchr v2.8.3
+   Compiling adler2 v2.0.1
+   Compiling gimli v0.34.0
+   Compiling rand_core v0.5.1
+   Compiling object v0.40.0
+   Compiling synstructure v0.12.6
+   Compiling addr2line v0.27.1
+   Compiling miniz_oxide v0.9.1
+   Compiling ppv-lite86 v0.2.21
+   Compiling rustc-demangle v0.1.28
+   Compiling cfg-if v1.0.5
+   Compiling rand_chacha v0.2.2
+   Compiling rand_pcg v0.2.1
+   Compiling rand v0.7.3
+   Compiling backtrace v0.3.77
+   Compiling failure v0.1.8
+   Compiling chess v3.2.0
+   Compiling arrayvec v0.5.2
+   Compiling nodrop v0.1.14
+   Compiling farzin v0.1.0 (/home/user/farzin)
+    Finished `release` profile [optimized] target(s) in 29.14s
+++ cargo clippy --all-targets --locked --features nnue-stack -- -D warnings
+    Checking farzin v0.1.0 (/home/user/farzin)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.71s
+++ cargo test --locked --features nnue-stack
+++ grep -E 'test result|FAILED|panicked'
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 21.86s
+test result: ok. 35 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.98s
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.96s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+++ python3 -m unittest discover -s tests -p 'test_*.py'
+............
+----------------------------------------------------------------------
+Ran 12 tests in 0.845s
+
+OK
+exit 0

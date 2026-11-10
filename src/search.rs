@@ -21,6 +21,7 @@ pub(crate) struct SearchControl {
     pub(crate) exchange_ordering: bool,
     pub(crate) pvs: bool,
     pub(crate) positional: bool,
+    pub(crate) features: SearchFeatures,
     pub(crate) cache: RefCell<Option<farzin::caissa::CachedEvaluator>>,
     #[cfg(feature = "nnue-stack")]
     pub(crate) stack: RefCell<Option<farzin::caissa::SearchEvaluator>>,
@@ -180,12 +181,93 @@ pub(crate) fn quiescence(
     Some(alpha)
 }
 
+/// Opt-in search experiments. Every flag defaults to `false`, and with all
+/// flags off the search is node-for-node identical to the Phase 3 baseline.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(crate) struct SearchFeatures {
+    /// Keep killers and a bounded, aged history table across iterative
+    /// deepening iterations and aspiration re-searches of one `go`.
+    pub(crate) persistent_history: bool,
+    /// Conservative late move reductions for late quiet moves.
+    pub(crate) lmr: bool,
+    /// Guarded null move pruning with a zugzwang material guard.
+    pub(crate) null_move: bool,
+}
+
+/// Bound of the gravity-style history update used by persistent history.
+pub(crate) const HISTORY_MAX: i32 = 16_384;
+
+/// Move-ordering state owned by one search (one `go` command).
+///
+/// It never outlives the search that created it, so a new game, position or
+/// evaluator configuration always starts from an empty table.
+pub(crate) struct Heuristics {
+    killers: [[Option<ChessMove>; 2]; 128],
+    history: [[i32; 64]; 64],
+}
+
+impl Heuristics {
+    pub(crate) fn new() -> Self {
+        Self {
+            killers: [[None; 2]; 128],
+            history: [[0; 64]; 64],
+        }
+    }
+    pub(crate) fn reset(&mut self) {
+        self.killers = [[None; 2]; 128];
+        self.history = [[0; 64]; 64];
+    }
+    /// Halve history between iterations so recent iterations dominate.
+    pub(crate) fn age(&mut self) {
+        for row in &mut self.history {
+            for value in row {
+                *value /= 2;
+            }
+        }
+    }
+    #[cfg(test)]
+    pub(crate) fn max_abs_history(&self) -> i32 {
+        self.history
+            .iter()
+            .flatten()
+            .map(|value| value.abs())
+            .max()
+            .unwrap_or(0)
+    }
+}
+
+// Gravity update: the entry moves toward +/-HISTORY_MAX and can never leave
+// the interval for |bonus| <= HISTORY_MAX.
+fn update_history(entry: &mut i32, bonus: i32) {
+    let bonus = bonus.clamp(-HISTORY_MAX, HISTORY_MAX);
+    *entry += bonus - *entry * bonus.abs() / HISTORY_MAX;
+}
+
+fn has_non_pawn_material(board: &Board) -> bool {
+    let own = *board.color_combined(board.side_to_move());
+    let minor_or_major = *board.pieces(Piece::Knight)
+        | *board.pieces(Piece::Bishop)
+        | *board.pieces(Piece::Rook)
+        | *board.pieces(Piece::Queen);
+    (own & minor_or_major).popcnt() > 0
+}
+
+/// Reduction in plies for a late quiet move. Always leaves at least one ply.
+pub(crate) fn lmr_reduction(depth: u8, move_index: usize, pv_node: bool) -> u8 {
+    if depth < 3 || move_index < 3 {
+        return 0;
+    }
+    let base = 0.5 + f64::from(depth).ln() * (move_index as f64 + 1.0).ln() / 2.5;
+    let mut reduction = base as i32 - i32::from(pv_node);
+    reduction = reduction.clamp(0, i32::from(depth) - 2);
+    reduction as u8
+}
+
 struct SearchState<'a> {
     hints: &'a mut HashMap<u64, ChessMove>,
     table: &'a mut Table,
     nodes: &'a mut u64,
-    killers: [[Option<ChessMove>; 2]; 128],
-    history: [[i32; 64]; 64],
+    heuristics: &'a mut Heuristics,
     pv: [[Option<ChessMove>; 64]; 65],
     pv_len: [usize; 65],
 }
@@ -284,12 +366,14 @@ fn move_score(
     history[mv.get_source().to_index()][mv.get_dest().to_index()]
 }
 
+#[allow(clippy::too_many_arguments)]
 fn search(
     game: &mut Game,
     depth: u8,
     mut alpha: i32,
     beta: i32,
     ply: i32,
+    allow_null: bool,
     control: &SearchControl,
     state: &mut SearchState<'_>,
 ) -> Option<i32> {
@@ -328,6 +412,64 @@ fn search(
             }
         }
     }
+    let in_check = board.checkers().popcnt() > 0;
+    let pv_node = alpha + 1 < beta;
+    let features = control.features;
+    // Null move pruning: only in zero-window nodes, never in check, never
+    // twice in a row, never near mate bounds and never without a piece other
+    // than pawns (the classic zugzwang guard).
+    if features.null_move
+        && allow_null
+        && !pv_node
+        && !in_check
+        && depth >= 3
+        && beta.abs() < MATE - 100
+        && has_non_pawn_material(&board)
+        && control.evaluate(&board) >= beta
+    {
+        if let Some(null_board) = board.null_move() {
+            let reduction = if depth >= 7 { 3 } else { 2 };
+            let child_depth = depth - 1 - reduction;
+            let saved = game.play_null(null_board);
+            #[cfg(feature = "nnue-stack")]
+            control.push(&game.board);
+            let result = search(
+                game,
+                child_depth,
+                -beta,
+                -beta + 1,
+                ply + 1,
+                false,
+                control,
+                state,
+            );
+            #[cfg(feature = "nnue-stack")]
+            control.pop();
+            game.unplay_null(board, saved);
+            if -result? >= beta {
+                // Deep nodes are verified with a reduced normal search of the
+                // same node, so a zugzwang at depth cannot be hidden by the
+                // null move alone. Unproven mate scores are never returned.
+                if depth < 8 {
+                    return Some(beta);
+                }
+                let verified = search(
+                    game,
+                    child_depth,
+                    beta - 1,
+                    beta,
+                    ply,
+                    false,
+                    control,
+                    state,
+                )?;
+                if verified >= beta {
+                    return Some(beta);
+                }
+            }
+            state.pv_len[pv_index] = 0;
+        }
+    }
     // Legal chess positions have fewer than 256 legal moves. Keep the list on
     // the stack so every interior node does not allocate a new Vec.
     let mut generator = MoveGen::new_legal(&board);
@@ -347,7 +489,7 @@ fn search(
     let hint = entry
         .and_then(|e| e.best)
         .or_else(|| state.hints.get(&board.get_hash()).copied());
-    let killers = state.killers[(ply as usize).min(127)];
+    let killers = state.heuristics.killers[(ply as usize).min(127)];
     let mut scores = [0; 256];
     for index in 0..move_count {
         scores[index] = move_score(
@@ -355,10 +497,12 @@ fn search(
             moves[index],
             hint,
             killers,
-            &state.history,
+            &state.heuristics.history,
             control.exchange_ordering,
         );
     }
+    let mut quiets_tried = [first; 64];
+    let mut quiet_count = 0;
     let mut best = None;
     let mut best_score = -MATE;
     for index in 0..move_count {
@@ -366,20 +510,82 @@ fn search(
         moves.swap(index, best_index);
         scores.swap(index, best_index);
         let mv = moves[index];
+        let quiet = capture_value(&board, mv).is_none() && mv.get_promotion().is_none();
         let halfmove = game.halfmove;
         game.play(mv);
         #[cfg(feature = "nnue-stack")]
         control.push(&game.board);
-        let result = if control.pvs && index > 0 && alpha + 1 < beta {
-            match search(game, depth - 1, -alpha - 1, -alpha, ply + 1, control, state) {
-                Some(probe) if -probe > alpha && -probe < beta => {
-                    search(game, depth - 1, -beta, -alpha, ply + 1, control, state)
-                }
-                other => other,
-            }
+        let reduction = if features.lmr
+            && quiet
+            && !in_check
+            && Some(mv) != hint
+            && !killers.contains(&Some(mv))
+            && game.board.checkers().popcnt() == 0
+        {
+            lmr_reduction(depth, index, pv_node)
         } else {
-            search(game, depth - 1, -beta, -alpha, ply + 1, control, state)
+            0
         };
+        let mut result = None;
+        let mut needs_full_depth = true;
+        if reduction > 0 {
+            // Reduced zero-window probe; only a fail high is re-searched at
+            // full depth, so a reduction can never raise alpha by itself.
+            let probe = search(
+                game,
+                depth - 1 - reduction,
+                -alpha - 1,
+                -alpha,
+                ply + 1,
+                true,
+                control,
+                state,
+            );
+            match probe {
+                Some(score) if -score > alpha => {}
+                other => {
+                    result = other;
+                    needs_full_depth = false;
+                }
+            }
+        }
+        if needs_full_depth {
+            result = if control.pvs && index > 0 && alpha + 1 < beta {
+                match search(
+                    game,
+                    depth - 1,
+                    -alpha - 1,
+                    -alpha,
+                    ply + 1,
+                    true,
+                    control,
+                    state,
+                ) {
+                    Some(probe) if -probe > alpha && -probe < beta => search(
+                        game,
+                        depth - 1,
+                        -beta,
+                        -alpha,
+                        ply + 1,
+                        true,
+                        control,
+                        state,
+                    ),
+                    other => other,
+                }
+            } else {
+                search(
+                    game,
+                    depth - 1,
+                    -beta,
+                    -alpha,
+                    ply + 1,
+                    true,
+                    control,
+                    state,
+                )
+            };
+        }
         #[cfg(feature = "nnue-stack")]
         control.pop();
         game.unplay(board, halfmove);
@@ -402,17 +608,36 @@ fn search(
             }
         }
         if alpha >= beta {
-            if capture_value(&board, mv).is_none() && mv.get_promotion().is_none() {
-                let killers = &mut state.killers[(ply as usize).min(127)];
+            if quiet {
+                let killers = &mut state.heuristics.killers[(ply as usize).min(127)];
                 if killers[0] != Some(mv) {
                     killers[1] = killers[0];
                     killers[0] = Some(mv);
                 }
-                let history =
-                    &mut state.history[mv.get_source().to_index()][mv.get_dest().to_index()];
-                *history = history.saturating_add(i32::from(depth).pow(2)).min(70_000);
+                let history = &mut state.heuristics.history;
+                if features.persistent_history {
+                    let bonus = (i32::from(depth) * i32::from(depth)).min(1_600);
+                    update_history(
+                        &mut history[mv.get_source().to_index()][mv.get_dest().to_index()],
+                        bonus,
+                    );
+                    for tried in &quiets_tried[..quiet_count] {
+                        update_history(
+                            &mut history[tried.get_source().to_index()]
+                                [tried.get_dest().to_index()],
+                            -bonus,
+                        );
+                    }
+                } else {
+                    let entry = &mut history[mv.get_source().to_index()][mv.get_dest().to_index()];
+                    *entry = entry.saturating_add(i32::from(depth).pow(2)).min(70_000);
+                }
             }
             break;
+        }
+        if quiet && quiet_count < quiets_tried.len() {
+            quiets_tried[quiet_count] = mv;
+            quiet_count += 1;
         }
     }
     if game.halfmove == 0 {
@@ -436,6 +661,7 @@ fn search(
     Some(alpha)
 }
 
+#[cfg(test)]
 pub(crate) fn best_move(
     game: &mut Game,
     depth: u8,
@@ -447,6 +673,7 @@ pub(crate) fn best_move(
     best_move_window(game, depth, control, hints, table, nodes, (-MATE, MATE))
 }
 
+#[cfg(test)]
 pub(crate) fn best_move_window(
     game: &mut Game,
     depth: u8,
@@ -454,6 +681,30 @@ pub(crate) fn best_move_window(
     hints: &mut HashMap<u64, ChessMove>,
     table: &mut Table,
     nodes: &mut u64,
+    window: (i32, i32),
+) -> Option<(ChessMove, i32, Vec<ChessMove>)> {
+    root_search(
+        game,
+        depth,
+        control,
+        hints,
+        table,
+        nodes,
+        &mut Heuristics::new(),
+        window,
+    )
+}
+
+/// Root search with caller-owned heuristics; used by iterative deepening.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn root_search(
+    game: &mut Game,
+    depth: u8,
+    control: &SearchControl,
+    hints: &mut HashMap<u64, ChessMove>,
+    table: &mut Table,
+    nodes: &mut u64,
+    heuristics: &mut Heuristics,
     window: (i32, i32),
 ) -> Option<(ChessMove, i32, Vec<ChessMove>)> {
     let board = game.board;
@@ -472,8 +723,7 @@ pub(crate) fn best_move_window(
         hints,
         table,
         nodes,
-        killers: [[None; 2]; 128],
-        history: [[0; 64]; 64],
+        heuristics,
         pv: [[None; 64]; 65],
         pv_len: [0; 65],
     };
@@ -492,6 +742,7 @@ pub(crate) fn best_move_window(
             -beta,
             -alpha,
             1,
+            true,
             control,
             &mut state,
         );
@@ -534,7 +785,18 @@ mod tests {
             *byte = (i * 13 + 17) as u8;
         }
         let net = Arc::new(farzin::caissa::Network::from_bytes(bytes).unwrap());
-        for limit in [None, Some(1), Some(25), Some(300)] {
+        let feature_sets = [
+            SearchFeatures::default(),
+            SearchFeatures {
+                persistent_history: true,
+                lmr: true,
+                null_move: true,
+            },
+        ];
+        for (features, limit) in feature_sets
+            .into_iter()
+            .flat_map(|f| [None, Some(1), Some(25), Some(300)].map(move |l| (f, l)))
+        {
             let mut signatures = Vec::new();
             for stack_enabled in [false, true] {
                 let mut game = Game::new(Board::default(), 0);
@@ -547,6 +809,7 @@ mod tests {
                     exchange_ordering: false,
                     pvs: true,
                     positional: false,
+                    features,
                     cache: RefCell::new((!stack_enabled).then(|| {
                         farzin::caissa::CachedEvaluator::new(Arc::clone(&net), &game.board)
                     })),
@@ -558,7 +821,7 @@ mod tests {
                 let mut nodes = 0;
                 let result = best_move(
                     &mut game,
-                    3,
+                    5,
                     &control,
                     &mut HashMap::new(),
                     &mut Table::new(1024),
@@ -616,6 +879,7 @@ mod tests {
                 exchange_ordering: enabled,
                 pvs: false,
                 positional: false,
+                features: SearchFeatures::default(),
                 cache: RefCell::new(None),
                 #[cfg(feature = "nnue-stack")]
                 stack: RefCell::new(None),
@@ -650,6 +914,7 @@ mod tests {
                     exchange_ordering: false,
                     pvs,
                     positional: false,
+                    features: SearchFeatures::default(),
                     cache: RefCell::new(None),
                     #[cfg(feature = "nnue-stack")]
                     stack: RefCell::new(None),
@@ -682,6 +947,7 @@ mod tests {
             exchange_ordering: false,
             pvs: false,
             positional: false,
+            features: SearchFeatures::default(),
             cache: RefCell::new(None),
             #[cfg(feature = "nnue-stack")]
             stack: RefCell::new(None),
@@ -714,6 +980,7 @@ mod tests {
             exchange_ordering: false,
             pvs: false,
             positional: false,
+            features: SearchFeatures::default(),
             cache: RefCell::new(None),
             #[cfg(feature = "nnue-stack")]
             stack: RefCell::new(None),
@@ -772,8 +1039,7 @@ mod tests {
                 hints: &mut hints,
                 table: &mut table,
                 nodes: &mut nodes,
-                killers: [[None; 2]; 128],
-                history: [[0; 64]; 64],
+                heuristics: &mut Heuristics::new(),
                 pv: [[None; 64]; 65],
                 pv_len: [0; 65],
             };
@@ -785,11 +1051,12 @@ mod tests {
                 exchange_ordering: false,
                 pvs: false,
                 positional: false,
+                features: SearchFeatures::default(),
                 cache: RefCell::new(None),
                 #[cfg(feature = "nnue-stack")]
                 stack: RefCell::new(None),
             };
-            assert!(search(&mut game, 1, -50, 50, 0, &control, &mut state).is_some());
+            assert!(search(&mut game, 1, -50, 50, 0, true, &control, &mut state).is_some());
             assert_eq!(
                 state.table.cutoffs > 0,
                 expected_cutoff,
@@ -810,8 +1077,7 @@ mod tests {
             hints: &mut hints,
             table: &mut table,
             nodes: &mut nodes,
-            killers: [[None; 2]; 128],
-            history: [[0; 64]; 64],
+            heuristics: &mut Heuristics::new(),
             pv: [[None; 64]; 65],
             pv_len: [0; 65],
         };
@@ -823,11 +1089,12 @@ mod tests {
             exchange_ordering: false,
             pvs: false,
             positional: false,
+            features: SearchFeatures::default(),
             cache: RefCell::new(None),
             #[cfg(feature = "nnue-stack")]
             stack: RefCell::new(None),
         };
-        assert!(search(&mut game, 4, -MATE, MATE, 0, &control, &mut state).is_none());
+        assert!(search(&mut game, 4, -MATE, MATE, 0, true, &control, &mut state).is_none());
         assert_eq!(game.board, original_board);
         assert_eq!(game.history, original_history);
         assert_eq!(game.halfmove, 0);
@@ -843,8 +1110,7 @@ mod tests {
             hints: &mut hints,
             table: &mut table,
             nodes: &mut nodes,
-            killers: [[None; 2]; 128],
-            history: [[0; 64]; 64],
+            heuristics: &mut Heuristics::new(),
             pv: [[None; 64]; 65],
             pv_len: [0; 65],
         };
@@ -856,11 +1122,12 @@ mod tests {
             exchange_ordering: false,
             pvs: false,
             positional: false,
+            features: SearchFeatures::default(),
             cache: RefCell::new(None),
             #[cfg(feature = "nnue-stack")]
             stack: RefCell::new(None),
         };
-        assert!(search(&mut game, 0, -MATE, MATE, 0, &control, &mut state).is_some());
+        assert!(search(&mut game, 0, -MATE, MATE, 0, true, &control, &mut state).is_some());
         assert_eq!(*state.nodes, 1);
     }
 
@@ -879,6 +1146,7 @@ mod tests {
                     exchange_ordering: false,
                     pvs: false,
                     positional: false,
+                    features: SearchFeatures::default(),
                     cache: RefCell::new(None),
                     #[cfg(feature = "nnue-stack")]
                     stack: RefCell::new(None),
@@ -917,6 +1185,7 @@ mod tests {
                     exchange_ordering: false,
                     pvs: false,
                     positional: false,
+                    features: SearchFeatures::default(),
                     cache: RefCell::new(None),
                     #[cfg(feature = "nnue-stack")]
                     stack: RefCell::new(None),
@@ -955,8 +1224,7 @@ mod tests {
             hints: &mut hints,
             table: &mut table,
             nodes: &mut nodes,
-            killers: [[None; 2]; 128],
-            history: [[0; 64]; 64],
+            heuristics: &mut Heuristics::new(),
             pv: [[None; 64]; 65],
             pv_len: [0; 65],
         };
@@ -968,11 +1236,12 @@ mod tests {
             exchange_ordering: false,
             pvs: false,
             positional: false,
+            features: SearchFeatures::default(),
             cache: RefCell::new(None),
             #[cfg(feature = "nnue-stack")]
             stack: RefCell::new(None),
         };
-        let score = search(&mut game, 1, -MATE, MATE, 0, &control, &mut state).unwrap();
+        let score = search(&mut game, 1, -MATE, MATE, 0, true, &control, &mut state).unwrap();
         assert_ne!(score, 12_345);
         assert_eq!(state.table.cutoffs, 0);
     }
@@ -995,6 +1264,7 @@ mod tests {
                     exchange_ordering: false,
                     pvs,
                     positional: false,
+                    features: SearchFeatures::default(),
                     cache: RefCell::new(None),
                     #[cfg(feature = "nnue-stack")]
                     stack: RefCell::new(None),
@@ -1032,6 +1302,7 @@ mod tests {
                     exchange_ordering: false,
                     pvs,
                     positional: false,
+                    features: SearchFeatures::default(),
                     cache: RefCell::new(None),
                     #[cfg(feature = "nnue-stack")]
                     stack: RefCell::new(None),
@@ -1080,6 +1351,7 @@ mod tests {
             exchange_ordering: false,
             pvs: true,
             positional: false,
+            features: SearchFeatures::default(),
             cache: RefCell::new(None),
             #[cfg(feature = "nnue-stack")]
             stack: RefCell::new(None),
@@ -1097,5 +1369,382 @@ mod tests {
         assert_eq!(game.board, board);
         assert_eq!(game.history, history);
         assert_eq!(game.halfmove, 0);
+    }
+
+    fn feature_control(
+        features: SearchFeatures,
+        pvs: bool,
+        node_limit: Option<u64>,
+    ) -> SearchControl {
+        SearchControl {
+            stop: Arc::new(AtomicBool::new(false)),
+            deadline: None,
+            node_limit,
+            shared_nodes: None,
+            exchange_ordering: false,
+            pvs,
+            positional: false,
+            features,
+            cache: RefCell::new(None),
+            #[cfg(feature = "nnue-stack")]
+            stack: RefCell::new(None),
+        }
+    }
+
+    /// Every combination in release tests; a representative subset in debug
+    /// builds (CI), where the full matrix takes several minutes.
+    fn all_feature_sets() -> Vec<(SearchFeatures, bool)> {
+        let mut sets = Vec::new();
+        let subset: &[u8] = &[0, 2, 4 | 8, 2 | 8, 1, 15];
+        let bits: Vec<u8> = if cfg!(debug_assertions) {
+            subset.to_vec()
+        } else {
+            (0..16).collect()
+        };
+        for bits in bits {
+            sets.push((
+                SearchFeatures {
+                    persistent_history: bits & 1 != 0,
+                    lmr: bits & 2 != 0,
+                    null_move: bits & 4 != 0,
+                },
+                bits & 8 != 0,
+            ));
+        }
+        sets
+    }
+
+    /// Iterative deepening with one heuristics object, as the UCI loop uses it,
+    /// including an aspiration trial and full-window re-search.
+    fn iterate(
+        game: &mut Game,
+        depth: u8,
+        control: &SearchControl,
+        aspiration: bool,
+    ) -> Option<(ChessMove, i32, Vec<ChessMove>)> {
+        let mut hints = HashMap::new();
+        let mut table = Table::new(1 << 14);
+        let mut heuristics = Heuristics::new();
+        let mut nodes = 0;
+        let mut result = None;
+        let mut previous: Option<i32> = None;
+        for current in 1..=depth {
+            if control.features.persistent_history {
+                heuristics.age();
+            } else {
+                heuristics.reset();
+            }
+            table.next_generation();
+            let window = previous
+                .filter(|score| aspiration && score.abs() < MATE - 100)
+                .map_or((-MATE, MATE), |s| (s - 30, s + 30));
+            let mut found = root_search(
+                game,
+                current,
+                control,
+                &mut hints,
+                &mut table,
+                &mut nodes,
+                &mut heuristics,
+                window,
+            );
+            if let Some((_, score, _)) = found {
+                if score <= window.0 || score >= window.1 {
+                    if !control.features.persistent_history {
+                        heuristics.reset();
+                    }
+                    found = root_search(
+                        game,
+                        current,
+                        control,
+                        &mut hints,
+                        &mut table,
+                        &mut nodes,
+                        &mut heuristics,
+                        (-MATE, MATE),
+                    );
+                }
+            }
+            match found {
+                Some(found) => {
+                    previous = Some(found.1);
+                    result = Some(found);
+                }
+                None => break,
+            }
+            assert!(heuristics.max_abs_history() <= 70_000);
+        }
+        result
+    }
+
+    fn assert_legal_pv(game: &Game, pv: &[ChessMove]) {
+        let mut board = game.board;
+        for &mv in pv {
+            assert!(
+                MoveGen::new_legal(&board).any(|legal| legal == mv),
+                "{pv:?}"
+            );
+            board = board.make_move_new(mv);
+        }
+    }
+
+    #[test]
+    fn history_gravity_is_bounded() {
+        let mut entry = 0;
+        for step in 0..10_000 {
+            let bonus = ((step * 7919) % 3201) - 1600;
+            update_history(&mut entry, bonus * if step % 3 == 0 { 1 } else { -1 });
+            assert!(entry.abs() <= HISTORY_MAX, "{entry}");
+        }
+        let mut saturated = HISTORY_MAX;
+        update_history(&mut saturated, HISTORY_MAX);
+        assert_eq!(saturated, HISTORY_MAX);
+        let mut heuristics = Heuristics::new();
+        heuristics.history[1][2] = 1001;
+        heuristics.history[3][4] = -7;
+        heuristics.age();
+        assert_eq!(heuristics.history[1][2], 500);
+        assert_eq!(heuristics.history[3][4], -3);
+        heuristics.reset();
+        assert_eq!(heuristics.max_abs_history(), 0);
+    }
+
+    #[test]
+    fn lmr_never_reduces_to_zero_depth() {
+        for depth in 0..=64u8 {
+            for index in 0..256 {
+                for pv in [false, true] {
+                    let r = lmr_reduction(depth, index, pv);
+                    if depth < 3 || index < 3 {
+                        assert_eq!(r, 0);
+                    } else {
+                        assert!(r <= depth - 2, "depth {depth} index {index}");
+                    }
+                    assert!(
+                        lmr_reduction(depth, index, true) <= lmr_reduction(depth, index, false)
+                    );
+                }
+            }
+        }
+        assert!(lmr_reduction(12, 30, false) >= 2);
+    }
+
+    #[test]
+    fn null_move_is_a_repetition_barrier_and_restores_state() {
+        let mut game =
+            crate::game::position("startpos moves g1f3 g8f6 f3g1 f6g8 g1f3 g8f6 f3g1").unwrap();
+        let before = game.clone();
+        let board = game.board;
+        // Black can repeat for the third time by f6g8.
+        game.play(ChessMove::from_str("f6g8").unwrap());
+        assert!(game.draw());
+        game.unplay(board, before.halfmove);
+        let saved = game.play_null(board.null_move().unwrap());
+        assert!(!game.draw(), "positions before a null move must not count");
+        assert_eq!(game.halfmove, before.halfmove + 1);
+        game.unplay_null(board, saved);
+        assert_eq!(game.board, before.board);
+        assert_eq!(game.history, before.history);
+        assert_eq!(
+            (game.halfmove, game.barrier),
+            (before.halfmove, before.barrier)
+        );
+    }
+
+    #[test]
+    fn null_move_guard_leaves_pawn_endings_unchanged() {
+        // Zugzwang-sensitive king and pawn endings, including a rook pawn
+        // and the classic mutual zugzwang trebuchet.
+        for fen in [
+            "fen 8/8/8/8/1k6/8/1P6/1K6 w - - 0 1",
+            "fen 8/8/1p6/1P6/1K6/8/8/k7 b - - 0 1",
+            "fen 7k/8/6KP/8/8/8/8/8 w - - 0 1",
+            "fen 8/8/8/2k5/2p5/2K5/3P4/8 w - - 0 1",
+            "fen 8/8/8/1k6/3K4/8/1P6/8 w - - 0 1",
+        ] {
+            let mut results = Vec::new();
+            for null_move in [false, true] {
+                let mut game = crate::game::position(fen).unwrap();
+                let control = feature_control(
+                    SearchFeatures {
+                        null_move,
+                        ..SearchFeatures::default()
+                    },
+                    true,
+                    None,
+                );
+                let mut nodes = 0;
+                let result = root_search(
+                    &mut game,
+                    7,
+                    &control,
+                    &mut HashMap::new(),
+                    &mut Table::new(1 << 14),
+                    &mut nodes,
+                    &mut Heuristics::new(),
+                    (-MATE, MATE),
+                );
+                results.push((result, nodes));
+            }
+            assert_eq!(results[0], results[1], "{fen}");
+        }
+    }
+
+    #[test]
+    fn null_move_is_not_tried_in_check_or_low_material() {
+        let in_check = crate::game::position("fen 4k3/8/8/8/8/8/4r3/4K2R w - - 0 1").unwrap();
+        assert!(in_check.board.null_move().is_none());
+        let pawns = crate::game::position("fen 4k3/pp6/8/8/8/8/PP6/4K3 w - - 0 1").unwrap();
+        assert!(!has_non_pawn_material(&pawns.board));
+        let knight = crate::game::position("fen 4k3/pp6/8/8/8/8/PP6/3NK3 w - - 0 1").unwrap();
+        assert!(has_non_pawn_material(&knight.board));
+        // The opponent's pieces do not count for the side to move.
+        let theirs = crate::game::position("fen 3qk3/pp6/8/8/8/8/PP6/4K3 w - - 0 1").unwrap();
+        assert!(!has_non_pawn_material(&theirs.board));
+    }
+
+    #[test]
+    fn all_feature_sets_solve_reference_positions() {
+        // (position, depth, acceptable best moves, expected mate in moves)
+        let cases: [(&str, u8, &[&str], Option<i32>); 6] = [
+            // Back-rank mate in one.
+            (
+                "fen 6k1/5ppp/8/8/8/8/5PPP/R5K1 w - - 0 1",
+                3,
+                &["a1a8"],
+                Some(1),
+            ),
+            // Mate in three by a king hunt: Bc5+ Kxc5 Qb6+ Kd5 Qd6#.
+            (
+                "fen r1b1kb1r/pppp1ppp/5q2/4n3/3KP3/2N3PN/PPP4P/R1BQ1B1R b kq - 0 1",
+                5,
+                &["f8c5"],
+                Some(3),
+            ),
+            // Win the queen with a knight fork.
+            ("fen 4k3/8/q7/1N6/8/8/8/4K3 w - - 0 1", 4, &["b5c7"], None),
+            // Check evasion with only legal king moves.
+            ("fen 4k3/8/8/8/8/8/3q4/4K3 w - - 0 1", 4, &["e1d2"], None),
+            // Passed pawn must promote.
+            ("fen 8/P7/8/8/8/8/k7/7K w - - 0 1", 4, &["a7a8q"], None),
+            // Quiet middlegame: any legal move, PV legality is checked.
+            (
+                "fen r1bq1rk1/ppp2ppp/2n2n2/3pp3/3PP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 6",
+                5,
+                &[],
+                None,
+            ),
+        ];
+        for (fen, depth, moves, mate) in cases {
+            for (features, pvs) in all_feature_sets() {
+                for aspiration in [false, true] {
+                    let mut game = crate::game::position(fen).unwrap();
+                    let before = game.clone();
+                    let control = feature_control(features, pvs, None);
+                    let (best, score, pv) =
+                        iterate(&mut game, depth, &control, aspiration).unwrap();
+                    let label = format!("{fen} {features:?} pvs {pvs} asp {aspiration}");
+                    assert_eq!(game.board, before.board, "{label}");
+                    assert_eq!(game.history, before.history, "{label}");
+                    assert_eq!(pv.first(), Some(&best), "{label}");
+                    assert_legal_pv(&game, &pv);
+                    if !moves.is_empty() {
+                        assert!(
+                            moves.contains(&best.to_string().as_str()),
+                            "{label}: {best}"
+                        );
+                    }
+                    if let Some(n) = mate {
+                        assert_eq!(score, MATE - (2 * n - 1), "{label}");
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn interrupted_searches_restore_state_for_every_feature_set() {
+        let fen = "fen r1bq1rk1/ppp2ppp/2n2n2/3pp3/3PP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 6";
+        for (features, pvs) in all_feature_sets() {
+            for limit in [1, 7, 50, 400, 3000] {
+                let mut game = crate::game::position(fen).unwrap();
+                let before = game.clone();
+                let control = feature_control(features, pvs, Some(limit));
+                if let Some((best, _, pv)) = iterate(&mut game, 8, &control, true) {
+                    assert_eq!(pv.first(), Some(&best));
+                    assert_legal_pv(&game, &pv);
+                }
+                assert_eq!(game.board, before.board);
+                assert_eq!(game.history, before.history);
+                assert_eq!(
+                    (game.halfmove, game.barrier),
+                    (before.halfmove, before.barrier)
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn persistent_history_preserves_minimax_scores() {
+        // Without pruning or a table, ordering cannot change alpha-beta values.
+        for fen in [
+            "startpos",
+            "fen 8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1",
+            "fen r1bq1rk1/ppp2ppp/2n2n2/3pp3/3PP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 6",
+        ] {
+            let mut game = crate::game::position(fen).unwrap();
+            let mut heuristics = Heuristics::new();
+            for depth in 1..=3 {
+                let mut scores = Vec::new();
+                for persistent_history in [false, true] {
+                    let control = feature_control(
+                        SearchFeatures {
+                            persistent_history,
+                            ..SearchFeatures::default()
+                        },
+                        false,
+                        None,
+                    );
+                    let mut fresh = Heuristics::new();
+                    let heur = if persistent_history {
+                        &mut heuristics
+                    } else {
+                        &mut fresh
+                    };
+                    heur.age();
+                    scores.push(
+                        root_search(
+                            &mut game,
+                            depth,
+                            &control,
+                            &mut HashMap::new(),
+                            &mut Table::new(0),
+                            &mut 0,
+                            heur,
+                            (-MATE, MATE),
+                        )
+                        .unwrap()
+                        .1,
+                    );
+                }
+                assert_eq!(scores[0], scores[1], "{fen} depth {depth}");
+            }
+        }
+    }
+
+    #[test]
+    fn repetition_draw_is_found_with_pruning() {
+        // White is lost on material but can repeat: the third occurrence draws.
+        let game = crate::game::position(
+            "fen 6k1/8/8/8/8/8/q7/6K1 b - - 0 1 moves a2b1 g1g2 b1a2 g2g1 a2b1 g1g2 b1a2",
+        )
+        .unwrap();
+        for (features, pvs) in all_feature_sets() {
+            let mut game = game.clone();
+            let control = feature_control(features, pvs, None);
+            let (best, score, _) = iterate(&mut game, 4, &control, false).unwrap();
+            assert_eq!(best.to_string(), "g2g1", "{features:?}");
+            assert_eq!(score, 0, "{features:?}");
+        }
     }
 }
