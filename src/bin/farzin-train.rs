@@ -5,13 +5,14 @@
 //!
 //! Model: (768 -> H) shared feature transformer per perspective, SCReLU,
 //! concatenated [stm, nstm] -> output bucket chosen by piece count.
-//! Loss: MSE between sigmoid(output) and a blend of sigmoid(score / 400)
+//! Loss: MSE between sigmoid(cp / scale) and a blend of sigmoid(score / scale)
 //! and the game result.
 use farzin::datagen::{unpack, RECORD_SIZE};
 use farzin::net::{feature, Network, INPUTS, QA, QB};
 use std::time::Instant;
 
-const EVAL_SCALE: f32 = 400.0;
+/// Network output unit: one output unit = SCALE centipawns (see net.rs).
+const NET_SCALE: f32 = 400.0;
 const WEIGHT_CLIP: f32 = 1.98;
 
 struct Sample {
@@ -128,7 +129,7 @@ fn quantize(p: &Params) -> Network {
     }
 }
 
-fn load(paths: &str, wdl: f32, buckets: usize) -> Vec<Sample> {
+fn load(paths: &str, wdl: f32, buckets: usize, eval_scale: f32) -> Vec<Sample> {
     let mut samples = Vec::new();
     for path in paths.split(',') {
         let bytes = std::fs::read(path).unwrap_or_else(|e| panic!("{path}: {e}"));
@@ -151,7 +152,7 @@ fn load(paths: &str, wdl: f32, buckets: usize) -> Vec<Sample> {
             let score = if r.stm == 0 { r.score } else { -r.score } as f32;
             let result = r.result as f32 / 2.0;
             let result = if r.stm == 0 { result } else { 1.0 - result };
-            let wdl_target = 1.0 / (1.0 + (-score / EVAL_SCALE).exp());
+            let wdl_target = 1.0 / (1.0 + (-score / eval_scale).exp());
             s.target = wdl * result + (1.0 - wdl) * wdl_target;
             samples.push(s);
         }
@@ -160,7 +161,7 @@ fn load(paths: &str, wdl: f32, buckets: usize) -> Vec<Sample> {
 }
 
 /// Forward + backward over `batch`, accumulating gradients into `g`. Returns loss sum.
-fn gradient(p: &Params, batch: &[Sample], g: &mut Params) -> f32 {
+fn gradient(p: &Params, batch: &[Sample], g: &mut Params, k: f32) -> f32 {
     let h = p.h;
     let mut acc = vec![0.0f32; 2 * h];
     let mut dacc = vec![0.0f32; 2 * h];
@@ -183,10 +184,10 @@ fn gradient(p: &Params, batch: &[Sample], g: &mut Params) -> f32 {
             let c = acc[i].clamp(0.0, 1.0);
             out += c * c * ow[i];
         }
-        let pred = 1.0 / (1.0 + (-out).exp());
+        let pred = 1.0 / (1.0 + (-out * k).exp());
         let err = pred - s.target;
         loss += err * err;
-        let dout = 2.0 * err * pred * (1.0 - pred);
+        let dout = 2.0 * err * pred * (1.0 - pred) * k;
         g.out_b[b] += dout;
         let gow = &mut g.out_w[b * 2 * h..(b + 1) * 2 * h];
         for i in 0..2 * h {
@@ -228,10 +229,14 @@ fn main() {
     let wdl = num("wdl", 0.3) as f32;
     let threads = num("threads", 4.0) as usize;
     let val_frac = num("val", 0.02);
+    // Centipawn scale of the win-probability sigmoid; fit it to the data
+    // (Farzin self-play: ~160).
+    let eval_scale = num("scale", 160.0) as f32;
+    let k = NET_SCALE / eval_scale;
     let mut rng = Rng(num("seed", 12345.0) as u64 | 1);
 
     let t0 = Instant::now();
-    let mut samples = load(&data, wdl, nb);
+    let mut samples = load(&data, wdl, nb, eval_scale);
     // Shuffle (Fisher-Yates).
     for i in (1..samples.len()).rev() {
         let j = (rng.next() % (i as u64 + 1)) as usize;
@@ -277,7 +282,7 @@ fn main() {
                         let p = &p;
                         scope.spawn(move || {
                             let mut g = p.zeros_like();
-                            let l = gradient(p, part, &mut g);
+                            let l = gradient(p, part, &mut g, k);
                             (g, l)
                         })
                     })
@@ -320,7 +325,7 @@ fn main() {
         }
         // Validation.
         let mut g = p.zeros_like();
-        let vloss = gradient(&p, val, &mut g) / val.len().max(1) as f32;
+        let vloss = gradient(&p, val, &mut g, k) / val.len().max(1) as f32;
         eprintln!(
             "epoch {:>3} train loss {:.6} val loss {:.6} ({:.0}s)",
             epoch + 1,
