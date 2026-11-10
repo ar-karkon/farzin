@@ -6,7 +6,7 @@
 #
 # Environment (optional):
 #   WORK=/data/farzin      where data, nets and results live (default ./work)
-#   PREV_NET=nets/default.nnue   network used for self-play and as the baseline
+#   PREV_NET=nets/g2.nnue        FZN1 network used for self-play and as the baseline
 #   HIDDEN=256 EPOCHS=12 WDL=0.0 SCALE=400 SOFT=4000 HARD=12000 TC=10+0.1
 # Requires python-chess (pip install chess) for the matches.
 set -euo pipefail
@@ -14,7 +14,7 @@ GEN=${1:?generation number}
 POSITIONS=${2:?positions to generate}
 THREADS=${3:-$(nproc)}
 WORK=${WORK:-work}
-PREV_NET=${PREV_NET:-nets/default.nnue}
+PREV_NET=${PREV_NET:-nets/g2.nnue}
 HIDDEN=${HIDDEN:-256}; EPOCHS=${EPOCHS:-12}; WDL=${WDL:-0.0}; SCALE=${SCALE:-400}
 SOFT=${SOFT:-4000}; HARD=${HARD:-12000}; TC=${TC:-10+0.1}
 mkdir -p "$WORK"/{data,nets,results,engines}
@@ -47,4 +47,4 @@ python3 tools/arena.py --engine name=new,cmd="$ENGINE",opt.EvalFile="$NET" \
     --engine name=prev,cmd="$ENGINE",opt.EvalFile="$PREV_NET" \
     --tc "$TC" --pairs 3000 --concurrency "$THREADS" --sprt 0 5 \
     --out "$WORK/results/gen$GEN-sprt.json" | tail -n 20
-echo "If H1 was accepted: cp $NET nets/default.nnue and record it in nets/README.md"
+echo "If H1 was accepted: record $NET in nets/README.md as the new self-trained FZN1 baseline"

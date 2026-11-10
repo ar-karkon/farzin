@@ -1,0 +1,59 @@
+[     65s] farzin-hka vs sf151: 1p -0.0 [-2400.0,+2400.0] | farzin-hka vs sf171: 2p -88.7 [-238.9,+33.6]
+[    108s] farzin-hka vs sf151: 2p -0.0 [-0.0,-0.0] | farzin-hka vs sf171: 4p -88.7 [-188.5,-1.7]
+[    165s] farzin-hka vs sf151: 4p -43.7 [-121.9,+30.4] | farzin-hka vs sf171: 5p -107.5 [-197.7,-29.7]
+[    226s] farzin-hka vs sf151: 6p -58.5 [-129.1,+7.6] | farzin-hka vs sf171: 6p -120.4 [-201.2,-50.6]
+[    279s] farzin-hka vs sf151: 8p -65.9 [-129.0,-6.9] | farzin-hka vs sf171: 7p -129.8 [-202.4,-66.8]
+[    333s] farzin-hka vs sf151: 9p -78.5 [-140.8,-20.8] | farzin-hka vs sf171: 9p -99.1 [-164.1,-40.3]
+[    394s] farzin-hka vs sf151: 11p -80.4 [-136.7,-27.9] | farzin-hka vs sf171: 10p -88.7 [-149.2,-33.1]
+[    438s] farzin-hka vs sf151: 12p -73.5 [-126.1,-24.0] | farzin-hka vs sf171: 12p -120.4 [-195.4,-55.0]
+[    491s] farzin-hka vs sf151: 14p -75.6 [-124.6,-29.5] | farzin-hka vs sf171: 13p -110.5 [-180.6,-48.2]
+[    550s] farzin-hka vs sf151: 16p -88.7 [-136.0,-44.5] | farzin-hka vs sf171: 14p -115.8 [-182.3,-56.6]
+[    606s] farzin-hka vs sf151: 18p -88.7 [-133.1,-47.0] | farzin-hka vs sf171: 15p -107.5 [-170.4,-50.9]
+[    657s] farzin-hka vs sf151: 19p -93.6 [-137.1,-52.8] | farzin-hka vs sf171: 17p -105.3 [-162.7,-53.1]
+[    699s] farzin-hka vs sf151: 22p -88.7 [-128.7,-50.9] | farzin-hka vs sf171: 17p -105.3 [-162.7,-53.1]
+[    767s] farzin-hka vs sf151: 22p -88.7 [-128.7,-50.9] | farzin-hka vs sf171: 20p -117.2 [-176.4,-63.8]
+[    822s] farzin-hka vs sf151: 23p -92.8 [-132.1,-55.6] | farzin-hka vs sf171: 22p -123.4 [-184.9,-68.5]
+[    885s] farzin-hka vs sf151: 24p -88.7 [-127.0,-52.5] | farzin-hka vs sf171: 24p -120.4 [-177.6,-68.9]
+[    920s] farzin-hka vs sf151: 25p -85.0 [-122.2,-49.7] | farzin-hka vs sf171: 26p -110.5 [-163.7,-61.9]
+[    971s] farzin-hka vs sf151: 26p -88.7 [-125.4,-53.9] | farzin-hka vs sf171: 28p -108.9 [-159.0,-62.8]
+[   1028s] farzin-hka vs sf151: 28p -88.7 [-124.0,-55.1] | farzin-hka vs sf171: 29p -104.9 [-153.5,-60.0]
+[   1084s] farzin-hka vs sf151: 30p -94.9 [-133.8,-58.3] | farzin-hka vs sf171: 30p -101.2 [-148.3,-57.5]
+{
+ "summary": {
+  "farzin-hka vs sf151": {
+   "pairs": 30,
+   "pentanomial": [
+    1,
+    14,
+    15,
+    0,
+    0
+   ],
+   "score": 0.36666666666666664,
+   "elo": -94.94436631784158,
+   "elo_95": [
+    -133.81631230437253,
+    -58.26946405261714
+   ],
+   "los": 9.9528165542484e-08
+  },
+  "farzin-hka vs sf171": {
+   "pairs": 30,
+   "pentanomial": [
+    3,
+    11,
+    16,
+    0,
+    0
+   ],
+   "score": 0.35833333333333334,
+   "elo": -101.20890783715815,
+   "elo_95": [
+    -148.33551315858946,
+    -57.46387858826123
+   ],
+   "los": 1.6610189369492545e-06
+  }
+ },
+ "sprt": null
+}

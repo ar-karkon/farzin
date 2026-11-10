@@ -1,0 +1,32 @@
+[     57s] st512-11m vs st512-6m: 3p +58.5 [-34.9,+161.2] LLR 0.02 
+[    129s] st512-11m vs st512-6m: 6p +58.5 [-7.6,+129.1] LLR 0.09 
+[    179s] st512-11m vs st512-6m: 9p +78.5 [+20.8,+140.8] LLR 0.25 
+[    228s] st512-11m vs st512-6m: 12p +58.5 [-3.4,+124.2] LLR 0.25 
+[    280s] st512-11m vs st512-6m: 15p +34.9 [-22.7,+94.4] LLR 0.19 
+[    331s] st512-11m vs st512-6m: 18p +38.8 [-11.8,+91.1] LLR 0.29 
+[    409s] st512-11m vs st512-6m: 21p +33.2 [-10.5,+78.0] LLR 0.33 
+[    474s] st512-11m vs st512-6m: 24p +43.7 [+2.1,+86.5] LLR 0.53 
+[    538s] st512-11m vs st512-6m: 27p +51.9 [+12.3,+92.7] LLR 0.75 
+[    579s] st512-11m vs st512-6m: 30p +52.5 [+15.7,+90.5] LLR 0.90 
+[    630s] st512-11m vs st512-6m: 33p +58.5 [+23.2,+94.9] LLR 1.14 
+[    684s] st512-11m vs st512-6m: 36p +73.5 [+36.2,+112.5] LLR 1.43 
+[    744s] st512-11m vs st512-6m: 39p +72.3 [+37.1,+109.0] LLR 1.60 
+[    794s] st512-11m vs st512-6m: 42p +71.3 [+37.9,+106.0] LLR 1.77 
+[    849s] st512-11m vs st512-6m: 45p +66.4 [+33.1,+101.0] LLR 1.69 
+[    908s] st512-11m vs st512-6m: 48p +69.7 [+37.6,+103.0] LLR 1.95 
+[    965s] st512-11m vs st512-6m: 51p +79.7 [+46.9,+114.0] LLR 2.24 
+[   1028s] st512-11m vs st512-6m: 54p +81.9 [+50.3,+115.0] LLR 2.51 
+[   1092s] st512-11m vs st512-6m: 57p +80.7 [+49.0,+113.7] LLR 2.52 
+[   1160s] st512-11m vs st512-6m: 60p +82.6 [+52.0,+114.5] LLR 2.79 
+[   1206s] st512-11m vs st512-6m: 63p +90.2 [+58.3,+123.7] LLR 2.92 
+[   1247s] st512-11m vs st512-6m: 64p +91.6 [+60.1,+124.8] LLR 3.04 H1 accepted
+[   1264s] st512-11m vs st512-6m: 65p +93.0 [+61.8,+125.8] LLR 3.17 H1 accepted
+Traceback (most recent call last):
+  File "/home/user/farzin/tools/arena.py", line 394, in <module>
+    main()
+    ~~~~^^
+  File "/home/user/farzin/tools/arena.py", line 348, in main
+    res = fut.result()
+  File "/usr/local/lib/python3.13/concurrent/futures/_base.py", line 451, in result
+    raise CancelledError()
+concurrent.futures._base.CancelledError

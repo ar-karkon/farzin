@@ -2,7 +2,7 @@
 
 فرزین یک موتور شطرنج UCI به زبان Rust است. از نسخهٔ ۰.۲ هستهٔ موتور کاملاً بازنویسی شده و دیگر به کتابخانهٔ `chess` وابسته نیست (آن کتابخانه فقط برای کد آزمایشی قدیمی Caissa در `src/caissa.rs` باقی مانده است).
 
-گزارش کامل این مرحله، نتایج اندازه‌گیری و راهنمای اجرا روی سرور: [docs/v5-report.md](docs/v5-report.md).
+گزارش مرحلهٔ ۶ (استنتاج مستقل HalfKAv2_hm، هم‌طراحی جست‌وجو، تقطیر): [docs/v6-report.md](docs/v6-report.md). گزارش مرحلهٔ ۵: [docs/v5-report.md](docs/v5-report.md).
 
 ## وضعیت فعلی (برآورد محلی، نه رتبهٔ رسمی CCRL)
 
@@ -11,7 +11,10 @@
 | main قدیمی `65ec72a` | حدود ۱۶۷۷ | [۱۵۹۲, ۱۷۵۲] |
 | هستهٔ جدید + ارزیاب کلاسیک | حدود ۲۹۹۱ | [۲۹۳۴, ۳۰۴۳] |
 | هستهٔ جدید + NNUE نسل ۱ | ارزیاب کلاسیک + ۵۰٫۸ | [+۱۶٫۸, +۸۵٫۹] |
-| هستهٔ جدید + NNUE نسل ۲ (پیش‌فرض) | نسل ۱ + ۱۶۲٫۴ | [+۱۱۸٫۱, +۲۱۲٫۴] |
+| هستهٔ جدید + NNUE نسل ۲ (`nets/g2.nnue`) | نسل ۱ + ۱۶۲٫۴ | [+۱۱۸٫۱, +۲۱۲٫۴] |
+| **۰٫۳: شبکهٔ CC0 `nn-ad9b42354671` با استنتاج مستقل (پیش‌فرض)** | g2 + ۷۶۷٫۶ | [+۵۷۷٫۹, ∞) |
+| ۰٫۳ با EvalScale تنظیم‌شده، در برابر استاک‌فیش ۱۵٫۱ کامل (تک‌نخ) | −۴۸٫۱ | [−۷۸٫۵, −۱۸٫۳] |
+| شبکهٔ تقطیرشدهٔ خود فرزین `nets/d1-512.nnue` (۷۶۸→۵۱۲، ۱۱٫۵M) | g2 + ۲۷۵٫۵ | [+۲۱۳٫۷, +۳۵۶٫۵] |
 
 ## ساخت و اجرا
 
@@ -22,7 +25,7 @@ cargo build --release
 cargo test --release
 ```
 
-ساخت با `-C target-cpu=native` انجام می‌شود (`.cargo/config.toml`). شبکهٔ `nets/default.nnue` هنگام ساخت داخل باینری قرار می‌گیرد.
+ساخت با `-C target-cpu=native` انجام می‌شود (`.cargo/config.toml`). شبکهٔ `nets/default.nnue` هنگام ساخت داخل باینری قرار می‌گیرد. این شبکه وزن CC0 منتشرشده توسط پروژهٔ استاک‌فیش است (منشأ و هش در `nets/README.md` و `THIRD_PARTY_NOTICES.md`)؛ استنتاج آن (`src/hka.rs`) مستقل نوشته شده است. شبکهٔ خودآموز قبلی در `nets/g2.nnue` است.
 
 ### گزینه‌های UCI
 
@@ -32,7 +35,9 @@ cargo test --release
 | `Threads` | 1 | Lazy SMP با جدول مشترک |
 | `Move Overhead` | 20 | حاشیهٔ زمانی (ms) |
 | `Clear Hash` | — | پاک کردن جدول و historyها |
-| `EvalFile` | `<default>` | مسیر شبکهٔ FZN1؛ `<empty>` = ارزیاب کلاسیک |
+| `EvalFile` | `<default>` | مسیر شبکهٔ FZN1 یا HalfKAv2_hm (تشخیص خودکار)؛ `<empty>` = ارزیاب کلاسیک |
+| `EvalScale` | 560 | تبدیل خروجی HalfKAv2_hm به سانتی‌پیاده (×/۱۰۲۴) |
+| `EvalMaterialScale` | false | مقیاس‌دهی وابسته به مواد برای HalfKAv2_hm |
 | `tune_*` | — | پارامترهای جست‌وجو برای SPSA |
 
 فرمان‌های اضافه: `bench [depth]`، `go perft N`، `eval`، `d`.
@@ -51,6 +56,10 @@ python3 tools/arena.py --engine name=new,cmd=./target/release/farzin,opt.EvalFil
 python3 tools/rating.py results/*.json --anchor sf2800=2800 --anchor sf3000=3000
 # یک نسل کامل NNUE روی سرور
 tools/pipeline.sh 2 20000000 64
+# تقطیر: برچسب ارزیابی ایستای شبکهٔ معلم، آموزش دانش‌آموز FZN1، غربال و SPRT
+tools/distill.sh nets/default.nnue 20000000 512
+# دریافت شبکه‌های CC0 دیگر با بررسی SHA-256
+tools/fetch_nets.sh
 ```
 
 ابزارهای قدیمی‌تر (`tools/match.py`، `tools/sprt.py`، `tools/bench.py` و …) برای بازتولید نتایج مراحل قبل نگه داشته شده‌اند.

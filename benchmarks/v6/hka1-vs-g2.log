@@ -1,0 +1,17 @@
+[     57s] hka vs g2: 3p +2400.0 [+2400.0,+2400.0] LLR 0.10 
+[    104s] hka vs g2: 6p +2400.0 [+2400.0,+2400.0] LLR 0.34 
+[    157s] hka vs g2: 9p +617.6 [+426.4,+2400.0] LLR 0.67 
+[    212s] hka vs g2: 12p +668.8 [+478.2,+2400.0] LLR 1.15 
+[    267s] hka vs g2: 15p +708.3 [+518.1,+2400.0] LLR 1.76 
+[    313s] hka vs g2: 18p +740.5 [+550.5,+2400.0] LLR 2.50 
+[    359s] hka vs g2: 20p +759.1 [+569.2,+2400.0] LLR 3.07 H1 accepted
+[    359s] hka vs g2: 21p +767.6 [+577.9,+2400.0] LLR 3.37 H1 accepted
+Traceback (most recent call last):
+  File "/home/user/farzin/tools/arena.py", line 394, in <module>
+    main()
+    ~~~~^^
+  File "/home/user/farzin/tools/arena.py", line 348, in main
+    res = fut.result()
+  File "/usr/local/lib/python3.13/concurrent/futures/_base.py", line 451, in result
+    raise CancelledError()
+concurrent.futures._base.CancelledError

@@ -1,0 +1,227 @@
+{
+ "engines": {
+  "farzin-hka": {
+   "cmd": "/tmp/claude-0/-home-user-farzin/870ba0b1-d577-58a2-9fde-61d4d5b2d901/scratchpad/bin/farzin-hka3",
+   "options": {
+    "EvalFile": "/tmp/claude-0/-home-user-farzin/870ba0b1-d577-58a2-9fde-61d4d5b2d901/scratchpad/nets/nn-ad9b42354671.nnue"
+   },
+   "sha256": "c2314f43bc71737fd235ebf3ac63c64da093977addb8698ff95a30cdbfe0ab24"
+  },
+  "sf3190": {
+   "cmd": "/tmp/claude-0/-home-user-farzin/870ba0b1-d577-58a2-9fde-61d4d5b2d901/scratchpad/bin/sf171",
+   "options": {
+    "UCI_LimitStrength": "true",
+    "UCI_Elo": "3190"
+   },
+   "sha256": "d6722b01dce990d338ad4b3a1fae902deb8b2cec4bce344488fac8c4a6eb727d"
+  }
+ },
+ "tc": "10+0.1",
+ "nodes": null,
+ "book": "farzin-openings.epd",
+ "seed": 1,
+ "concurrency": 3,
+ "elapsed_s": 336.0,
+ "summary": {
+  "farzin-hka vs sf3190": {
+   "pairs": 15,
+   "pentanomial": [
+    0,
+    0,
+    0,
+    3,
+    12
+   ],
+   "score": 0.95,
+   "elo": 511.50144038113183,
+   "elo_95": [
+    380.52855546880056,
+    2399.999826281142
+   ],
+   "los": 1.0
+  }
+ },
+ "sprt": null,
+ "games": [
+  [
+   "farzin-hka",
+   "sf3190",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "sf3190",
+   "farzin-hka",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "farzin-hka",
+   "sf3190",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "sf3190",
+   "farzin-hka",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "farzin-hka",
+   "sf3190",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "sf3190",
+   "farzin-hka",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "farzin-hka",
+   "sf3190",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "sf3190",
+   "farzin-hka",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "farzin-hka",
+   "sf3190",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "sf3190",
+   "farzin-hka",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "farzin-hka",
+   "sf3190",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "sf3190",
+   "farzin-hka",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "farzin-hka",
+   "sf3190",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "sf3190",
+   "farzin-hka",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "farzin-hka",
+   "sf3190",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "sf3190",
+   "farzin-hka",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "farzin-hka",
+   "sf3190",
+   "1-0",
+   "checkmate"
+  ],
+  [
+   "sf3190",
+   "farzin-hka",
+   "0-1",
+   "checkmate"
+  ],
+  [
+   "farzin-hka",
+   "sf3190",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "sf3190",
+   "farzin-hka",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "farzin-hka",
+   "sf3190",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "sf3190",
+   "farzin-hka",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "farzin-hka",
+   "sf3190",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "sf3190",
+   "farzin-hka",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "farzin-hka",
+   "sf3190",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "sf3190",
+   "farzin-hka",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "farzin-hka",
+   "sf3190",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "sf3190",
+   "farzin-hka",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "farzin-hka",
+   "sf3190",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "sf3190",
+   "farzin-hka",
+   "0-1",
+   "adjudication"
+  ]
+ ]
+}

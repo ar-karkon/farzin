@@ -1,0 +1,14 @@
+loaded 5987088 train / 122185 val samples in 1.9s
+epoch   1 train loss 0.014047 val loss 0.004815 (44s)
+epoch   2 train loss 0.004113 val loss 0.003735 (41s)
+epoch   3 train loss 0.003365 val loss 0.003255 (42s)
+epoch   4 train loss 0.002986 val loss 0.002992 (40s)
+epoch   5 train loss 0.002754 val loss 0.002821 (40s)
+epoch   6 train loss 0.002600 val loss 0.002710 (41s)
+epoch   7 train loss 0.002492 val loss 0.002634 (39s)
+epoch   8 train loss 0.002418 val loss 0.002585 (40s)
+epoch   9 train loss 0.002364 val loss 0.002549 (40s)
+epoch  10 train loss 0.002327 val loss 0.002529 (41s)
+epoch  11 train loss 0.002303 val loss 0.002515 (38s)
+epoch  12 train loss 0.002289 val loss 0.002510 (38s)
+wrote st512-6m.nnue

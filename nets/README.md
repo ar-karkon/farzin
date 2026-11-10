@@ -18,6 +18,12 @@ Two kinds of network are kept here:
   Farzin runs it with its own independent Rust inference (`src/hka.rs`); no
   Stockfish source code is included. Other CC0 nets of the same family can be
   fetched and verified with `tools/fetch_nets.sh`.
+* `d1-512.nnue` — Farzin's own FZN1 (768→512)×2→1 net **distilled** from
+  `default.nnue`: 11.5M positions from g2 self-play (400 soft nodes), each
+  labelled with the teacher's static eval (`datagen teacher=`), 12 epochs,
+  wdl 0. sha256 `6a4181bbdbf4fd3613a0e771b39fd6cb2f1456f2c4f18e71259f7374b22825d0`.
+  +275.5 Elo [+213.7, +356.5] vs g2 at 10+0.1 (50 pairs). Derived from CC0
+  labels, so no third-party restrictions.
 * `g2.nnue` and older FZN1 nets — trained by Farzin's own trainer
   (`farzin-train`) on Farzin's own self-play; no third-party weights or
   evaluations. Kept as the self-trained baseline (`EvalFile=nets/g2.nnue`).
