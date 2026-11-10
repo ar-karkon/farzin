@@ -82,6 +82,18 @@ pub fn feature(persp: usize, ksq: Square, code: usize, sq: Square) -> usize {
 const LEB128_MAGIC: &[u8] = b"COMPRESSED_LEB128";
 const STACK_FIXED: usize = 4 + 4 * FC0_OUT + 4 * FC1_OUT + FC1_OUT * FC1_IN + 4 + FC1_OUT;
 
+/// Enables material-dependent output scaling (see [`Network::evaluate`]).
+pub static MATERIAL_SCALE: std::sync::atomic::AtomicBool =
+    std::sync::atomic::AtomicBool::new(false);
+
+/// Non-pawn material of both sides in the reference engine's midgame units.
+fn non_pawn_material(board: &Board) -> i32 {
+    const V: [i32; 5] = [0, 781, 825, 1276, 2538];
+    (KNIGHT..=QUEEN)
+        .map(|p| V[p] * board.pieces[p].count_ones() as i32)
+        .sum()
+}
+
 struct Reader<'a> {
     b: &'a [u8],
     o: usize,
@@ -264,7 +276,16 @@ impl Network {
         let them = us ^ 1;
         let psqt = (acc.psqt[us][bucket] - acc.psqt[them][bucket]) / 2;
         let positional = self.propagate(acc, us, bucket);
-        (psqt + positional) / OUTPUT_SCALE
+        if MATERIAL_SCALE.load(std::sync::atomic::Ordering::Relaxed) {
+            // Material-aware blend and scaling in the style the reference
+            // engine applies on top of the raw network output.
+            let npm = non_pawn_material(board);
+            let delta = 24 - npm / 9560;
+            let v = ((1024 - delta) * psqt + (1024 + delta) * positional) / (1024 * OUTPUT_SCALE);
+            v * (1064 + 106 * npm / 5120) / 1024
+        } else {
+            (psqt + positional) / OUTPUT_SCALE
+        }
     }
 
     fn propagate(&self, acc: &Acc, us: usize, bucket: usize) -> i32 {

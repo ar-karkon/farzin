@@ -266,6 +266,10 @@ impl Engine {
                     self.opts.overhead = ms;
                 }
             }
+            "evalmaterialscale" => {
+                crate::hka::MATERIAL_SCALE
+                    .store(value == "true", std::sync::atomic::Ordering::Relaxed);
+            }
             "evalscale" => {
                 if let Ok(v) = value.parse() {
                     crate::evalnet::set_hka_scale(v);
@@ -326,6 +330,7 @@ impl Engine {
                 println!("option name Move Overhead type spin default 20 min 0 max 5000");
                 println!("option name Clear Hash type button");
                 println!("option name EvalFile type string default <default>");
+                println!("option name EvalMaterialScale type check default false");
                 println!(
                     "option name EvalScale type spin default {} min 1 max 4096",
                     crate::evalnet::DEFAULT_HKA_SCALE
