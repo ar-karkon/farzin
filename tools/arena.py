@@ -233,7 +233,8 @@ def sprt_llr(pairs, elo0, elo1):
     n = len(pairs)
     if n < 2:
         return 0.0
-    counts = [sum(1 for p in pairs if abs(p - k / 2) < 1e-9) + 1e-3 for k in range(5)]
+    # A small symmetric prior keeps the variance estimate sane for tiny samples.
+    counts = [sum(1 for p in pairs if abs(p - k / 2) < 1e-9) + 0.5 for k in range(5)]
     total = sum(counts)
     probs = [c / total for c in counts]
     xs = [k / 4 for k in range(5)]
@@ -256,6 +257,7 @@ def main():
     ap.add_argument("--hash", type=int, default=16)
     ap.add_argument("--gauntlet", action="store_true")
     ap.add_argument("--sprt", nargs=2, type=float, metavar=("ELO0", "ELO1"))
+    ap.add_argument("--sprt-min-pairs", type=int, default=20)
     ap.add_argument("--alpha", type=float, default=0.05)
     ap.add_argument("--beta", type=float, default=0.05)
     ap.add_argument("--resign-cp", type=int, default=1000)
@@ -361,7 +363,9 @@ def main():
                         llr = sprt_llr(pairs, *args.sprt)
                         sprt_state["llr"] = llr
                         sprt_state["bounds"] = [lower, upper]
-                        if llr >= upper:
+                        if len(pairs) < args.sprt_min_pairs:
+                            pass
+                        elif llr >= upper:
                             sprt_state["decision"] = "H1 accepted"
                             stop.set()
                         elif llr <= lower:
