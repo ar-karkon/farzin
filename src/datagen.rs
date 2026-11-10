@@ -88,6 +88,17 @@ pub struct Config {
     /// Distillation teacher: when set, each stored position is labelled with
     /// this network's static evaluation instead of the search score.
     pub teacher: Option<Arc<Network>>,
+    /// When non-zero, store one in `tree_rate` positions evaluated inside
+    /// the mover's search trees (labelled with the mover network's static
+    /// evaluation) instead of the game positions. This distils the network
+    /// on the distribution the search actually queries, at a fraction of the
+    /// cost of labelling game positions one per move.
+    pub tree_rate: u64,
+    /// With `tree_rate`: keep only quiet sampled positions.
+    pub tree_quiet: bool,
+    /// Probability (per mille) of playing a random legal move instead of the
+    /// search move during the first 30 plies (diversity).
+    pub random_move_pm: u64,
 }
 
 fn play_game(
@@ -112,6 +123,9 @@ fn play_game(
         return Vec::new();
     }
     thread.histories.clear();
+    if let Some(s) = &mut thread.sampler {
+        s.out.clear();
+    }
     // SAFETY-free reset: the shared table belongs to this worker only.
     let limits = Limits {
         nodes: Some(cfg.hard_nodes),
@@ -188,7 +202,22 @@ fn play_game(
             positions.push((board, label.clamp(-20000, 20000) as i16));
         }
         history.push(board.hash);
-        board = board.make_move(r.best);
+        let mut mv = r.best;
+        if cfg.random_move_pm > 0
+            && history.len() < 30
+            && rng.below(1000) < cfg.random_move_pm as usize
+        {
+            let moves = legal_moves(&board);
+            mv = moves[rng.below(moves.len())];
+        }
+        board = board.make_move(mv);
+    }
+    if let Some(s) = &mut thread.sampler {
+        let mut out = std::mem::take(&mut s.out);
+        for r in out.iter_mut() {
+            r[27] = result;
+        }
+        return out;
     }
     positions.iter().map(|(b, s)| pack(b, *s, result)).collect()
 }
@@ -240,6 +269,14 @@ pub fn run(cfg: Config) {
             let mut thread = Thread::new(0);
             thread.silent = true;
             thread.net = cfg.net.clone();
+            if cfg.tree_rate > 0 {
+                thread.sampler = Some(Box::new(crate::search::Sampler {
+                    rate: cfg.tree_rate,
+                    quiet_only: cfg.tree_quiet,
+                    rng: cfg.seed.wrapping_mul(0x2545_F491_4F6C_DD1D) ^ (t as u64 + 7) | 1,
+                    out: Vec::new(),
+                }));
+            }
             let mut rng = Rng(cfg.seed ^ (0x9E37_79B9_7F4A_7C15u64.wrapping_mul(t as u64 + 1)) | 1);
             let mut shared = shared;
             while !done.load(Ordering::Relaxed) {

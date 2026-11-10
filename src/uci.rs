@@ -399,6 +399,13 @@ macro_rules! params_table {
             see_quiet,
             see_noisy,
             hist_div,
+            x_nmp_all,
+            x_deeper,
+            x_tm,
+            x_cont_corr,
+            x_cutoff,
+            x_checkext,
+            x_optimism,
             probcut_margin,
             singular_depth,
             asp_delta,
@@ -492,6 +499,9 @@ pub fn run() {
         let teacher = get("teacher").map(|p| Arc::new(Network::load(&p).expect("load teacher")));
         crate::datagen::run(crate::datagen::Config {
             teacher,
+            tree_rate: num("tree_rate", 0),
+            tree_quiet: num("tree_quiet", 0) != 0,
+            random_move_pm: num("random_move_pm", 0),
             threads: num("threads", 1) as usize,
             games: num("games", 1000),
             soft_nodes: num("soft_nodes", 5000),

@@ -26,8 +26,11 @@ def run_match(engine, plus, minus, args, seed):
     with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
         out = tmp.name
     cmd = [sys.executable, os.path.join(HERE, "arena.py"), "--engine", spec("plus", plus),
-           "--engine", spec("minus", minus), "--tc", args.tc, "--pairs", str(args.pairs),
+           "--engine", spec("minus", minus), "--pairs", str(args.pairs),
            "--concurrency", str(args.concurrency), "--seed", str(seed), "--out", out]
+    cmd += ["--nodes", str(args.nodes)] if args.nodes else ["--tc", args.tc]
+    if args.book:
+        cmd += ["--book", args.book]
     subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL)
     with open(out) as f:
         data = json.load(f)
@@ -43,6 +46,8 @@ def main():
     ap.add_argument("--iterations", type=int, default=100)
     ap.add_argument("--pairs", type=int, default=8)
     ap.add_argument("--tc", default="5+0.05")
+    ap.add_argument("--nodes", type=int, default=None, help="fixed nodes per move instead of --tc")
+    ap.add_argument("--book", default=None)
     ap.add_argument("--concurrency", type=int, default=os.cpu_count())
     ap.add_argument("--a-ratio", type=float, default=0.1)
     ap.add_argument("--r-end", type=float, default=0.002)
