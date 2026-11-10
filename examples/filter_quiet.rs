@@ -2,7 +2,7 @@
 //! Farzin 32-byte record file.
 //!
 //! cargo run --release --example filter_quiet -- IN OUT
-use farzin::datagen::{unpack, RECORD_SIZE};
+use farzin::datagen::RECORD_SIZE;
 use std::io::{BufWriter, Read, Write};
 
 #[path = "common/board_util.rs"]
@@ -20,14 +20,13 @@ fn main() {
             break;
         }
         let mut n = n;
-        while n % RECORD_SIZE != 0 {
+        while !n.is_multiple_of(RECORD_SIZE) {
             let m = f.read(&mut buf[n..]).unwrap();
             assert!(m > 0, "truncated file");
             n += m;
         }
         for rec in buf[..n].chunks_exact(RECORD_SIZE) {
             total += 1;
-            let _ = unpack(rec);
             let b = board_util::board_from(rec);
             if farzin::search::is_quiet(&b) {
                 out.write_all(rec).unwrap();
