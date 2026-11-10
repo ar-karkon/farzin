@@ -487,7 +487,9 @@ pub fn run() {
             Some(path) => Some(Arc::new(Network::load(&path).expect("load network"))),
             None => default_network(),
         };
+        let teacher = get("teacher").map(|p| Arc::new(Network::load(&p).expect("load teacher")));
         crate::datagen::run(crate::datagen::Config {
+            teacher,
             threads: num("threads", 1) as usize,
             games: num("games", 1000),
             soft_nodes: num("soft_nodes", 5000),

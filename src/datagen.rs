@@ -85,6 +85,9 @@ pub struct Config {
     pub out: String,
     pub seed: u64,
     pub net: Option<Arc<Network>>,
+    /// Distillation teacher: when set, each stored position is labelled with
+    /// this network's static evaluation instead of the search score.
+    pub teacher: Option<Arc<Network>>,
 }
 
 fn play_game(
@@ -171,7 +174,18 @@ fn play_game(
             break;
         }
         if !board.in_check() && !r.best.is_noisy() && score.abs() < MATE_BOUND {
-            positions.push((board, white_score.clamp(-20000, 20000) as i16));
+            let label = match &cfg.teacher {
+                Some(t) => {
+                    let v = t.evaluate(&board);
+                    if board.stm == WHITE {
+                        v
+                    } else {
+                        -v
+                    }
+                }
+                None => white_score,
+            };
+            positions.push((board, label.clamp(-20000, 20000) as i16));
         }
         history.push(board.hash);
         board = board.make_move(r.best);
