@@ -79,6 +79,9 @@ pub fn feature(persp: usize, ksq: Square, code: usize, sq: Square) -> usize {
     (sq ^ orient(persp, ksq)) + ps + king_bucket(persp, ksq) * 704
 }
 
+const LEB128_MAGIC: &[u8] = b"COMPRESSED_LEB128";
+const STACK_FIXED: usize = 4 + 4 * FC0_OUT + 4 * FC1_OUT + FC1_OUT * FC1_IN + 4 + FC1_OUT;
+
 struct Reader<'a> {
     b: &'a [u8],
     o: usize,
@@ -110,6 +113,31 @@ impl Reader<'_> {
             .map(|c| i32::from_le_bytes(c.try_into().unwrap()))
             .collect())
     }
+    /// One signed-LEB128 block: magic, u32 byte count, payload.
+    fn leb128(&mut self) -> Result<Vec<i32>, String> {
+        if self.take(LEB128_MAGIC.len())? != LEB128_MAGIC {
+            return Err("missing LEB128 block".into());
+        }
+        let len = self.u32()? as usize;
+        let data = self.take(len)?;
+        let mut out = Vec::with_capacity(len);
+        let (mut value, mut shift) = (0i64, 0u32);
+        for &byte in data {
+            value |= i64::from(byte & 0x7f) << shift;
+            shift += 7;
+            if byte & 0x80 == 0 {
+                if shift < 64 && byte & 0x40 != 0 {
+                    value |= -1i64 << shift;
+                }
+                out.push(value as i32);
+                value = 0;
+                shift = 0;
+            } else if shift > 35 {
+                return Err("bad LEB128 value".into());
+            }
+        }
+        Ok(out)
+    }
     fn i8s(&mut self, n: usize) -> Result<Vec<i8>, String> {
         Ok(self.take(n)?.iter().map(|&x| x as i8).collect())
     }
@@ -129,21 +157,30 @@ impl Network {
         let dlen = r.u32()? as usize;
         let description = String::from_utf8_lossy(r.take(dlen)?).into_owned();
         let header = r.o;
-        // Infer L1 from the total size.
-        let fixed = 4 + 4 * PSQT_BUCKETS * INPUTS + STACKS * (4 + 4 * FC0_OUT + 4 * FC1_OUT + FC1_OUT * FC1_IN + 4 + FC1_OUT);
-        let per_l1 = 2 + 2 * INPUTS + STACKS * FC0_OUT;
-        let rest = bytes.len() - header;
-        if rest < fixed || !(rest - fixed).is_multiple_of(per_l1) {
-            return Err(format!("unsupported HalfKAv2_hm layout ({} bytes)", bytes.len()));
-        }
-        let l1 = (rest - fixed) / per_l1;
+        let _ft_hash = r.u32()?;
+        let (l1, ft_bias, ft_w, psqt_w) = if bytes[r.o..].starts_with(LEB128_MAGIC) {
+            let ft_bias: Vec<i16> = r.leb128()?.into_iter().map(|v| v as i16).collect();
+            let l1 = ft_bias.len();
+            let ft_w: Vec<i16> = r.leb128()?.into_iter().map(|v| v as i16).collect();
+            let psqt_w: Vec<i32> = r.leb128()?;
+            if ft_w.len() != INPUTS * l1 || psqt_w.len() != INPUTS * PSQT_BUCKETS {
+                return Err("inconsistent compressed feature transformer".into());
+            }
+            (l1, ft_bias, ft_w, psqt_w)
+        } else {
+            // Infer L1 from the total size.
+            let fixed = 4 + 4 * PSQT_BUCKETS * INPUTS + STACKS * STACK_FIXED;
+            let per_l1 = 2 + 2 * INPUTS + STACKS * FC0_OUT;
+            let rest = bytes.len() - header;
+            if rest < fixed || !(rest - fixed).is_multiple_of(per_l1) {
+                return Err(format!("unsupported HalfKAv2_hm layout ({} bytes)", bytes.len()));
+            }
+            let l1 = (rest - fixed) / per_l1;
+            (l1, r.i16s(l1)?, r.i16s(INPUTS * l1)?, r.i32s(INPUTS * PSQT_BUCKETS)?)
+        };
         if l1 == 0 || !l1.is_multiple_of(64) || l1 > 4096 {
             return Err(format!("unsupported L1 = {l1}"));
         }
-        let _ft_hash = r.u32()?;
-        let ft_bias = r.i16s(l1)?;
-        let ft_w = r.i16s(INPUTS * l1)?;
-        let psqt_w = r.i32s(INPUTS * PSQT_BUCKETS)?;
         let mut stacks = Vec::with_capacity(STACKS);
         for _ in 0..STACKS {
             let _h = r.u32()?;
@@ -478,6 +515,21 @@ fn dot_u8_i8(a: &[u8], w: &[i8]) -> i32 {
 pub struct Acc {
     v: Vec<i16>,
     psqt: [[i32; PSQT_BUCKETS]; 2],
+    /// Whether `v`/`psqt` are up to date for each perspective (lazy updates).
+    computed: [bool; 2],
+    dirty: Dirty,
+    board: Option<Board>,
+}
+
+/// Feature changes from the parent ply: up to two (code, square) adds/subs.
+/// `king_side` is the perspective whose king moved (needs a refresh), or 2.
+#[derive(Clone, Copy, Default)]
+struct Dirty {
+    adds: [(usize, Square); 2],
+    subs: [(usize, Square); 2],
+    na: usize,
+    ns: usize,
+    king_side: usize,
 }
 
 impl Acc {
@@ -485,6 +537,9 @@ impl Acc {
         Acc {
             v: vec![0; 2 * l1],
             psqt: [[0; PSQT_BUCKETS]; 2],
+            computed: [false; 2],
+            dirty: Dirty::default(),
+            board: None,
         }
     }
     #[inline(always)]
@@ -654,71 +709,102 @@ impl Accumulators {
         for p in [WHITE, BLACK] {
             self.refresh_side(net, board, ply, p);
         }
+        self.stack[ply].computed = [true; 2];
+        self.stack[ply].board = Some(*board);
     }
 
-    pub fn push(&mut self, net: &Network, parent: &Board, child: &Board, mv: Move, ply: usize) {
-        let l1 = net.l1;
+    /// Record the move; the accumulator itself is updated lazily on evaluation.
+    pub fn push(&mut self, _net: &Network, parent: &Board, child: &Board, mv: Move, ply: usize) {
         let us = parent.stm;
         let from = mv.from();
         let to = mv.to();
         let code = parent.mailbox[from] as usize;
         let placed = if mv.is_promotion() { us * 6 + mv.promotion() } else { code };
-        let king_move = code % 6 == KING;
-        // Dirty pieces as (code, square) lists.
-        let mut adds: [(usize, Square); 2] = [(placed, to), (0, 0)];
-        let mut subs: [(usize, Square); 2] = [(code, from), (0, 0)];
-        let (mut na, mut ns) = (1, 1);
+        let mut d = Dirty {
+            adds: [(placed, to), (0, 0)],
+            subs: [(code, from), (0, 0)],
+            na: 1,
+            ns: 1,
+            king_side: if code % 6 == KING { us } else { 2 },
+        };
         if mv.is_castle() {
             let (rf, rt) = if mv.flag() == KING_CASTLE { (to + 1, to - 1) } else { (to - 2, to + 1) };
-            adds[1] = (us * 6 + ROOK, rt);
-            subs[1] = (us * 6 + ROOK, rf);
-            na = 2;
-            ns = 2;
+            d.adds[1] = (us * 6 + ROOK, rt);
+            d.subs[1] = (us * 6 + ROOK, rf);
+            d.na = 2;
+            d.ns = 2;
         } else if mv.is_capture() {
-            subs[1] = if mv.flag() == EN_PASSANT {
+            d.subs[1] = if mv.flag() == EN_PASSANT {
                 ((us ^ 1) * 6 + PAWN, to ^ 8)
             } else {
                 (parent.mailbox[to] as usize, to)
             };
-            ns = 2;
+            d.ns = 2;
         }
-        for p in [WHITE, BLACK] {
-            if king_move && p == us {
-                self.refresh_side(net, child, ply, p);
-                continue;
-            }
-            let ksq = child.king_sq(p);
-            let fa: [usize; 2] = std::array::from_fn(|i| feature(p, ksq, adds[i].0, adds[i].1));
-            let fs: [usize; 2] = std::array::from_fn(|i| feature(p, ksq, subs[i].0, subs[i].1));
-            let ra: [&[i16]; 2] = [net.row(fa[0]), net.row(if na > 1 { fa[1] } else { fa[0] })];
-            let rs: [&[i16]; 2] = [net.row(fs[0]), net.row(if ns > 1 { fs[1] } else { fs[0] })];
-            let (prev, rest) = self.stack.split_at_mut(ply);
-            let src = &prev[ply - 1];
-            let dst = &mut rest[0];
-            update(dst.side_mut(p, l1), src.side(p, l1), &ra[..na], &rs[..ns]);
-            let mut ps = src.psqt[p];
-            for &f in &fa[..na] {
-                for (a, w) in ps.iter_mut().zip(net.prow(f)) {
-                    *a += w;
-                }
-            }
-            for &f in &fs[..ns] {
-                for (a, w) in ps.iter_mut().zip(net.prow(f)) {
-                    *a -= w;
-                }
-            }
-            dst.psqt[p] = ps;
-        }
+        let e = &mut self.stack[ply];
+        e.dirty = d;
+        e.computed = [false; 2];
+        e.board = Some(*child);
     }
 
     pub fn push_null(&mut self, ply: usize) {
+        let parent_board = self.stack[ply - 1].board;
+        let e = &mut self.stack[ply];
+        e.dirty = Dirty { king_side: 2, ..Dirty::default() };
+        e.computed = [false; 2];
+        e.board = parent_board.map(|b| b.make_null());
+    }
+
+    /// Apply `stack[ply].dirty` to perspective `p` on top of `stack[ply - 1]`.
+    fn apply(&mut self, net: &Network, ply: usize, p: usize) {
+        let l1 = net.l1;
+        let d = self.stack[ply].dirty;
+        let ksq = self.stack[ply].board.as_ref().unwrap().king_sq(p);
+        let fa: [usize; 2] = std::array::from_fn(|i| feature(p, ksq, d.adds[i].0, d.adds[i].1));
+        let fs: [usize; 2] = std::array::from_fn(|i| feature(p, ksq, d.subs[i].0, d.subs[i].1));
+        let ra: [&[i16]; 2] = [net.row(fa[0]), net.row(fa[1])];
+        let rs: [&[i16]; 2] = [net.row(fs[0]), net.row(fs[1])];
         let (prev, rest) = self.stack.split_at_mut(ply);
-        rest[0].v.copy_from_slice(&prev[ply - 1].v);
-        rest[0].psqt = prev[ply - 1].psqt;
+        let src = &prev[ply - 1];
+        let dst = &mut rest[0];
+        update(dst.side_mut(p, l1), src.side(p, l1), &ra[..d.na], &rs[..d.ns]);
+        let mut ps = src.psqt[p];
+        for &f in &fa[..d.na] {
+            for (a, w) in ps.iter_mut().zip(net.prow(f)) {
+                *a += w;
+            }
+        }
+        for &f in &fs[..d.ns] {
+            for (a, w) in ps.iter_mut().zip(net.prow(f)) {
+                *a -= w;
+            }
+        }
+        dst.psqt[p] = ps;
+        dst.computed[p] = true;
+    }
+
+    fn materialize(&mut self, net: &Network, ply: usize, p: usize) {
+        if self.stack[ply].computed[p] {
+            return;
+        }
+        let mut k = ply;
+        while !self.stack[k].computed[p] && self.stack[k].dirty.king_side != p {
+            k -= 1;
+        }
+        if !self.stack[k].computed[p] {
+            let b = self.stack[k].board.unwrap();
+            self.refresh_side(net, &b, k, p);
+            self.stack[k].computed[p] = true;
+        }
+        for j in k + 1..=ply {
+            self.apply(net, j, p);
+        }
     }
 
     /// Side-to-move relative raw network value (reference-engine units).
-    pub fn evaluate(&self, net: &Network, board: &Board, ply: usize) -> i32 {
+    pub fn evaluate(&mut self, net: &Network, board: &Board, ply: usize) -> i32 {
+        self.materialize(net, ply, WHITE);
+        self.materialize(net, ply, BLACK);
         net.output(&self.stack[ply], board)
     }
 }
@@ -804,6 +890,35 @@ mod tests {
                 assert_eq!(acc.evaluate(&net, &child, ply), net.evaluate(&child), "{fen} {}", mv.to_uci());
                 board = child;
             }
+        }
+    }
+
+    #[test]
+    fn lazy_chains_with_skipped_evals_and_null_moves() {
+        let net = Network::from_bytes(&synthetic(64)).unwrap();
+        let mut acc = Accumulators::new();
+        let mut board = Board::from_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1").unwrap();
+        acc.refresh(&net, &board, 0);
+        let mut seed = 5u64;
+        for ply in 1..100 {
+            seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+            let moves = legal_moves(&board);
+            if moves.is_empty() {
+                break;
+            }
+            let child = if (seed >> 40) % 5 == 0 && !board.in_check() {
+                acc.push_null(ply);
+                board.make_null()
+            } else {
+                let mv = moves[(seed >> 33) as usize % moves.len()];
+                let c = board.make_move(mv);
+                acc.push(&net, &board, &c, mv, ply);
+                c
+            };
+            if (seed >> 50) % 4 == 0 {
+                assert_eq!(acc.evaluate(&net, &child, ply), net.evaluate(&child), "ply {ply}");
+            }
+            board = child;
         }
     }
 

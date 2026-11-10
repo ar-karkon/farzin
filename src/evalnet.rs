@@ -111,7 +111,7 @@ impl EvalAccs {
     }
 
     #[inline]
-    pub fn evaluate(&self, net: &EvalNet, board: &Board, ply: usize) -> i32 {
+    pub fn evaluate(&mut self, net: &EvalNet, board: &Board, ply: usize) -> i32 {
         match (self, net) {
             (EvalAccs::Fzn1(a), EvalNet::Fzn1(n)) => a.evaluate(n, board, ply),
             (EvalAccs::Hka(a), EvalNet::Hka(n)) => a.evaluate(n, board, ply) * hka_scale() / 1024,
