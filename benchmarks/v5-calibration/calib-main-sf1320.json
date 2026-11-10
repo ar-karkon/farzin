@@ -1,0 +1,285 @@
+{
+ "engines": {
+  "farzin-main-65ec72a": {
+   "cmd": "/opt/engines/farzin-main-65ec72a",
+   "options": {},
+   "sha256": "63e7218bbd0f7ea1b7f8921d1b67265d79a1d50417154757956333aa5ae5af4b"
+  },
+  "sf1320": {
+   "cmd": "/opt/engines/stockfish",
+   "options": {
+    "UCI_LimitStrength": "true",
+    "UCI_Elo": "1320"
+   },
+   "sha256": "7fecbc0b26454b62be5e3b237b58dc5666401b56e520aeb1b0bf8f53fa8f2ef3"
+  }
+ },
+ "tc": "10+0.1",
+ "nodes": null,
+ "book": "farzin-openings.epd",
+ "seed": 1,
+ "concurrency": 4,
+ "elapsed_s": 242.1,
+ "summary": {
+  "farzin-main-65ec72a vs sf1320": {
+   "pairs": 20,
+   "pentanomial": [
+    0,
+    0,
+    4,
+    2,
+    14
+   ],
+   "score": 0.875,
+   "elo": 338.0392160057028,
+   "elo_95": [
+    226.6900447924474,
+    567.8152091337327
+   ],
+   "los": 1.0
+  }
+ },
+ "sprt": null,
+ "games": [
+  [
+   "farzin-main-65ec72a",
+   "sf1320",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "sf1320",
+   "farzin-main-65ec72a",
+   "0-1",
+   "checkmate"
+  ],
+  [
+   "farzin-main-65ec72a",
+   "sf1320",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "sf1320",
+   "farzin-main-65ec72a",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "farzin-main-65ec72a",
+   "sf1320",
+   "1-0",
+   "checkmate"
+  ],
+  [
+   "sf1320",
+   "farzin-main-65ec72a",
+   "0-1",
+   "checkmate"
+  ],
+  [
+   "farzin-main-65ec72a",
+   "sf1320",
+   "1-0",
+   "checkmate"
+  ],
+  [
+   "sf1320",
+   "farzin-main-65ec72a",
+   "0-1",
+   "checkmate"
+  ],
+  [
+   "farzin-main-65ec72a",
+   "sf1320",
+   "1-0",
+   "checkmate"
+  ],
+  [
+   "sf1320",
+   "farzin-main-65ec72a",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "farzin-main-65ec72a",
+   "sf1320",
+   "1-0",
+   "checkmate"
+  ],
+  [
+   "sf1320",
+   "farzin-main-65ec72a",
+   "0-1",
+   "checkmate"
+  ],
+  [
+   "farzin-main-65ec72a",
+   "sf1320",
+   "1-0",
+   "checkmate"
+  ],
+  [
+   "sf1320",
+   "farzin-main-65ec72a",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "farzin-main-65ec72a",
+   "sf1320",
+   "1-0",
+   "checkmate"
+  ],
+  [
+   "sf1320",
+   "farzin-main-65ec72a",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "farzin-main-65ec72a",
+   "sf1320",
+   "1-0",
+   "checkmate"
+  ],
+  [
+   "sf1320",
+   "farzin-main-65ec72a",
+   "0-1",
+   "checkmate"
+  ],
+  [
+   "farzin-main-65ec72a",
+   "sf1320",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "sf1320",
+   "farzin-main-65ec72a",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "farzin-main-65ec72a",
+   "sf1320",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "sf1320",
+   "farzin-main-65ec72a",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "farzin-main-65ec72a",
+   "sf1320",
+   "1-0",
+   "checkmate"
+  ],
+  [
+   "sf1320",
+   "farzin-main-65ec72a",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "farzin-main-65ec72a",
+   "sf1320",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "sf1320",
+   "farzin-main-65ec72a",
+   "0-1",
+   "checkmate"
+  ],
+  [
+   "farzin-main-65ec72a",
+   "sf1320",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "sf1320",
+   "farzin-main-65ec72a",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "farzin-main-65ec72a",
+   "sf1320",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "sf1320",
+   "farzin-main-65ec72a",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "farzin-main-65ec72a",
+   "sf1320",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "sf1320",
+   "farzin-main-65ec72a",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "farzin-main-65ec72a",
+   "sf1320",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "sf1320",
+   "farzin-main-65ec72a",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "farzin-main-65ec72a",
+   "sf1320",
+   "1-0",
+   "checkmate"
+  ],
+  [
+   "sf1320",
+   "farzin-main-65ec72a",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "farzin-main-65ec72a",
+   "sf1320",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "sf1320",
+   "farzin-main-65ec72a",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "farzin-main-65ec72a",
+   "sf1320",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "sf1320",
+   "farzin-main-65ec72a",
+   "0-1",
+   "adjudication"
+  ]
+ ]
+}

@@ -1,0 +1,141 @@
+{
+ "anchors": {
+  "sf1320": 1320.0,
+  "sf1600": 1600.0,
+  "sf1900": 1900.0,
+  "sf2000": 2000.0,
+  "sf2400": 2400.0,
+  "sf2800": 2800.0,
+  "sf3000": 3000.0,
+  "sf3190": 3190.0
+ },
+ "players": {
+  "sf3190": {
+   "rating": 3190.0,
+   "ci95": [
+    3190.0,
+    3190.0
+   ],
+   "games": 40,
+   "score": 0.7,
+   "anchor": true
+  },
+  "sf3000": {
+   "rating": 3000.0,
+   "ci95": [
+    3000.0,
+    3000.0
+   ],
+   "games": 40,
+   "score": 0.5125,
+   "anchor": true
+  },
+  "farzin-core1": {
+   "rating": 2990.5305180926644,
+   "ci95": [
+    2934.4427143165244,
+    3043.418899450685
+   ],
+   "games": 162,
+   "score": 0.6049382716049383,
+   "anchor": false
+  },
+  "sf2800": {
+   "rating": 2800.0,
+   "ci95": [
+    2800.0,
+    2800.0
+   ],
+   "games": 50,
+   "score": 0.29,
+   "anchor": true
+  },
+  "sf2400": {
+   "rating": 2400.0,
+   "ci95": [
+    2400.0,
+    2400.0
+   ],
+   "games": 16,
+   "score": 0.0625,
+   "anchor": true
+  },
+  "core1": {
+   "rating": 2004.7865326609349,
+   "ci95": [
+    1810.3667010115723,
+    1857.6006912353348
+   ],
+   "games": 80,
+   "score": 1.0,
+   "anchor": false
+  },
+  "sf2000": {
+   "rating": 2000.0,
+   "ci95": [
+    2000.0,
+    2000.0
+   ],
+   "games": 16,
+   "score": 0.0,
+   "anchor": true
+  },
+  "sf1900": {
+   "rating": 1900.0,
+   "ci95": [
+    1900.0,
+    1900.0
+   ],
+   "games": 40,
+   "score": 0.6375,
+   "anchor": true
+  },
+  "farzin-main-65ec72a": {
+   "rating": 1677.0297881155316,
+   "ci95": [
+    1592.0426096765666,
+    1751.7623186497256
+   ],
+   "games": 120,
+   "score": 0.5708333333333333,
+   "anchor": false
+  },
+  "sf1600": {
+   "rating": 1600.0,
+   "ci95": [
+    1600.0,
+    1600.0
+   ],
+   "games": 40,
+   "score": 0.525,
+   "anchor": true
+  },
+  "sf1320": {
+   "rating": 1320.0,
+   "ci95": [
+    1320.0,
+    1320.0
+   ],
+   "games": 40,
+   "score": 0.125,
+   "anchor": true
+  },
+  "main": {
+   "rating": -2004.7865326609349,
+   "ci95": [
+    -1857.6006912353348,
+    -1810.3667010115723
+   ],
+   "games": 80,
+   "score": 0.0,
+   "anchor": false
+  }
+ },
+ "files": [
+  "/opt/results/calib-main-sf1320.json",
+  "/opt/results/calib-main-b.json",
+  "/opt/results/calib-core1-partial.json",
+  "/opt/results/calib-core1-hi.json",
+  "/opt/results/core1-vs-main.json"
+ ]
+}
