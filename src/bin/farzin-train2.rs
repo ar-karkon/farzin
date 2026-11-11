@@ -2,6 +2,7 @@
 //!
 //! farzin-train2 data=a.data[,b.data] out=net.fzn2 hidden=768 kb=16m obuckets=8 \
 //!     epochs=12 batch=16384 lr=0.001 wdl=0.0 scale=400 threads=4 [resume=1]
+//!     [init=old.nnue] [valdata=heldout.data]
 //!
 //! Model: `(KB x 768 -> H) x 2 -> 1 x OB`, SCReLU (see `src/fzn2.rs`).
 //! Loss: MSE between sigmoid(out) and a blend of sigmoid(label / scale) and
@@ -16,6 +17,13 @@
 //!
 //! Every epoch writes the quantized net to `out` and a float checkpoint to
 //! `out.ckpt`; `resume=1` continues from the checkpoint (same arguments).
+//!
+//! Warm start: `init=old.nnue` dequantizes an existing FZN2 net and continues
+//! from it, so every training run builds on all earlier compute. The new
+//! model may *grow*: each new king bucket starts from the old bucket that
+//! covers the same king squares, and extra hidden neurons start with zero
+//! output weights, so the grown net computes exactly the old function
+//! before the first step (up to quantization).
 use farzin::datagen::{unpack, RECORD_SIZE};
 use farzin::fzn2::{self, feature, king_key, output_bucket, QA, QB};
 use std::io::{Read, Write};
@@ -411,6 +419,71 @@ fn read_ckpt(path: &str, model: &mut Model) -> Option<(usize, i32, u64)> {
     Some((epoch, step, rng))
 }
 
+/// Initialise `model` from a quantized FZN2 net, growing buckets/width.
+fn warm_start(model: &mut Model, old: &fzn2::Network, rng: &mut Rng) {
+    assert_eq!(
+        old.out_buckets, model.ob,
+        "init net must have the same output buckets"
+    );
+    assert!(old.hidden <= model.h, "init net is wider than the model");
+    assert!(
+        old.mirror == model.mirror || old.king_buckets == 1,
+        "init net mirroring differs"
+    );
+    let (h, oh) = (model.h, old.hidden);
+    // Old bucket for every new bucket: the first king square mapped to it.
+    let mut parent = vec![usize::MAX; model.kb];
+    for sq in 0..64 {
+        if model.mirror && sq % 8 >= 4 {
+            continue;
+        }
+        let nb = model.layout[sq] as usize;
+        if parent[nb] == usize::MAX {
+            parent[nb] = if old.king_buckets == 1 {
+                0
+            } else {
+                old.layout[sq] as usize
+            };
+        }
+    }
+    let qa = QA as f32;
+    let qb = QB as f32;
+    for (nb, &ob) in parent.iter().enumerate() {
+        let ob = if ob == usize::MAX { 0 } else { ob };
+        for i in 0..768 {
+            let dst = (nb * 768 + i) * h;
+            let src = (ob * 768 + i) * oh;
+            for j in 0..h {
+                model.p.ft_w[dst + j] = if j < oh {
+                    f32::from(old.ft_weights[src + j]) / qa
+                } else {
+                    // Fresh neurons: small random inputs, zero output weight.
+                    (rng.uniform() * 2.0 - 1.0) * 0.05
+                };
+            }
+        }
+    }
+    for j in 0..h {
+        model.p.ft_b[j] = if j < oh {
+            f32::from(old.ft_bias[j]) / qa
+        } else {
+            0.0
+        };
+    }
+    for b in 0..model.ob {
+        for side in 0..2 {
+            for j in 0..h {
+                model.p.out_w[b * 2 * h + side * h + j] = if j < oh {
+                    f32::from(old.out_weights[b * 2 * oh + side * oh + j]) / qb
+                } else {
+                    0.0
+                };
+            }
+        }
+        model.p.out_b[b] = old.out_bias[b] as f32 / (qa * qb);
+    }
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let data = arg(&args, "data").expect("data=FILE[,FILE...]");
@@ -446,16 +519,28 @@ fn main() {
     if max_samples > 0 && n > max_samples {
         n = max_samples;
     }
-    let mut order: Vec<u32> = (0..n as u32).collect();
-    for i in (1..order.len()).rev() {
-        let j = (rng.next() % (i as u64 + 1)) as usize;
-        order.swap(i, j);
-    }
-    let n_val = val_n.min(n / 20);
-    let (val_idx, train_idx) = order.split_at_mut(n_val);
-    let val_idx = val_idx.to_vec();
-    let mut train_idx = train_idx.to_vec();
-    drop(order);
+    // Validation must not share games with training: tree-sampled data has
+    // thousands of strongly correlated positions per game, so a random split
+    // leaks and badly overstates accuracy. Use `valdata=FILE` (preferred), or
+    // else the contiguous tail of the data (only one game straddles it).
+    let (val_idx, mut train_idx): (Vec<u32>, Vec<u32>) = if let Some(vpath) = arg(&args, "valdata")
+    {
+        let mut v = std::fs::read(&vpath).unwrap_or_else(|e| panic!("{vpath}: {e}"));
+        v.truncate(v.len() / RECORD_SIZE * RECORD_SIZE);
+        let nv = (v.len() / RECORD_SIZE).min(val_n);
+        raw.truncate(n * RECORD_SIZE);
+        raw.extend_from_slice(&v[..nv * RECORD_SIZE]);
+        (
+            (n as u32..(n + nv) as u32).collect(),
+            (0..n as u32).collect(),
+        )
+    } else {
+        let nv = val_n.min(n / 20);
+        (
+            ((n - nv) as u32..n as u32).collect(),
+            (0..(n - nv) as u32).collect(),
+        )
+    };
     eprintln!(
         "loaded {} train / {} val positions in {:.1}s; model {}x768x{} -> 1x{}{}",
         train_idx.len(),
@@ -488,6 +573,15 @@ fn main() {
     for w in model.p.out_w.iter_mut() {
         *w = (rng.uniform() * 2.0 - 1.0) * out_scale;
     }
+    if let Some(init) = arg(&args, "init") {
+        let bytes = std::fs::read(&init).unwrap_or_else(|e| panic!("{init}: {e}"));
+        let old = fzn2::Network::from_bytes(&bytes).unwrap_or_else(|e| panic!("{init}: {e}"));
+        warm_start(&mut model, &old, &mut rng);
+        eprintln!(
+            "warm start from {init}: {}x768x{} -> {}x768x{}",
+            old.king_buckets, old.hidden, kb, h
+        );
+    }
     let ckpt = format!("{out}.ckpt");
     let mut start_epoch = 0;
     let mut step = 0i32;
@@ -500,6 +594,12 @@ fn main() {
         }
     }
 
+    if epochs == 0 {
+        // Conversion only (e.g. verify or materialise a grown warm start).
+        std::fs::write(&out, quantize(&model).to_bytes()).unwrap();
+        eprintln!("wrote {out} (no training)");
+        return;
+    }
     let slices = split(h, threads);
     let mut bufs: Vec<Vec<f32>> = vec![Vec::new(); slices.len()];
     let mut mark = vec![false; f_count];

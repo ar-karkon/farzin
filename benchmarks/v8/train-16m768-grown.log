@@ -1,0 +1,6 @@
+loaded 99944549 train / 200000 val positions in 4.8s; model 16x768x768 -> 1x8 (mirrored)
+warm start from /home/user/farzin/nets/fzn2-a1.nnue: 4x768x768 -> 16x768x768
+epoch   1 train loss 0.002368 val loss 0.002195 (1005s, 99410 pos/s)
+epoch   2 train loss 0.002006 val loss 0.002035 (977s, 102302 pos/s)
+epoch   3 train loss 0.001844 val loss 0.001986 (996s, 100382 pos/s)
+wrote b-16m768.nnue

@@ -25,6 +25,17 @@ Two kinds of network are kept here:
   Farzin runs it with its own independent Rust inference (`src/hka.rs`); no
   Stockfish source code is included. Other CC0 nets of the same family can be
   fetched and verified with `tools/fetch_nets.sh`.
+* `fzn2-b1.nnue` — **Farzin's best own net** (Farzin 0.5, Track B): same
+  architecture as `fzn2-a1` ((4 mirrored king buckets x 768 -> 768) x 2 -> 1 x 8,
+  SCReLU), **warm-started from `fzn2-a1`** (`farzin-train2 init=`) and trained
+  3 more epochs (Adam lr 5e-4 cosine to 2.5e-5, wdl 0, batch 16384, 2 threads,
+  47 min) on 100.1M *new* tree-sampled positions (`datagen tree_rate=48 seed=2027`,
+  mover = Farzin 0.5 search + `default.nnue`, 2500 soft nodes), labelled with
+  `default.nnue`'s static eval. Held-out MSE (new seed): 0.002533 vs 0.002853
+  for a1. sha256 `3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0`.
+  vs fzn2-a1: +63.1 Elo [+36.5, +90.5] at 5+0.05 (SPRT [0,10] H1, 89 pairs).
+  Effective training data: 105M (a1) + 100M positions, all from Farzin's own
+  play with CC0 labels; no third-party restrictions.
 * `fzn2-a1.nnue` — **Farzin's own FZN2 net** (Farzin 0.4, Track B):
   (4 mirrored king buckets x 768 -> 768) x 2 -> 1 x 8, SCReLU (`src/fzn2.rs`).
   Data: 105.4M positions *sampled from Farzin's search trees* (`datagen

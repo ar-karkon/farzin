@@ -1,4 +1,5 @@
 //! Staged move picker: TT move, good noisy, killers, counter, quiets, bad noisy.
+use crate::attacks::{bishop_attacks, rook_attacks, KNIGHT_ATTACKS, PAWN_ATTACKS};
 use crate::board::{Board, SEE_VALUES};
 use crate::movegen::{generate_all, generate_noisy, generate_quiets, MoveList};
 use crate::search::Histories;
@@ -27,6 +28,10 @@ enum Stage {
 pub struct OrderingContext {
     /// `piece_code * 64 + to` of the moves 1, 2 and 4 plies ago, if any.
     pub cont: [Option<usize>; 3],
+    /// Pawn-structure history bucket, if pawn history is enabled.
+    pub pawn: Option<usize>,
+    /// Threat-aware quiet ordering (escape bonus, en-prise malus, checks).
+    pub threats: bool,
 }
 
 pub struct MovePicker {
@@ -119,9 +124,49 @@ impl MovePicker {
 
     fn score_quiets(&mut self, board: &Board, h: &Histories) {
         let stm = board.stm;
+        if !self.ctx.threats {
+            for i in 0..self.list.len {
+                let mv = self.list.moves[i];
+                self.list.scores[i] = h.quiet_score(board, stm, mv, &self.ctx);
+            }
+            return;
+        }
+        let them = stm ^ 1;
+        let (by_pawn, by_minor, by_rook) = board.threats(them);
+        let occ = board.occupied();
+        let ksq = board.king_sq(them);
+        let bishop = bishop_attacks(ksq, occ);
+        let rook = rook_attacks(ksq, occ);
+        // Squares from which a piece of each type would give check.
+        let check_sq = [
+            PAWN_ATTACKS[them][ksq],
+            KNIGHT_ATTACKS[ksq],
+            bishop,
+            rook,
+            bishop | rook,
+            0,
+        ];
         for i in 0..self.list.len {
             let mv = self.list.moves[i];
-            self.list.scores[i] = h.quiet_score(board, stm, mv, &self.ctx);
+            let pt = board.mailbox[mv.from()] as usize % 6;
+            let from = bit(mv.from());
+            let to = bit(mv.to());
+            let mut score = h.quiet_score(board, stm, mv, &self.ctx);
+            if check_sq[pt] & to != 0 {
+                score += 8192;
+            }
+            let (threat, escape, malus) = match pt {
+                QUEEN => (by_rook, 25_000, 24_000),
+                ROOK => (by_minor, 12_500, 12_000),
+                KNIGHT | BISHOP => (by_pawn, 7_000, 4_000),
+                _ => (0, 0, 0),
+            };
+            if threat & from != 0 && threat & to == 0 {
+                score += escape;
+            } else if threat & to != 0 {
+                score -= malus;
+            }
+            self.list.scores[i] = score;
         }
     }
 

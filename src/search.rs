@@ -14,6 +14,7 @@ const HISTORY_MAX: i32 = 16_384;
 const CORR_SIZE: usize = 16_384;
 const CORR_GRAIN: i32 = 256;
 const CORR_MAX: i32 = CORR_GRAIN * 64;
+const PAWN_HIST: usize = 512;
 
 /// Tunable search parameters (centipawns / plies), kept together so
 /// experiments can override them through UCI options.
@@ -48,6 +49,23 @@ pub struct Params {
     pub x_optimism: i32,
     /// Soft time target scale in percent.
     pub tm_pct: i32,
+    /// Farzin 0.5 search features (1 = on); kept switchable for ablation.
+    pub x_prior: i32,
+    pub x_pawnhist: i32,
+    pub x_evalhist: i32,
+    pub x_malus: i32,
+    pub x_frac: i32,
+    pub x_postlmr: i32,
+    pub x_minorcorr: i32,
+    pub x_hindsight: i32,
+    pub x_smallpc: i32,
+    pub x_threats: i32,
+    /// Batch 2 (default off until measured).
+    pub x_futhist: i32,
+    pub x_tripleext: i32,
+    pub x_rfpworse: i32,
+    /// Lazy SMP best-thread voting.
+    pub x_vote: i32,
 }
 
 impl Default for Params {
@@ -80,6 +98,20 @@ impl Default for Params {
             x_checkext: 0,
             x_optimism: 0,
             tm_pct: 100,
+            x_prior: 1,
+            x_pawnhist: 1,
+            x_evalhist: 1,
+            x_malus: 1,
+            x_frac: 1,
+            x_postlmr: 1,
+            x_minorcorr: 1,
+            x_hindsight: 1,
+            x_smallpc: 1,
+            x_threats: 1,
+            x_futhist: 0,
+            x_tripleext: 0,
+            x_rfpworse: 0,
+            x_vote: 1,
         }
     }
 }
@@ -96,6 +128,9 @@ pub struct Histories {
     pub non_pawn_corr: Box<[[[i32; CORR_SIZE]; 2]; 2]>,
     /// Correction keyed by the previous two moves (`piece*64+to` pairs).
     pub cont_corr: Box<[[i32; 768]; 768]>,
+    /// `pawn[pawn_hash % PAWN_HIST][piece_code][to]`.
+    pub pawn: Box<[[[i16; 64]; 12]; PAWN_HIST]>,
+    pub minor_corr: Box<[[i32; CORR_SIZE]; 2]>,
 }
 
 fn zeroed_box<T: Copy>(value: T) -> Box<T> {
@@ -125,6 +160,14 @@ impl Histories {
                 .into_boxed_slice()
                 .try_into()
                 .unwrap(),
+            pawn: vec![[[0i16; 64]; 12]; PAWN_HIST]
+                .into_boxed_slice()
+                .try_into()
+                .unwrap(),
+            minor_corr: vec![[0i32; CORR_SIZE]; 2]
+                .into_boxed_slice()
+                .try_into()
+                .unwrap(),
         }
     }
 
@@ -145,6 +188,9 @@ impl Histories {
         }
         if let Some(c) = ctx.cont[2] {
             score += i32::from(self.cont[c][idx]) / 2;
+        }
+        if let Some(pi) = ctx.pawn {
+            score += i32::from(self.pawn[pi][piece][mv.to()]);
         }
         score
     }
@@ -167,6 +213,19 @@ fn history_bonus(depth: i32) -> i32 {
     (170 * depth - 100).clamp(0, 2000)
 }
 
+fn history_malus(depth: i32, on: bool) -> i32 {
+    if on {
+        (260 * depth - 120).clamp(0, 2400)
+    } else {
+        history_bonus(depth)
+    }
+}
+
+#[inline]
+fn pawn_index(board: &Board) -> usize {
+    (board.pawn_hash as usize) % PAWN_HIST
+}
+
 #[derive(Clone, Copy)]
 struct StackEntry {
     static_eval: i32,
@@ -177,6 +236,8 @@ struct StackEntry {
     tt_pv: bool,
     double_ext: i32,
     cutoff_cnt: i32,
+    /// LMR reduction applied to the move searched from this ply.
+    reduction: i32,
 }
 
 impl Default for StackEntry {
@@ -189,6 +250,7 @@ impl Default for StackEntry {
             tt_pv: false,
             double_ext: 0,
             cutoff_cnt: 0,
+            reduction: 0,
         }
     }
 }
@@ -266,6 +328,8 @@ pub struct Thread {
     root_nodes: Box<[[u64; 64]; 64]>,
     pub params: Params,
     lmr: Box<[[[i32; 64]; 64]; 2]>,
+    /// Same reductions in 1/1024 plies.
+    lmr_f: Box<[[[i32; 64]; 64]; 2]>,
     pub net: Option<Arc<EvalNet>>,
     acc: EvalAccs,
     pub silent: bool,
@@ -318,16 +382,23 @@ pub fn format_score(score: i32) -> String {
     }
 }
 
-fn init_lmr(p: &Params) -> Box<[[[i32; 64]; 64]; 2]> {
+type LmrTable = Box<[[[i32; 64]; 64]; 2]>;
+
+fn init_lmr(p: &Params) -> (LmrTable, LmrTable) {
     let mut t = Box::new([[[0; 64]; 64]; 2]);
+    let mut f = Box::new([[[0; 64]; 64]; 2]);
     for d in 1..64 {
         for m in 1..64 {
             let l = (d as f64).ln() * (m as f64).ln();
-            t[0][d][m] = (p.lmr_quiet_base + l / p.lmr_quiet_div) as i32;
-            t[1][d][m] = (p.lmr_noisy_base + l / p.lmr_noisy_div) as i32;
+            let q = p.lmr_quiet_base + l / p.lmr_quiet_div;
+            let n = p.lmr_noisy_base + l / p.lmr_noisy_div;
+            t[0][d][m] = q as i32;
+            t[1][d][m] = n as i32;
+            f[0][d][m] = (q * 1024.0) as i32;
+            f[1][d][m] = (n * 1024.0) as i32;
         }
     }
-    t
+    (t, f)
 }
 
 static NULL_NET: OnceLock<()> = OnceLock::new();
@@ -336,6 +407,7 @@ impl Thread {
     pub fn new(id: usize) -> Self {
         let _ = NULL_NET.get_or_init(|| ());
         let params = Params::default();
+        let (lmr, lmr_f) = init_lmr(&params);
         Thread {
             id,
             histories: Histories::new(),
@@ -352,7 +424,8 @@ impl Thread {
             root_depth: 0,
             root_best: Move::NONE,
             root_nodes: Box::new([[0; 64]; 64]),
-            lmr: init_lmr(&params),
+            lmr,
+            lmr_f,
             params,
             net: None,
             acc: EvalAccs::default(),
@@ -364,7 +437,7 @@ impl Thread {
 
     pub fn set_params(&mut self, params: Params) {
         self.params = params;
-        self.lmr = init_lmr(&params);
+        (self.lmr, self.lmr_f) = init_lmr(&params);
     }
 
     #[inline]
@@ -411,7 +484,12 @@ impl Thread {
         let c = self
             .cont_corr_key(ply)
             .map_or(0, |(a, b)| h.cont_corr[a][b]);
-        let corr = (2 * p + w + b + c) / (2 * CORR_GRAIN);
+        let m = if self.params.x_minorcorr != 0 {
+            h.minor_corr[stm][(board.minor_hash as usize) % CORR_SIZE]
+        } else {
+            0
+        };
+        let corr = (2 * p + w + b + c + m) / (2 * CORR_GRAIN);
         (raw + corr).clamp(-MATE_BOUND + 1, MATE_BOUND - 1)
     }
 
@@ -426,12 +504,15 @@ impl Thread {
         upd(&mut h.pawn_corr[stm][(board.pawn_hash as usize) % CORR_SIZE]);
         upd(&mut h.non_pawn_corr[stm][WHITE][(board.non_pawn_hash[WHITE] as usize) % CORR_SIZE]);
         upd(&mut h.non_pawn_corr[stm][BLACK][(board.non_pawn_hash[BLACK] as usize) % CORR_SIZE]);
+        if self.params.x_minorcorr != 0 {
+            upd(&mut h.minor_corr[stm][(board.minor_hash as usize) % CORR_SIZE]);
+        }
         if let Some((a, b)) = self.cont_corr_key(ply) {
             upd(&mut self.histories.cont_corr[a][b]);
         }
     }
 
-    fn ctx(&self, ply: usize) -> OrderingContext {
+    fn ctx(&self, board: &Board, ply: usize) -> OrderingContext {
         let get = |back: usize| {
             if ply >= back {
                 self.stack[ply - back].cont
@@ -441,6 +522,8 @@ impl Thread {
         };
         OrderingContext {
             cont: [get(1), get(2), get(4)],
+            pawn: (self.params.x_pawnhist != 0).then(|| pawn_index(board)),
+            threats: self.params.x_threats != 0,
         }
     }
 
@@ -616,7 +699,7 @@ impl Thread {
         }
         let original_alpha = alpha;
         let mut best_move = Move::NONE;
-        let mut picker = MovePicker::new_qsearch(board, tt_move, self.ctx(ply));
+        let mut picker = MovePicker::new_qsearch(board, tt_move, self.ctx(board, ply));
         let mut moves = 0;
         while let Some(mv) = picker.next(board, &self.histories) {
             if !board.is_legal(mv) {
@@ -820,17 +903,54 @@ impl Thread {
                     && self.stack[ply - 4].static_eval != NO_SCORE
                     && static_eval > self.stack[ply - 4].static_eval
             };
+        let p = self.params;
+        let prior_reduction = if ply >= 1 {
+            self.stack[ply - 1].reduction
+        } else {
+            0
+        };
+        self.stack[ply].reduction = 0;
+        let mut opp_worsening = false;
+        if !in_check && excluded.is_none() && ply >= 1 {
+            let prev_eval = self.stack[ply - 1].static_eval;
+            let prev_mv = self.stack[ply - 1].mv;
+            if prev_eval != NO_SCORE {
+                opp_worsening = static_eval > -prev_eval;
+                // Eval-difference history: reward the opponent's previous quiet
+                // move if it made their position better (our eval fell).
+                if p.x_evalhist != 0 && !prev_mv.is_none() && !prev_mv.is_noisy() {
+                    let bonus = (-10 * (prev_eval + static_eval)).clamp(-1600, 1400) + 600;
+                    gravity(
+                        &mut self.histories.main[board.stm ^ 1][prev_mv.from()][prev_mv.to()],
+                        bonus,
+                    );
+                }
+                // Hindsight depth adjustment based on the parent's reduction.
+                if p.x_hindsight != 0 && !pv_node {
+                    let opponent_worsening = static_eval > -prev_eval;
+                    if prior_reduction >= 3 && !opponent_worsening {
+                        depth += 1;
+                    } else if prior_reduction >= 1 && depth >= 2 && static_eval + prev_eval > 175 {
+                        depth -= 1;
+                    }
+                }
+            }
+        }
         self.histories.killers[ply + 1] = [Move::NONE; 2];
         self.stack[ply + 1].excluded = Move::NONE;
         self.stack[ply + 2].double_ext = self.stack[ply].double_ext;
         self.stack[ply + 2].cutoff_cnt = 0;
-        let p = self.params;
 
         if !pv_node && !in_check && excluded.is_none() {
             // Reverse futility pruning.
             if depth <= p.rfp_depth
                 && eval < MATE_BOUND
-                && eval - p.rfp_margin * (depth - i32::from(improving)) >= beta
+                && eval
+                    - p.rfp_margin
+                        * (depth
+                            - i32::from(improving)
+                            - i32::from(p.x_rfpworse != 0 && opp_worsening))
+                    >= beta
             {
                 return (eval + beta) / 2;
             }
@@ -881,7 +1001,7 @@ impl Thread {
                 && beta.abs() < MATE_BOUND
                 && !(tt_depth >= depth - 3 && tt_score != NO_SCORE && tt_score < pc_beta)
             {
-                let mut picker = MovePicker::new_qsearch(board, tt_move, self.ctx(ply));
+                let mut picker = MovePicker::new_qsearch(board, tt_move, self.ctx(board, ply));
                 while let Some(mv) = picker.next(board, &self.histories) {
                     if !mv.is_noisy()
                         || !board.see_ge(mv, pc_beta - static_eval)
@@ -923,6 +1043,20 @@ impl Thread {
             }
         }
 
+        // Small ProbCut: a deep enough TT lower bound far above beta.
+        if p.x_smallpc != 0
+            && !pv_node
+            && excluded.is_none()
+            && tt_bound & BOUND_LOWER != 0
+            && tt_depth >= depth - 4
+            && tt_score != NO_SCORE
+            && tt_score >= beta + 400
+            && tt_score.abs() < MATE_BOUND
+            && beta.abs() < MATE_BOUND
+        {
+            return beta + 400;
+        }
+
         // Internal iterative reduction.
         if depth >= 4 && tt_move.is_none() && (pv_node || cut_node) {
             depth -= 1;
@@ -936,7 +1070,7 @@ impl Thread {
         } else {
             Move::NONE
         };
-        let ctx = self.ctx(ply);
+        let ctx = self.ctx(board, ply);
         let mut picker = MovePicker::new(board, tt_move, self.histories.killers[ply], counter, ctx);
         let original_alpha = alpha;
         let mut best_score = -INF;
@@ -979,7 +1113,15 @@ impl Thread {
                     }
                     if !in_check
                         && lmr_depth < 9
-                        && static_eval + p.futility_base + p.futility_mult * lmr_depth <= alpha
+                        && static_eval
+                            + p.futility_base
+                            + p.futility_mult * lmr_depth
+                            + if p.x_futhist != 0 {
+                                (hist / 128).clamp(-200, 200)
+                            } else {
+                                0
+                            }
+                            <= alpha
                     {
                         picker.skip_quiets = true;
                         continue;
@@ -1015,6 +1157,9 @@ impl Thread {
                     ext = 1;
                     if !pv_node && v < s_beta - 20 && self.stack[ply].double_ext <= 8 {
                         ext = 2;
+                        if p.x_tripleext != 0 && !mv.is_noisy() && v < s_beta - 100 {
+                            ext = 3;
+                        }
                         self.stack[ply + 2].double_ext = self.stack[ply].double_ext + 1;
                     }
                 } else if s_beta >= beta {
@@ -1042,26 +1187,49 @@ impl Thread {
             let new_depth = depth - 1 + ext;
             let mut score = 0;
             if depth >= 2 && move_count > 1 + usize::from(root) && (quiet || !tt_pv) {
-                let mut r =
-                    self.lmr[usize::from(!quiet)][depth.min(63) as usize][move_count.min(63)];
-                r += i32::from(!pv_node);
-                r -= i32::from(tt_pv);
-                r += 2 * i32::from(cut_node);
-                r -= i32::from(gives_check);
-                r += i32::from(tt_noisy);
-                r += i32::from(!improving);
-                r -= hist / p.hist_div;
-                if p.x_cutoff != 0 && self.stack[ply + 1].cutoff_cnt > 3 {
-                    r += 1;
-                }
-                if mv == self.histories.killers[ply][0]
+                let killer_or_counter = mv == self.histories.killers[ply][0]
                     || mv == self.histories.killers[ply][1]
-                    || mv == counter
-                {
-                    r -= 1;
-                }
+                    || mv == counter;
+                let r = if p.x_frac != 0 {
+                    // Reductions in 1/1024 plies with a continuous history term.
+                    let mut r =
+                        self.lmr_f[usize::from(!quiet)][depth.min(63) as usize][move_count.min(63)];
+                    r += 1024 * i32::from(!pv_node);
+                    r -= 1024 * i32::from(tt_pv);
+                    r += 2048 * i32::from(cut_node);
+                    r -= 1024 * i32::from(gives_check);
+                    r += 1024 * i32::from(tt_noisy);
+                    r += 1024 * i32::from(!improving);
+                    r -= hist * 1024 / p.hist_div;
+                    if p.x_cutoff != 0 && self.stack[ply + 1].cutoff_cnt > 3 {
+                        r += 1024;
+                    }
+                    if killer_or_counter {
+                        r -= 1024;
+                    }
+                    (r + 512).div_euclid(1024)
+                } else {
+                    let mut r =
+                        self.lmr[usize::from(!quiet)][depth.min(63) as usize][move_count.min(63)];
+                    r += i32::from(!pv_node);
+                    r -= i32::from(tt_pv);
+                    r += 2 * i32::from(cut_node);
+                    r -= i32::from(gives_check);
+                    r += i32::from(tt_noisy);
+                    r += i32::from(!improving);
+                    r -= hist / p.hist_div;
+                    if p.x_cutoff != 0 && self.stack[ply + 1].cutoff_cnt > 3 {
+                        r += 1;
+                    }
+                    if killer_or_counter {
+                        r -= 1;
+                    }
+                    r
+                };
                 let d = (new_depth - r).clamp(1, new_depth.max(1));
+                self.stack[ply].reduction = new_depth - d;
                 score = -self.negamax(shared, &child, -alpha - 1, -alpha, d, ply + 1, true);
+                self.stack[ply].reduction = 0;
                 if score > alpha && d < new_depth {
                     let mut full = new_depth;
                     if p.x_deeper != 0 {
@@ -1081,6 +1249,18 @@ impl Thread {
                             ply + 1,
                             !cut_node,
                         );
+                        if p.x_postlmr != 0 && quiet && !self.stopped {
+                            let b = if score > alpha {
+                                history_bonus(full)
+                            } else {
+                                -history_malus(full, p.x_malus != 0)
+                            };
+                            self.update_cont(
+                                ply,
+                                board.mailbox[mv.from()] as usize * 64 + mv.to(),
+                                b,
+                            );
+                        }
                     }
                 }
             } else if !pv_node || move_count > 1 {
@@ -1149,9 +1329,26 @@ impl Thread {
             } else {
                 self.update_capture(board, best_move, history_bonus(bonus_depth));
             }
-            let malus = history_bonus(bonus_depth);
+            let malus = history_malus(bonus_depth, p.x_malus != 0);
             for &mv in &noisies[..noisy_count] {
                 self.update_capture(board, mv, -malus);
+            }
+        } else if p.x_prior != 0 && best_move.is_none() && ply >= 1 && excluded.is_none() {
+            // Fail low: the opponent's previous quiet move refuted us; reward it.
+            let prev = self.stack[ply - 1].mv;
+            if !prev.is_none() && !prev.is_noisy() {
+                let scale = 1
+                    + i32::from(depth > 5)
+                    + i32::from(pv_node || cut_node)
+                    + i32::from(best_score < alpha - 100);
+                let bonus = history_bonus(depth) * scale / 2;
+                gravity(
+                    &mut self.histories.main[board.stm ^ 1][prev.from()][prev.to()],
+                    bonus,
+                );
+                if let Some(c) = self.stack[ply - 1].cont {
+                    self.update_cont(ply - 1, c, bonus);
+                }
             }
         }
 
@@ -1181,6 +1378,17 @@ impl Thread {
             );
         }
         best_score
+    }
+
+    /// Continuation-history update for move `idx` (`piece*64+to`) played at `ply`.
+    fn update_cont(&mut self, ply: usize, idx: usize, bonus: i32) {
+        for back in [1, 2, 4] {
+            if ply >= back {
+                if let Some(c) = self.stack[ply - back].cont {
+                    gravity(&mut self.histories.cont[c][idx], bonus);
+                }
+            }
+        }
     }
 
     fn update_capture(&mut self, board: &Board, mv: Move, bonus: i32) {
@@ -1226,17 +1434,23 @@ impl Thread {
                 None
             },
         ];
+        let pawn = (self.params.x_pawnhist != 0).then(|| pawn_index(board));
         let apply = |h: &mut Histories, mv: Move, b: i32| {
             gravity(&mut h.main[stm][mv.from()][mv.to()], b);
-            let idx = board.mailbox[mv.from()] as usize * 64 + mv.to();
+            let piece = board.mailbox[mv.from()] as usize;
+            let idx = piece * 64 + mv.to();
             for c in conts.iter().flatten() {
                 gravity(&mut h.cont[*c][idx], b);
             }
+            if let Some(pi) = pawn {
+                gravity(&mut h.pawn[pi][piece][mv.to()], b);
+            }
         };
         apply(&mut self.histories, best, bonus);
+        let malus = history_malus(depth, self.params.x_malus != 0);
         for &mv in quiets {
             if mv != best {
-                apply(&mut self.histories, mv, -bonus);
+                apply(&mut self.histories, mv, -malus);
             }
         }
     }
@@ -1438,25 +1652,75 @@ pub fn search(
     shared.nodes.store(0, Ordering::Relaxed);
     shared.tt.new_search();
     let (main, helpers) = threads.split_first_mut().expect("at least one thread");
+    let vote = main.params.x_vote != 0;
     std::thread::scope(|scope| {
-        for helper in helpers.iter_mut() {
-            helper.silent = true;
-            let mut helper_limits = limits;
-            helper_limits.soft_ms = None;
-            helper_limits.hard_ms = None;
-            helper_limits.soft_nodes = None;
-            scope.spawn(move || {
-                helper.iterate(shared, root, history, helper_limits, start);
-            });
-        }
+        let handles: Vec<_> = helpers
+            .iter_mut()
+            .map(|helper| {
+                helper.silent = true;
+                let mut helper_limits = limits;
+                helper_limits.soft_ms = None;
+                helper_limits.hard_ms = None;
+                helper_limits.soft_nodes = None;
+                scope.spawn(move || helper.iterate(shared, root, history, helper_limits, start))
+            })
+            .collect();
         let result = main.iterate(shared, root, history, limits, start);
         // UCI: a pondering search must not answer before ponderhit or stop.
         while shared.ponder.load(Ordering::Acquire) && !shared.stop.load(Ordering::Relaxed) {
             std::thread::sleep(std::time::Duration::from_millis(1));
         }
         shared.stop.store(true, Ordering::Relaxed);
-        result
+        let mut all = vec![result];
+        all.extend(handles.into_iter().filter_map(|h| h.join().ok()));
+        let nodes = shared.nodes.load(Ordering::Relaxed);
+        let mut best = if vote {
+            pick_best_thread(&all)
+        } else {
+            all.swap_remove(0)
+        };
+        best.nodes = nodes;
+        best
     })
+}
+
+/// Lazy SMP result selection: every thread votes for its best move,
+/// weighted by depth and by how far its score is above the worst thread's;
+/// proven mates win outright.
+fn pick_best_thread(results: &[SearchResult]) -> SearchResult {
+    let main = &results[0];
+    if results.len() == 1 || main.best.is_none() {
+        return main.clone();
+    }
+    let valid: Vec<&SearchResult> = results
+        .iter()
+        .filter(|r| r.depth > 0 && !r.best.is_none())
+        .collect();
+    let min_score = valid.iter().map(|r| r.score).min().unwrap_or(0);
+    let weight = |r: &SearchResult| i64::from(r.score - min_score + 14) * i64::from(r.depth);
+    let votes = |mv: Move| -> i64 {
+        valid
+            .iter()
+            .filter(|r| r.best == mv)
+            .map(|r| weight(r))
+            .sum()
+    };
+    let mut best = main;
+    for &r in &valid {
+        if best.score.abs() >= MATE_BOUND {
+            // Prefer the shortest proven win; keep a proven loss only if forced.
+            if r.score > best.score {
+                best = r;
+            }
+        } else if r.score >= MATE_BOUND
+            || (r.score > -MATE_BOUND
+                && (votes(r.best) > votes(best.best)
+                    || (votes(r.best) == votes(best.best) && r.depth > best.depth)))
+        {
+            best = r;
+        }
+    }
+    best.clone()
 }
 
 #[allow(dead_code)]
