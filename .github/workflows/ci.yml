@@ -80,6 +80,7 @@ jobs:
           python-version: "3.12"
       - run: pip install chess==1.10.0
       - shell: bash
+        timeout-minutes: 25
         run: |
           exe=$(ls dist/farzin-*-windows-x64-avx2-bmi2.exe)
           (cd dist && sha256sum -c SHA256SUMS --ignore-missing)
@@ -101,6 +102,9 @@ jobs:
                          if k == "time forfeit" or k.startswith(("crash", "illegal")))
           sys.exit(1 if bad else 0)
           PY
+          # every engine process must have exited after quit
+          sleep 2
+          if tasklist | grep -i "farzin-"; then echo "engine process left running"; exit 1; fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:

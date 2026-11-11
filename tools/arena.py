@@ -37,6 +37,7 @@ import os
 import platform
 import random
 import threading
+import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed, CancelledError
 
@@ -623,3 +624,8 @@ def main(argv=None):
 
 if __name__ == "__main__":
     main()
+    # python-chess keeps one event-loop thread per engine; on Windows these
+    # can keep the interpreter alive after every engine has quit. All
+    # results are saved and the engines closed at this point.
+    sys.stdout.flush()
+    os._exit(0)
