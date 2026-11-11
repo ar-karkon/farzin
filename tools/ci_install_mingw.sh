@@ -13,9 +13,9 @@ set -uo pipefail
 mirrors=("$@")
 if [ ${#mirrors[@]} -eq 0 ]; then
     mirrors=(
-        http://archive.ubuntu.com/ubuntu
         http://mirrors.edge.kernel.org/ubuntu
         http://mirrors.mit.edu/ubuntu
+        http://archive.ubuntu.com/ubuntu
         http://mirror.math.princeton.edu/pub/ubuntu
         http://ftp.halifax.rwth-aachen.de/ubuntu
         http://azure.archive.ubuntu.com/ubuntu
@@ -35,8 +35,8 @@ for m in "${mirrors[@]}"; do
     echo "::group::mingw-w64 from $m"
     printf 'deb %s %s main universe\ndeb %s %s-updates main universe\ndeb %s %s-security main universe\n' \
         "$m" "$codename" "$m" "$codename" "$m" "$codename" > "$list"
-    if timeout 300 sudo apt-get "${opts[@]}" update \
-        && timeout 600 sudo apt-get "${opts[@]}" install -y mingw-w64; then
+    if timeout 180 sudo apt-get "${opts[@]}" update \
+        && timeout 300 sudo apt-get "${opts[@]}" install -y mingw-w64; then
         echo "::endgroup::"
         x86_64-w64-mingw32-gcc --version | head -1
         exit 0
