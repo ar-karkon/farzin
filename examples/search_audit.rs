@@ -4,8 +4,6 @@
 use farzin::board::Board;
 use farzin::evalnet::EvalNet;
 use farzin::search::{search, Limits, Shared, Thread};
-use farzin::tt::TranspositionTable;
-use std::sync::atomic::{AtomicBool, AtomicU64};
 use std::sync::Arc;
 use std::time::Instant;
 
@@ -43,11 +41,7 @@ fn main() {
         }
         _ => panic!("limit mode must be nodes or depth"),
     };
-    let mut shared = Shared {
-        tt: TranspositionTable::new(16),
-        stop: AtomicBool::new(false),
-        nodes: AtomicU64::new(0),
-    };
+    let mut shared = Shared::new(16);
     let mut threads = vec![Thread::new(0)];
     threads[0].net = Some(net);
     threads[0].silent = true;

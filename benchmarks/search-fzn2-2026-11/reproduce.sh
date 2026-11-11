@@ -23,7 +23,7 @@ assert hashlib.sha256(open(sys.argv[1], 'rb').read()).hexdigest() == \
     'f7bb0b7ef9857c3a4f24b39f5152e381e978d76d0c24817b0bebbefb1b6e220c'
 PY
 git -C "$research_repo" worktree add --detach "$research_output/baseline-src" "$research_base"
-cp "$research_repo/examples/search_audit.rs" "$research_output/baseline-src/examples/"
+cp "$research_repo/benchmarks/search-fzn2-2026-11/search_audit_v04.rs" "$research_output/baseline-src/examples/search_audit.rs"
 (
     cd "$research_output/baseline-src"
     FARZIN_EVALFILE="$research_network" CARGO_TARGET_DIR="$research_output/baseline-target" \
@@ -31,7 +31,7 @@ cp "$research_repo/examples/search_audit.rs" "$research_output/baseline-src/exam
 )
 cp "$research_output/baseline-target/release/farzin" "$research_output/baseline"
 git -C "$research_repo" worktree add --detach "$research_output/candidate-src" "$research_candidate"
-cp "$research_repo/examples/search_audit.rs" "$research_output/candidate-src/examples/"
+cp "$research_repo/benchmarks/search-fzn2-2026-11/search_audit_v04.rs" "$research_output/candidate-src/examples/search_audit.rs"
 (
     cd "$research_output/candidate-src"
     FARZIN_EVALFILE="$research_network" CARGO_TARGET_DIR="$research_output/candidate-target" \
