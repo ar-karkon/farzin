@@ -22,6 +22,72 @@ enum Stage {
     Done,
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::movegen::legal_moves;
+
+    #[test]
+    fn quiet_ordering_prioritizes_an_attacked_queen() {
+        let board = Board::from_fen("3r4/7k/8/8/3Q4/8/8/K6N w - - 0 1").unwrap();
+        let histories = Histories::new();
+        let mut picker = MovePicker::new(
+            &board,
+            Move::NONE,
+            [Move::NONE; 2],
+            Move::NONE,
+            OrderingContext { cont: [None; 3] },
+        );
+        let first_quiet = std::iter::from_fn(|| picker.next(&board, &histories))
+            .find(|m| !m.is_noisy() && board.is_legal(*m))
+            .unwrap();
+        assert_eq!(first_quiet.from(), 27); // d4
+    }
+
+    #[test]
+    fn staged_ordering_preserves_every_legal_move_once() {
+        for fen in [
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
+            "4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1",
+            "1r2k3/P7/8/8/8/8/7p/4K3 w - - 0 1",
+        ] {
+            let mut board = Board::from_fen(fen).unwrap();
+            let histories = Histories::new();
+            let mut seed = 17usize;
+            for _ in 0..48 {
+                let legal = legal_moves(&board);
+                if legal.is_empty() {
+                    break;
+                }
+                let quiets: Vec<_> = legal.iter().copied().filter(|m| !m.is_noisy()).collect();
+                let k1 = quiets.first().copied().unwrap_or(Move::NONE);
+                let k2 = quiets.get(1).copied().unwrap_or(Move::NONE);
+                let mut picker = MovePicker::new(
+                    &board,
+                    legal[0],
+                    [k1, k2],
+                    k1,
+                    OrderingContext { cont: [None; 3] },
+                );
+                let mut actual = Vec::new();
+                while let Some(mv) = picker.next(&board, &histories) {
+                    if board.is_legal(mv) {
+                        actual.push(mv.0);
+                    }
+                    assert!(actual.len() <= 256);
+                }
+                actual.sort_unstable();
+                let mut expected: Vec<_> = legal.iter().map(|m| m.0).collect();
+                expected.sort_unstable();
+                assert_eq!(actual, expected, "{}", board.to_fen());
+                seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1);
+                board = board.make_move(legal[(seed >> 33) % legal.len()]);
+            }
+        }
+    }
+}
+
 /// Context needed to score quiet moves with continuation history.
 #[derive(Clone, Copy)]
 pub struct OrderingContext {
@@ -119,9 +185,46 @@ impl MovePicker {
 
     fn score_quiets(&mut self, board: &Board, h: &Histories) {
         let stm = board.stm;
+        // Prefer saving pieces attacked by cheaper enemy pieces, and delay
+        // quiet moves onto those attacks. Compute the masks once per quiet
+        // stage rather than running SEE for every ordering comparison.
+        let enemy = board.colors[stm ^ 1];
+        let mut pawns = enemy & board.pieces[PAWN];
+        let mut pawn_attacks = 0;
+        while pawns != 0 {
+            pawn_attacks |= crate::attacks::PAWN_ATTACKS[stm ^ 1][pop_lsb(&mut pawns)];
+        }
+        let mut minor_attacks = pawn_attacks;
+        let mut knights = enemy & board.pieces[KNIGHT];
+        while knights != 0 {
+            minor_attacks |= crate::attacks::KNIGHT_ATTACKS[pop_lsb(&mut knights)];
+        }
+        let occ = board.occupied();
+        let mut bishops = enemy & board.pieces[BISHOP];
+        while bishops != 0 {
+            minor_attacks |= crate::attacks::bishop_attacks(pop_lsb(&mut bishops), occ);
+        }
+        let mut rook_attacks = minor_attacks;
+        let mut rooks = enemy & board.pieces[ROOK];
+        while rooks != 0 {
+            rook_attacks |= crate::attacks::rook_attacks(pop_lsb(&mut rooks), occ);
+        }
+        let threats = [
+            0,
+            pawn_attacks,
+            pawn_attacks,
+            minor_attacks,
+            rook_attacks,
+            0,
+        ];
         for i in 0..self.list.len {
             let mv = self.list.moves[i];
-            self.list.scores[i] = h.quiet_score(board, stm, mv, &self.ctx);
+            let piece = board.piece_on(mv.from()).unwrap();
+            let mask = threats[piece];
+            let escape =
+                i32::from(mask & bit(mv.from()) != 0) - i32::from(mask & bit(mv.to()) != 0);
+            self.list.scores[i] =
+                h.quiet_score(board, stm, mv, &self.ctx) + escape * 8 * SEE_VALUES[piece];
         }
     }
 
