@@ -1,2 +1,5 @@
-[build]
-rustflags = ["-C", "target-cpu=native"]
+# No CPU-specific flags here: plain `cargo build` produces a portable
+# x86-64 binary. For a fast local build use
+#   RUSTFLAGS="-C target-cpu=native" cargo build --release
+# and for distributable release binaries use tools/build_release.sh, which
+# targets an explicit, documented instruction set (x86-64-v3: AVX2, BMI2/PEXT).

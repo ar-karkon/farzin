@@ -3,15 +3,98 @@ use crate::board::Board;
 use crate::evalnet::EvalNet as Network;
 use crate::movegen::perft;
 use crate::search::{search, Limits, Params, Shared, Thread};
-use crate::tt::TranspositionTable;
 use crate::types::*;
 use std::io::BufRead;
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::thread::JoinHandle;
 use std::time::Instant;
 
-pub const NAME: &str = concat!("Farzin ", env!("CARGO_PKG_VERSION"));
+include!(concat!(env!("OUT_DIR"), "/embedded_net.rs"));
+
+/// `true` for the competition edition, which embeds only Farzin's own FZN2
+/// network (cargo feature `ownnet`).
+pub const OWNNET: bool = cfg!(feature = "ownnet");
+
+/// Engine name reported to GUIs. The competition edition is plain
+/// "Farzin x.y"; the research edition (third-party CC0 network) is marked.
+pub const NAME: &str = if OWNNET {
+    concat!("Farzin ", env!("CARGO_PKG_VERSION"))
+} else {
+    concat!("Farzin ", env!("CARGO_PKG_VERSION"), " Research")
+};
+
+pub fn edition() -> &'static str {
+    if OWNNET {
+        "OwnNet"
+    } else {
+        "Research"
+    }
+}
+
+/// CPU features this binary was compiled for.
+pub fn compiled_features() -> Vec<&'static str> {
+    let mut v = Vec::new();
+    if cfg!(target_feature = "popcnt") {
+        v.push("popcnt");
+    }
+    if cfg!(target_feature = "avx2") {
+        v.push("avx2");
+    }
+    if cfg!(target_feature = "bmi2") {
+        v.push("bmi2");
+    }
+    if cfg!(target_feature = "avx512bw") {
+        v.push("avx512bw");
+    }
+    v
+}
+
+/// Compiled-in CPU features the running processor lacks.
+pub fn missing_cpu_features() -> Vec<&'static str> {
+    #[cfg(target_arch = "x86_64")]
+    {
+        let mut missing = Vec::new();
+        if cfg!(target_feature = "popcnt") && !std::is_x86_feature_detected!("popcnt") {
+            missing.push("popcnt");
+        }
+        if cfg!(target_feature = "avx2") && !std::is_x86_feature_detected!("avx2") {
+            missing.push("avx2");
+        }
+        if cfg!(target_feature = "bmi2") && !std::is_x86_feature_detected!("bmi2") {
+            missing.push("bmi2");
+        }
+        if cfg!(target_feature = "fma") && !std::is_x86_feature_detected!("fma") {
+            missing.push("fma");
+        }
+        if cfg!(target_feature = "avx512bw") && !std::is_x86_feature_detected!("avx512bw") {
+            missing.push("avx512bw");
+        }
+        missing
+    }
+    #[cfg(not(target_arch = "x86_64"))]
+    Vec::new()
+}
+
+/// One-line build description for `--version`, `bench` and GUIs.
+pub fn build_info() -> String {
+    let net = match default_network() {
+        Some(n) => format!(
+            "{} {} sha256 {}",
+            EMBEDDED_NET_NAME,
+            n.describe(),
+            EMBEDDED_NET_SHA256
+        ),
+        None => "none (classical evaluation)".to_string(),
+    };
+    format!(
+        "{NAME} edition {} target {} features [{}] sliders {} net {net}",
+        edition(),
+        std::env::consts::ARCH,
+        compiled_features().join(","),
+        crate::attacks::SLIDER_METHOD,
+    )
+}
 
 /// Network embedded at build time when `FARZIN_EVALFILE` is set or the
 /// default file exists (see build instructions in the README).
@@ -71,14 +154,11 @@ pub struct Engine {
     board: Board,
     history: Vec<u64>,
     opts: Options,
+    go_start: Instant,
 }
 
 fn new_shared(mb: usize) -> Arc<Shared> {
-    Arc::new(Shared {
-        tt: TranspositionTable::new(mb),
-        stop: AtomicBool::new(false),
-        nodes: AtomicU64::new(0),
-    })
+    Arc::new(Shared::new(mb))
 }
 
 /// Parse the clock part of a `go` command into search limits.
@@ -141,7 +221,7 @@ impl Engine {
         let opts = Options {
             hash_mb: 16,
             threads: 1,
-            overhead: 20,
+            overhead: 50,
             params: Params::default(),
             net: default_network(),
         };
@@ -152,6 +232,7 @@ impl Engine {
             board: Board::startpos(),
             history: Vec::new(),
             opts,
+            go_start: Instant::now(),
         };
         engine.rebuild_threads();
         engine
@@ -224,6 +305,10 @@ impl Engine {
             return;
         }
         let limits = limits_from_go(words, self.board.stm, self.opts.overhead);
+        let ponder = words.contains(&"ponder") && !limits.infinite;
+        self.shared.time_offset_ms.store(0, Ordering::Relaxed);
+        self.shared.ponder.store(ponder, Ordering::Release);
+        self.go_start = Instant::now();
         let mut threads = self.threads.take().unwrap();
         let shared = Arc::clone(&self.shared);
         let board = self.board;
@@ -232,7 +317,11 @@ impl Engine {
         self.worker = Some(std::thread::spawn(move || {
             let result = search(&shared, &mut threads, &board, &history, limits);
             let mut line = format!("bestmove {}", result.best.to_uci());
-            if !result.ponder.is_none() {
+            let ponder_ok = !result.ponder.is_none()
+                && !result.best.is_none()
+                && crate::movegen::legal_moves(&board.make_move(result.best))
+                    .contains(&result.ponder);
+            if ponder_ok {
                 line.push_str(&format!(" ponder {}", result.ponder.to_uci()));
             }
             println!("{line}");
@@ -276,6 +365,8 @@ impl Engine {
                 }
             }
             "clear hash" => self.new_game(),
+            // Pondering is driven entirely by `go ponder` / `ponderhit`.
+            "ponder" => {}
             "evalfile" => {
                 if value.is_empty() || value == "<empty>" {
                     self.opts.net = None;
@@ -327,18 +418,23 @@ impl Engine {
                 println!("id author Farzin contributors");
                 println!("option name Hash type spin default 16 min 1 max 65536");
                 println!("option name Threads type spin default 1 min 1 max 256");
-                println!("option name Move Overhead type spin default 20 min 0 max 5000");
+                println!("option name Move Overhead type spin default 50 min 0 max 5000");
                 println!("option name Clear Hash type button");
+                println!("option name Ponder type check default false");
                 println!("option name EvalFile type string default <default>");
-                println!("option name EvalMaterialScale type check default false");
-                println!(
-                    "option name EvalScale type spin default {} min 1 max 4096",
-                    crate::evalnet::DEFAULT_HKA_SCALE
-                );
-                for (name, value) in param_list(&self.opts.params) {
+                // Research/tuning options are hidden in the competition
+                // edition (they stay settable for tools when FARZIN_TUNE=1).
+                if !OWNNET || std::env::var_os("FARZIN_TUNE").is_some() {
+                    println!("option name EvalMaterialScale type check default false");
                     println!(
-                        "option name tune_{name} type spin default {value} min -100000 max 100000"
+                        "option name EvalScale type spin default {} min 1 max 4096",
+                        crate::evalnet::DEFAULT_HKA_SCALE
                     );
+                    for (name, value) in param_list(&self.opts.params) {
+                        println!(
+                            "option name tune_{name} type spin default {value} min -100000 max 100000"
+                        );
+                    }
                 }
                 println!("uciok");
             }
@@ -351,10 +447,20 @@ impl Engine {
                 }
             }
             "go" => self.go(&words),
-            "stop" => self.shared.stop.store(true, Ordering::Relaxed),
+            "stop" => {
+                self.shared.stop.store(true, Ordering::Relaxed);
+                self.shared.ponder.store(false, Ordering::Release);
+            }
+            "ponderhit" => {
+                // The clock starts now: measure limits from this moment.
+                let ms = self.go_start.elapsed().as_millis() as u64;
+                self.shared.time_offset_ms.store(ms, Ordering::Relaxed);
+                self.shared.ponder.store(false, Ordering::Release);
+            }
             "setoption" => self.set_option(line),
             "quit" => {
                 self.shared.stop.store(true, Ordering::Relaxed);
+                self.shared.ponder.store(false, Ordering::Release);
                 self.wait();
                 return false;
             }
@@ -453,6 +559,7 @@ fn set_param(p: &mut Params, name: &str, value: &str) -> bool {
 
 /// Fixed-depth search over `BENCH_FENS`; prints a node-count signature.
 pub fn bench(depth: i32, net: Option<Arc<Network>>) {
+    println!("info string {}", build_info());
     let mut shared = new_shared(16);
     let mut threads = vec![Thread::new(0)];
     threads[0].net = net;
@@ -478,7 +585,25 @@ pub fn bench(depth: i32, net: Option<Arc<Network>>) {
 }
 
 pub fn run() {
+    let missing = missing_cpu_features();
+    if !missing.is_empty() {
+        let msg = format!(
+            "{NAME}: this build requires CPU features [{}] which this processor lacks. \
+             Use a build for your CPU (see README: Hardware requirements).",
+            missing.join(",")
+        );
+        println!("info string {msg}");
+        eprintln!("{msg}");
+        std::process::exit(1);
+    }
     let args: Vec<String> = std::env::args().collect();
+    if matches!(
+        args.get(1).map(String::as_str),
+        Some("--version" | "-v" | "version")
+    ) {
+        println!("{}", build_info());
+        return;
+    }
     if args.get(1).map(String::as_str) == Some("bench") {
         let depth = args.get(2).and_then(|d| d.parse().ok()).unwrap_or(12);
         bench(depth, default_network());

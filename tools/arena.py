@@ -71,10 +71,18 @@ def parse_engine(spec):
 
 
 def parse_tc(text):
+    """'10+0.1' -> (10.0, 0.1); '40/900' or '40/900+0' (repeating moves
+    per control, as CCRL 40/15) -> (900.0, 0.0, 40)."""
+    mtg = None
+    if "/" in text:
+        mtg, text = text.split("/", 1)
+        mtg = int(mtg)
     if "+" in text:
         base, inc = text.split("+")
     else:
         base, inc = text, "0"
+    if mtg is not None:
+        return float(base), float(inc), mtg
     return float(base), float(inc)
 
 
@@ -191,17 +199,22 @@ def move_limit(spec, clocks, tc, args):
         return chess.engine.Limit(nodes=args.nodes), False
     if args.movetime is not None:
         return chess.engine.Limit(time=args.movetime), False
-    base, inc = tc
+    base, inc = tc[0], tc[1]
+    remaining = None
+    if len(tc) > 2:
+        remaining = tc[2] - clocks.get("moves", 0) % tc[2]
     return chess.engine.Limit(
         white_clock=clocks[chess.WHITE], black_clock=clocks[chess.BLACK],
-        white_inc=inc, black_inc=inc,
+        white_inc=inc, black_inc=inc, remaining_moves=remaining,
     ), True
 
 
 def play_game(pool, white, black, fen, tc, args, adjudicator=None):
     board = chess.Board(fen)
-    base, inc = tc
+    base, inc = tc[0], tc[1]
+    mtg = tc[2] if len(tc) > 2 else None
     clocks = {chess.WHITE: base, chess.BLACK: base}
+    moves_done = {chess.WHITE: 0, chess.BLACK: 0}
     names = {chess.WHITE: white, chess.BLACK: black}
     for name in (white, black):
         eng = pool.get(name)
@@ -219,7 +232,10 @@ def play_game(pool, white, black, fen, tc, args, adjudicator=None):
     scores = []  # white-relative cp per ply
     result, reason = None, None
     stats = {"plies": 0, "time": {white: 0.0, black: 0.0}, "moves": {white: 0, black: 0},
-             "depth": {white: 0, black: 0}, "nodes": {white: 0, black: 0}}
+             "depth": {white: 0, black: 0}, "nodes": {white: 0, black: 0},
+             # clock safety: smallest clock left after a move (s) and the
+             # largest share of the available clock spent on one move
+             "min_clock": {white: None, black: None}, "max_share": {white: 0.0, black: 0.0}}
     while result is None:
         if board.is_game_over(claim_draw=True):
             outcome = board.outcome(claim_draw=True)
@@ -229,6 +245,7 @@ def play_game(pool, white, black, fen, tc, args, adjudicator=None):
         side = board.turn
         name = names[side]
         eng = pool.get(name)
+        clocks["moves"] = moves_done[side]
         limit, clocked = move_limit(pool.specs[name], clocks, tc, args)
         start = time.perf_counter()
         try:
@@ -244,12 +261,19 @@ def play_game(pool, white, black, fen, tc, args, adjudicator=None):
         stats["depth"][name] += res.info.get("depth", 0) or 0
         stats["nodes"][name] += res.info.get("nodes", 0) or 0
         if clocked:
+            if clocks[side] > 0:
+                stats["max_share"][name] = max(stats["max_share"][name], elapsed / clocks[side])
             clocks[side] -= elapsed
+            left = stats["min_clock"][name]
+            stats["min_clock"][name] = clocks[side] if left is None else min(left, clocks[side])
             if clocks[side] < -args.time_margin:
                 result = "0-1" if side == chess.WHITE else "1-0"
                 reason = "time forfeit"
                 break
             clocks[side] = max(clocks[side], 0.0) + inc
+            moves_done[side] += 1
+            if mtg is not None and moves_done[side] % mtg == 0:
+                clocks[side] += base
         move = res.move
         if move is None or move not in board.legal_moves:
             result = "0-1" if side == chess.WHITE else "1-0"
@@ -506,7 +530,9 @@ def main(argv=None):
             if s["moves"]:
                 per_engine[n] = {"avg_depth": round(s["depth"] / s["moves"], 2),
                                  "avg_ms_per_move": round(1000 * s["time"] / s["moves"], 1),
-                                 "nps": round(s["nodes"] / s["time"]) if s["time"] > 0 else None}
+                                 "nps": round(s["nodes"] / s["time"]) if s["time"] > 0 else None,
+                                 "min_clock_s": None if s.get("min_clock") is None else round(s["min_clock"], 3),
+                                 "max_move_share": round(s.get("max_share", 0.0), 3)}
         payload = {
             "engines": {n: {"cmd": s["cmd"], "options": s["options"], "nodes": s.get("nodes"),
                             "sha256": sha256(s["cmd"].split()[0])}
@@ -549,6 +575,10 @@ def main(argv=None):
                 es["time"] += st["time"][n]
                 es["depth"] += st["depth"][n]
                 es["nodes"] += st["nodes"][n]
+                mc = st.get("min_clock", {}).get(n)
+                if mc is not None:
+                    es["min_clock"] = mc if es.get("min_clock") is None else min(es["min_clock"], mc)
+                es["max_share"] = max(es.get("max_share", 0.0), st.get("max_share", {}).get(n, 0.0))
             pair_score += score_for(a, white, r)
             if pgn_file:
                 pgn_file.write(pgn + "\n\n")
