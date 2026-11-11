@@ -27,18 +27,24 @@ depth 12). The 0.5 research build matches 0.4 (1179018).
 
 ## 2. Release binaries
 
-Built with rustc 1.97.0 and mingw-w64 13 (Ubuntu 24.04):
+Built with rustc 1.97.0 and mingw-w64 13 (Ubuntu 24.04), from main after
+PR #8 (fifty-move checkmate fix in quiescence; `bench` signature unchanged):
 
 ```
-1fd1651a7aa74c7604d7258a7699738ad0dd5b80067134b3b871cbbbbb3e3845  farzin-0.5.0-windows-x64-avx2-bmi2.exe
-024540ca36ea2039d6cda9ebcd743036a6a123a0a8fdcefedffb680fe078c470  farzin-0.5.0-windows-x64-avx2.exe
-578bd795e4f9ea5c38cf7d2edbc3afa52b83ccf817cfbdecb5ddeb3c3f2958a9  farzin-0.5.0-windows-x64-popcnt.exe
-c0e2cf7c7096b329e15b0ef37256e291e37fcb60703af68b4739379885baf055  farzin-0.5.0-linux-x64-avx2-bmi2
+6dd8922d4ce62a08954cd0ef3df568f9d1d8293c329c3de7786e60a478ff6e60  farzin-0.5.0-windows-x64-avx2-bmi2.exe
+d600ce0e36e7a55c764407cb367938bf869547b2a472efa99f4b6fb94a39f752  farzin-0.5.0-windows-x64-avx2.exe
+012e319bc7d0a5b69e47e1d1e943bbecae78ea0bd389759b6046ae095f77e405  farzin-0.5.0-windows-x64-popcnt.exe
+0f82c35a930b6b77507bc19a391bed6c12ebf8f04c39619fa7b7ef8baaa1225c  farzin-0.5.0-linux-x64-avx2-bmi2
 ```
+
+The games in §4 were played with the build before PR #8, which searched
+identically at fixed depth (same `bench` node count). Its hashes were
+`1fd1651a…`, `024540ca…`, `578bd795…` and `c0e2cf7c…`.
 
 * **Reproducible:** a second build from a different directory, and the CI job
-  `release-build` on a fresh GitHub Ubuntu 24.04 runner, produced
-  **bit-identical** files (same four hashes).
+  `release-build` on fresh GitHub Ubuntu 24.04 runners (packages fetched from
+  different Ubuntu mirrors), produced **bit-identical** files (same four
+  hashes), both before and after PR #8.
 * The Windows executables import only `KERNEL32`, `ntdll`, `msvcrt` and
   `api-ms-win-core-synch-l1-2-0`, so no runtime installation is needed.
 * All three Windows variants give the same `bench` node count. Only their
