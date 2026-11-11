@@ -64,6 +64,8 @@ pub struct Params {
     pub x_futhist: i32,
     pub x_tripleext: i32,
     pub x_rfpworse: i32,
+    /// Lazy SMP best-thread voting.
+    pub x_vote: i32,
 }
 
 impl Default for Params {
@@ -109,6 +111,7 @@ impl Default for Params {
             x_futhist: 0,
             x_tripleext: 0,
             x_rfpworse: 0,
+            x_vote: 1,
         }
     }
 }
@@ -1609,21 +1612,71 @@ pub fn search(
     shared.nodes.store(0, Ordering::Relaxed);
     shared.tt.new_search();
     let (main, helpers) = threads.split_first_mut().expect("at least one thread");
+    let vote = main.params.x_vote != 0;
     std::thread::scope(|scope| {
-        for helper in helpers.iter_mut() {
-            helper.silent = true;
-            let mut helper_limits = limits;
-            helper_limits.soft_ms = None;
-            helper_limits.hard_ms = None;
-            helper_limits.soft_nodes = None;
-            scope.spawn(move || {
-                helper.iterate(shared, root, history, helper_limits, start);
-            });
-        }
+        let handles: Vec<_> = helpers
+            .iter_mut()
+            .map(|helper| {
+                helper.silent = true;
+                let mut helper_limits = limits;
+                helper_limits.soft_ms = None;
+                helper_limits.hard_ms = None;
+                helper_limits.soft_nodes = None;
+                scope.spawn(move || helper.iterate(shared, root, history, helper_limits, start))
+            })
+            .collect();
         let result = main.iterate(shared, root, history, limits, start);
         shared.stop.store(true, Ordering::Relaxed);
-        result
+        let mut all = vec![result];
+        all.extend(handles.into_iter().filter_map(|h| h.join().ok()));
+        let nodes = shared.nodes.load(Ordering::Relaxed);
+        let mut best = if vote {
+            pick_best_thread(&all)
+        } else {
+            all.swap_remove(0)
+        };
+        best.nodes = nodes;
+        best
     })
+}
+
+/// Lazy SMP result selection: every thread votes for its best move,
+/// weighted by depth and by how far its score is above the worst thread's;
+/// proven mates win outright.
+fn pick_best_thread(results: &[SearchResult]) -> SearchResult {
+    let main = &results[0];
+    if results.len() == 1 || main.best.is_none() {
+        return main.clone();
+    }
+    let valid: Vec<&SearchResult> = results
+        .iter()
+        .filter(|r| r.depth > 0 && !r.best.is_none())
+        .collect();
+    let min_score = valid.iter().map(|r| r.score).min().unwrap_or(0);
+    let weight = |r: &SearchResult| i64::from(r.score - min_score + 14) * i64::from(r.depth);
+    let votes = |mv: Move| -> i64 {
+        valid
+            .iter()
+            .filter(|r| r.best == mv)
+            .map(|r| weight(r))
+            .sum()
+    };
+    let mut best = main;
+    for &r in &valid {
+        if best.score.abs() >= MATE_BOUND {
+            // Prefer the shortest proven win; keep a proven loss only if forced.
+            if r.score > best.score {
+                best = r;
+            }
+        } else if r.score >= MATE_BOUND
+            || (r.score > -MATE_BOUND
+                && (votes(r.best) > votes(best.best)
+                    || (votes(r.best) == votes(best.best) && r.depth > best.depth)))
+        {
+            best = r;
+        }
+    }
+    best.clone()
 }
 
 #[allow(dead_code)]

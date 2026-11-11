@@ -420,6 +420,7 @@ macro_rules! params_table {
             x_futhist,
             x_tripleext,
             x_rfpworse,
+            x_vote,
             probcut_margin,
             singular_depth,
             asp_delta,
