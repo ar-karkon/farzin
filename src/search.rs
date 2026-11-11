@@ -60,6 +60,10 @@ pub struct Params {
     pub x_hindsight: i32,
     pub x_smallpc: i32,
     pub x_threats: i32,
+    /// Batch 2 (default off until measured).
+    pub x_futhist: i32,
+    pub x_tripleext: i32,
+    pub x_rfpworse: i32,
 }
 
 impl Default for Params {
@@ -102,6 +106,9 @@ impl Default for Params {
             x_hindsight: 1,
             x_smallpc: 1,
             x_threats: 1,
+            x_futhist: 0,
+            x_tripleext: 0,
+            x_rfpworse: 0,
         }
     }
 }
@@ -864,10 +871,12 @@ impl Thread {
             0
         };
         self.stack[ply].reduction = 0;
+        let mut opp_worsening = false;
         if !in_check && excluded.is_none() && ply >= 1 {
             let prev_eval = self.stack[ply - 1].static_eval;
             let prev_mv = self.stack[ply - 1].mv;
             if prev_eval != NO_SCORE {
+                opp_worsening = static_eval > -prev_eval;
                 // Eval-difference history: reward the opponent's previous quiet
                 // move if it made their position better (our eval fell).
                 if p.x_evalhist != 0 && !prev_mv.is_none() && !prev_mv.is_noisy() {
@@ -897,7 +906,12 @@ impl Thread {
             // Reverse futility pruning.
             if depth <= p.rfp_depth
                 && eval < MATE_BOUND
-                && eval - p.rfp_margin * (depth - i32::from(improving)) >= beta
+                && eval
+                    - p.rfp_margin
+                        * (depth
+                            - i32::from(improving)
+                            - i32::from(p.x_rfpworse != 0 && opp_worsening))
+                    >= beta
             {
                 return (eval + beta) / 2;
             }
@@ -1060,7 +1074,15 @@ impl Thread {
                     }
                     if !in_check
                         && lmr_depth < 9
-                        && static_eval + p.futility_base + p.futility_mult * lmr_depth <= alpha
+                        && static_eval
+                            + p.futility_base
+                            + p.futility_mult * lmr_depth
+                            + if p.x_futhist != 0 {
+                                (hist / 128).clamp(-200, 200)
+                            } else {
+                                0
+                            }
+                            <= alpha
                     {
                         picker.skip_quiets = true;
                         continue;
@@ -1096,6 +1118,9 @@ impl Thread {
                     ext = 1;
                     if !pv_node && v < s_beta - 20 && self.stack[ply].double_ext <= 8 {
                         ext = 2;
+                        if p.x_tripleext != 0 && !mv.is_noisy() && v < s_beta - 100 {
+                            ext = 3;
+                        }
                         self.stack[ply + 2].double_ext = self.stack[ply].double_ext + 1;
                     }
                 } else if s_beta >= beta {

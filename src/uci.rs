@@ -378,7 +378,7 @@ impl Engine {
             "bench" => {
                 self.wait();
                 let depth = words.get(1).and_then(|d| d.parse().ok()).unwrap_or(12);
-                bench(depth, self.opts.net.clone());
+                bench_with(depth, self.opts.net.clone(), self.opts.params);
             }
             _ => println!("info string unknown command {cmd}"),
         }
@@ -417,6 +417,9 @@ macro_rules! params_table {
             x_hindsight,
             x_smallpc,
             x_threats,
+            x_futhist,
+            x_tripleext,
+            x_rfpworse,
             probcut_margin,
             singular_depth,
             asp_delta,
@@ -463,9 +466,15 @@ fn set_param(p: &mut Params, name: &str, value: &str) -> bool {
 
 /// Fixed-depth search over `BENCH_FENS`; prints a node-count signature.
 pub fn bench(depth: i32, net: Option<Arc<Network>>) {
+    bench_with(depth, net, Params::default());
+}
+
+/// `bench` with explicit search parameters (UCI `bench` honours `tune_*`).
+pub fn bench_with(depth: i32, net: Option<Arc<Network>>, params: Params) {
     let mut shared = new_shared(16);
     let mut threads = vec![Thread::new(0)];
     threads[0].net = net;
+    threads[0].set_params(params);
     let mut total = 0;
     let start = Instant::now();
     for fen in BENCH_FENS {
