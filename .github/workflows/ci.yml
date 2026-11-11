@@ -59,7 +59,7 @@ jobs:
         run: tools/ci_install_mingw.sh
       - run: tools/build_release.sh dist
       - run: pip install chess==1.10.0
-      - run: python3 tools/release_check.py --quick --expect-sha256 f7bb0b7ef9857c3a4f24b39f5152e381e978d76d0c24817b0bebbefb1b6e220c dist/farzin-*-linux-x64-avx2-bmi2
+      - run: python3 tools/release_check.py --quick --expect-sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0 dist/farzin-*-linux-x64-avx2-bmi2
       - uses: actions/upload-artifact@v4
         with:
           name: farzin-release-candidate
@@ -89,19 +89,26 @@ jobs:
           exe=$(ls dist/farzin-*-windows-x64-avx2-bmi2.exe)
           (cd dist && sha256sum -c SHA256SUMS --ignore-missing)
           "$exe" --version
-          python tools/release_check.py --expect-sha256 f7bb0b7ef9857c3a4f24b39f5152e381e978d76d0c24817b0bebbefb1b6e220c --json release-check-windows.json "$exe"
+          python tools/release_check.py --expect-sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0 --json release-check-windows.json "$exe"
           python tools/arena.py --engine name=a,cmd=$exe --engine name=b,cmd=$exe \
             --tc 40/8 --pairs 4 --concurrency 2 --book tools/books/farzin-openings.epd \
             --time-margin 0 --out selfplay-windows.json
           python tools/arena.py --engine name=a,cmd=$exe --engine name=b,cmd=$exe \
             --tc 3+0.05 --pairs 4 --concurrency 2 --threads 2 --book tools/books/farzin-openings.epd \
             --time-margin 0 --out selfplay-windows-blitz.json
+          # New net vs the previous OwnNet net (fzn2-a1) on native Windows.
+          # The same exe with EvalFile=fzn2-a1 searches exactly like the
+          # 0.5.0 release (identical bench signature, 943892 nodes).
+          python tools/arena.py --engine name=b1,cmd=$exe \
+            --engine name=a1,cmd=$exe,opt.EvalFile=nets/fzn2-a1.nnue \
+            --tc 10+0.1 --pairs 12 --concurrency 2 --hash 64 --book tools/books/farzin-openings.epd \
+            --time-margin 0 --out b1-vs-a1-windows.json
           python - <<'PY'
           import json, sys
           bad = 0
-          for f in ("selfplay-windows.json", "selfplay-windows-blitz.json"):
+          for f in ("selfplay-windows.json", "selfplay-windows-blitz.json", "b1-vs-a1-windows.json"):
               d = json.load(open(f))
-              print(f, d["terminations"], d["engine_stats"])
+              print(f, d["terminations"], d["engine_stats"], d.get("summary"))
               bad += sum(v for k, v in d["terminations"].items()
                          if k == "time forfeit" or k.startswith(("crash", "illegal")))
           sys.exit(1 if bad else 0)
@@ -116,3 +123,4 @@ jobs:
           path: |
             release-check-windows.json
             selfplay-windows*.json
+            b1-vs-a1-windows.json

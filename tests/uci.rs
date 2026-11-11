@@ -234,8 +234,8 @@ fn version_reports_embedded_network() {
     assert!(text.starts_with("Farzin "), "{text}");
     assert!(text.contains(" net "), "{text}");
     if cfg!(feature = "ownnet") {
-        assert!(text.contains("fzn2-a1.nnue FZN2"), "{text}");
-        assert!(text.contains("f7bb0b7ef9857c3a4f24b39f5152e381e978d76d0c24817b0bebbefb1b6e220c"));
+        assert!(text.contains("fzn2-b1.nnue FZN2"), "{text}");
+        assert!(text.contains("3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0"));
     }
 }
 

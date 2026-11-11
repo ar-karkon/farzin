@@ -1,0 +1,696 @@
+{
+ "engines": {
+  "b1-0.5.1": {
+   "cmd": "/tmp/claude-0/-home-user-farzin/6a1b750e-4023-5b48-8abe-ba21be2d9749/scratchpad/dist-b1/farzin-0.5.1-linux-x64-avx2-bmi2",
+   "options": {},
+   "nodes": null,
+   "sha256": "734405d79e4e316f377368eabc7403ccef69e35ee65f777b3df67f0e76707427"
+  },
+  "a1-0.5.0": {
+   "cmd": "/tmp/claude-0/-home-user-farzin/6a1b750e-4023-5b48-8abe-ba21be2d9749/scratchpad/dist-a1/farzin-0.5.0-linux-x64-avx2-bmi2",
+   "options": {},
+   "nodes": null,
+   "sha256": "0279087294567489c96509901a6aa0b337c960e3efb978395d91d57d19686c19"
+  }
+ },
+ "tc": "60+0.6",
+ "nodes": null,
+ "movetime": null,
+ "book": "farzin-openings.epd",
+ "book_sha256": "29d02b4cf9e26a9ed5f5cc45a6f48a6fc94f4dbaf03617d5d180242711433d48",
+ "seed": 513,
+ "concurrency": 3,
+ "threads": 1,
+ "hash": 64,
+ "adjudication": "conservative",
+ "hardware": {
+  "platform": "Linux-6.18.44-fc-v378-x86_64-with-glibc2.39",
+  "python": "3.13.18",
+  "cpus": 4,
+  "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+  "loadavg_start": [
+   1.7685546875,
+   2.677734375,
+   2.93701171875
+  ]
+ },
+ "elapsed_s": 5712.9,
+ "summary": {
+  "b1-0.5.1 vs a1-0.5.0": {
+   "pairs": 50,
+   "pentanomial": [
+    0,
+    0,
+    35,
+    15,
+    0
+   ],
+   "score": 0.575,
+   "elo": 52.51156585572754,
+   "elo_95": [
+    30.124530378730363,
+    75.34052003783698
+   ],
+   "los": 0.9999981637124429,
+   "nelo": 160.83142422653478,
+   "nelo_95": [
+    92.73404946410479,
+    228.92879898896476
+   ]
+  }
+ },
+ "sprt": null,
+ "terminations": {
+  "adjudication": 42,
+  "threefold_repetition": 42,
+  "insufficient_material": 5,
+  "max plies": 1,
+  "fifty_moves": 10
+ },
+ "natural_fraction": 0.57,
+ "engine_stats": {
+  "b1-0.5.1": {
+   "avg_depth": 28.51,
+   "avg_ms_per_move": 1153.0,
+   "nps": 1226016,
+   "min_clock_s": 0.312,
+   "max_move_share": 0.685
+  },
+  "a1-0.5.0": {
+   "avg_depth": 28.36,
+   "avg_ms_per_move": 1183.2,
+   "nps": 1225291,
+   "min_clock_s": 1.18,
+   "max_move_share": 0.456
+  }
+ },
+ "games": [
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "insufficient_material"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "max plies"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "fifty_moves"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "fifty_moves"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "fifty_moves"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "insufficient_material"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "fifty_moves"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "insufficient_material"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "fifty_moves"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "insufficient_material"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "fifty_moves"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "fifty_moves"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "insufficient_material"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "fifty_moves"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "fifty_moves"
+  ],
+  [
+   "b1-0.5.1",
+   "a1-0.5.0",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "a1-0.5.0",
+   "b1-0.5.1",
+   "1/2-1/2",
+   "fifty_moves"
+  ]
+ ],
+ "scheduler": {
+  "completed": 50,
+  "cancelled": 0,
+  "failed": 0,
+  "skipped": 0
+ },
+ "scheduler_errors": []
+}

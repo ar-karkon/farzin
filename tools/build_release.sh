@@ -17,7 +17,7 @@
 # runtime (no DLLs beyond the Windows system ones). Requires the rustup
 # target x86_64-pc-windows-gnu and mingw-w64 (apt-get install mingw-w64).
 #
-# The embedded network is nets/fzn2-a1.nnue only; build.rs refuses any other
+# The embedded network is nets/fzn2-b1.nnue only; build.rs refuses any other
 # file or hash for the `ownnet` feature, and this script additionally checks
 # that no fragment of nets/default.nnue occurs in the binaries.
 set -euo pipefail
@@ -48,7 +48,7 @@ build x86_64-unknown-linux-gnu linux-x64-avx2-bmi2 \
     "-C target-cpu=x86-64-v3 -C link-arg=-s -C link-arg=-Wl,--build-id=none"
 
 (cd "$out" && python3 "$root/tools/check_no_foreign_weights.py" "$root/nets/default.nnue" \
-    --expect-present "$root/nets/fzn2-a1.nnue" "${bins[@]}")
+    --expect-present "$root/nets/fzn2-b1.nnue" "${bins[@]}")
 (cd "$out" && sha256sum "${bins[@]}" > SHA256SUMS)
 echo "toolchain: $(rustc --version)"
 cat "$out/SHA256SUMS"
