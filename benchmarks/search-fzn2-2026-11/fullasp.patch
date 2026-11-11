@@ -1,0 +1,14 @@
+diff --git a/src/search.rs b/src/search.rs
+index 98a2515..899ed8b 100644
+--- a/src/search.rs
++++ b/src/search.rs
+@@ -1307,9 +1307,6 @@ impl Thread {
+                     }
+                 } else if v >= beta {
+                     beta = (v + delta).min(INF);
+-                    if v.abs() < MATE_BOUND {
+-                        search_depth = (search_depth - 1).max(depth - 3);
+-                    }
+                     if self.id == 0 && self.start.elapsed().as_millis() > 1000 {
+                         self.report(shared, depth, v, alpha, beta);
+                     }

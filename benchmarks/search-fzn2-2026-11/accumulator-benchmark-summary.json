@@ -1,0 +1,279 @@
+{
+  "lazy-bench-paired.json": {
+    "raw_sha256": "1385a7c922d8088ca72f1eedae0765305d12c87e7442a532c43b436b79055047",
+    "depth": 12,
+    "repeats": 5,
+    "order": [
+      [
+        "baseline",
+        "lazy"
+      ],
+      [
+        "lazy",
+        "baseline"
+      ],
+      [
+        "baseline",
+        "lazy"
+      ],
+      [
+        "lazy",
+        "baseline"
+      ],
+      [
+        "baseline",
+        "lazy"
+      ]
+    ],
+    "positions_sha256": "641f7b2b5fb78348a7dc5ddc60fe8e1dd304ee806170e3080d9a635b1cb771f5",
+    "options": {
+      "threads": [
+        "Threads",
+        "1"
+      ],
+      "hash": [
+        "Hash",
+        "16"
+      ]
+    },
+    "configurations": {
+      "baseline": {
+        "commit": "0657431a154d3d69951173d4bdbde9af7474c535",
+        "binary": "/workspace/farzin-research/baseline",
+        "binary_sha256": "a73486bc8dd4e650714a15f6d28b711a23dffdf42f07f4489675c6a6b266a7bf",
+        "summary": {
+          "total_wall_ms_median": 650.6270249999488,
+          "total_wall_ms_min": 588.1006139996998,
+          "total_wall_ms_max": 712.069165999992,
+          "total_wall_ms_stdev": 45.28811795399015,
+          "paired_speed_ratios_vs_first": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "paired_speed_ratio_median": 1.0,
+          "all_search_signatures_equal_to_first": true
+        }
+      },
+      "lazy": {
+        "commit": "working-tree",
+        "binary": "/workspace/farzin-research/lazy",
+        "binary_sha256": "e484695f4a94a24c5ee2bcc485793e7b3b67560e59fd481b71cb727ce14f30ca",
+        "summary": {
+          "total_wall_ms_median": 607.8849329998661,
+          "total_wall_ms_min": 578.8848700000244,
+          "total_wall_ms_max": 652.4159059999306,
+          "total_wall_ms_stdev": 29.493839833406128,
+          "paired_speed_ratios_vs_first": [
+            1.1360482132360996,
+            1.1239316463736932,
+            1.0713161630543306,
+            0.9014197976953713,
+            1.0607595611820275
+          ],
+          "paired_speed_ratio_median": 1.0713161630543306,
+          "all_search_signatures_equal_to_first": true
+        }
+      }
+    }
+  },
+  "lazy-compact-bench.json": {
+    "raw_sha256": "6da3215678b65eb3524ff4c82c4b1c0c7544ece57a3a94ae2c00d59d53b2dc35",
+    "depth": 14,
+    "repeats": 7,
+    "order": [
+      [
+        "baseline",
+        "lazy-compact"
+      ],
+      [
+        "lazy-compact",
+        "baseline"
+      ],
+      [
+        "baseline",
+        "lazy-compact"
+      ],
+      [
+        "lazy-compact",
+        "baseline"
+      ],
+      [
+        "baseline",
+        "lazy-compact"
+      ],
+      [
+        "lazy-compact",
+        "baseline"
+      ],
+      [
+        "baseline",
+        "lazy-compact"
+      ]
+    ],
+    "positions_sha256": "641f7b2b5fb78348a7dc5ddc60fe8e1dd304ee806170e3080d9a635b1cb771f5",
+    "options": {
+      "threads": [
+        "Threads",
+        "1"
+      ],
+      "hash": [
+        "Hash",
+        "16"
+      ]
+    },
+    "configurations": {
+      "baseline": {
+        "commit": "0657431a154d3d69951173d4bdbde9af7474c535",
+        "binary": "/workspace/farzin-research/baseline",
+        "binary_sha256": "a73486bc8dd4e650714a15f6d28b711a23dffdf42f07f4489675c6a6b266a7bf",
+        "summary": {
+          "total_wall_ms_median": 1695.7981590000486,
+          "total_wall_ms_min": 1574.3300780000595,
+          "total_wall_ms_max": 1731.0531089999017,
+          "total_wall_ms_stdev": 52.3634922578022,
+          "paired_speed_ratios_vs_first": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "paired_speed_ratio_median": 1.0,
+          "all_search_signatures_equal_to_first": true
+        }
+      },
+      "lazy-compact": {
+        "commit": "working-tree",
+        "binary": "/workspace/farzin-research/lazy-compact",
+        "binary_sha256": "883c0cdb2a3bef09fdb109685e8fa33604191de38f385f845cca5ca100a85e2b",
+        "summary": {
+          "total_wall_ms_median": 1693.0770719999373,
+          "total_wall_ms_min": 1516.0456669999007,
+          "total_wall_ms_max": 1795.4744589999336,
+          "total_wall_ms_stdev": 102.35530210758843,
+          "paired_speed_ratios_vs_first": [
+            1.1124304746949654,
+            1.0627392733131684,
+            0.9552721364486587,
+            0.9530908363592026,
+            0.9298632082592622,
+            0.9641201523769298,
+            1.0042860008193872
+          ],
+          "paired_speed_ratio_median": 0.9641201523769298,
+          "all_search_signatures_equal_to_first": true
+        }
+      }
+    }
+  },
+  "lazy-frame-bench.json": {
+    "raw_sha256": "7c7712bab23c25aca227ae06701c8b1f5ca7ae748a54125dfbc60a62ea8dbe80",
+    "depth": 16,
+    "repeats": 5,
+    "order": [
+      [
+        "baseline",
+        "lazy-index",
+        "lazy-frame"
+      ],
+      [
+        "lazy-frame",
+        "lazy-index",
+        "baseline"
+      ],
+      [
+        "baseline",
+        "lazy-index",
+        "lazy-frame"
+      ],
+      [
+        "lazy-frame",
+        "lazy-index",
+        "baseline"
+      ],
+      [
+        "baseline",
+        "lazy-index",
+        "lazy-frame"
+      ]
+    ],
+    "positions_sha256": "641f7b2b5fb78348a7dc5ddc60fe8e1dd304ee806170e3080d9a635b1cb771f5",
+    "options": {
+      "threads": [
+        "Threads",
+        "1"
+      ],
+      "hash": [
+        "Hash",
+        "16"
+      ]
+    },
+    "configurations": {
+      "baseline": {
+        "commit": "0657431a154d3d69951173d4bdbde9af7474c535",
+        "binary": "/workspace/farzin-research/baseline",
+        "binary_sha256": "a73486bc8dd4e650714a15f6d28b711a23dffdf42f07f4489675c6a6b266a7bf",
+        "summary": {
+          "total_wall_ms_median": 3772.123561999706,
+          "total_wall_ms_min": 3672.9266270001517,
+          "total_wall_ms_max": 3953.6536269998805,
+          "total_wall_ms_stdev": 115.45940187011152,
+          "paired_speed_ratios_vs_first": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "paired_speed_ratio_median": 1.0,
+          "all_search_signatures_equal_to_first": true
+        }
+      },
+      "lazy-index": {
+        "commit": "working-tree",
+        "binary": "/workspace/farzin-research/lazy",
+        "binary_sha256": "e484695f4a94a24c5ee2bcc485793e7b3b67560e59fd481b71cb727ce14f30ca",
+        "summary": {
+          "total_wall_ms_median": 3921.4769079998177,
+          "total_wall_ms_min": 3725.652958999831,
+          "total_wall_ms_max": 4025.7444169999417,
+          "total_wall_ms_stdev": 126.27679118102083,
+          "paired_speed_ratios_vs_first": [
+            0.9820925566720938,
+            0.9759254522684726,
+            0.9957662911541725,
+            0.9267684501655008,
+            0.9858477607603491
+          ],
+          "paired_speed_ratio_median": 0.9820925566720938,
+          "all_search_signatures_equal_to_first": true
+        }
+      },
+      "lazy-frame": {
+        "commit": "working-tree",
+        "binary": "/workspace/farzin-research/lazy-frame",
+        "binary_sha256": "7ebe7405577d82f897cf459880f241e6d4a113a56496bbda7aa61b156908580f",
+        "summary": {
+          "total_wall_ms_median": 3878.0161899999257,
+          "total_wall_ms_min": 3739.63573099968,
+          "total_wall_ms_max": 4329.571924000106,
+          "total_wall_ms_stdev": 251.40367215398007,
+          "paired_speed_ratios_vs_first": [
+            0.9131742575019025,
+            0.9358147463270639,
+            0.9726941243119922,
+            0.9848119086763292,
+            0.9795098071839621
+          ],
+          "paired_speed_ratio_median": 0.9726941243119922,
+          "all_search_signatures_equal_to_first": true
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "command": [
+    "/workspace/farzin-research/venv/bin/python",
+    "-u",
+    "tools/arena.py",
+    "--engine",
+    "name=threatorder,cmd=/workspace/farzin-research/threatorder-mate,opt.EvalFile=/workspace/farzin/nets/fzn2-a1.nnue",
+    "--engine",
+    "name=baseline,cmd=/workspace/farzin-research/baseline,opt.EvalFile=/workspace/farzin/nets/fzn2-a1.nnue",
+    "--tc",
+    "5+0.05",
+    "--pairs",
+    "80",
+    "--seed",
+    "13",
+    "--book",
+    "benchmarks/search-fzn2-2026-11/holdout-80.fen",
+    "--concurrency",
+    "2",
+    "--adjudicate",
+    "conservative",
+    "--out",
+    "/workspace/farzin-research/threatorder-timed-holdout.json",
+    "--pgn",
+    "/workspace/farzin-research/threatorder-timed-holdout.pgn"
+  ],
+  "cwd": "/workspace/farzin",
+  "finished_utc": "2026-11-11T11:49:47.418433+00:00",
+  "returncode": 0,
+  "wall_s": 1190.977011544,
+  "child_user_s": 2319.227739,
+  "child_system_s": 14.661316,
+  "max_child_rss_kib": 40480,
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "affinity": [
+    0,
+    1,
+    2
+  ],
+  "cpu_quota": "200000 100000"
+}

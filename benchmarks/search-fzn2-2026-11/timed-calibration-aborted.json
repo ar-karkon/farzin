@@ -1,0 +1,220 @@
+{
+ "engines": {
+  "threatorder": {
+   "cmd": "/workspace/farzin-research/threatorder-mate",
+   "options": {
+    "EvalFile": "/workspace/farzin/nets/fzn2-a1.nnue"
+   },
+   "nodes": null,
+   "sha256": "938ac1a65276b28b6ef56a6fee5cde3dccd06a006f5f4305fe79fcf4373be433"
+  },
+  "baseline": {
+   "cmd": "/workspace/farzin-research/baseline",
+   "options": {
+    "EvalFile": "/workspace/farzin/nets/fzn2-a1.nnue"
+   },
+   "nodes": null,
+   "sha256": "a73486bc8dd4e650714a15f6d28b711a23dffdf42f07f4489675c6a6b266a7bf"
+  }
+ },
+ "tc": "5+0.05",
+ "nodes": null,
+ "movetime": null,
+ "book": "farzin-openings.epd",
+ "book_sha256": "29d02b4cf9e26a9ed5f5cc45a6f48a6fc94f4dbaf03617d5d180242711433d48",
+ "seed": 11,
+ "concurrency": 2,
+ "threads": 1,
+ "hash": 16,
+ "adjudication": "conservative",
+ "hardware": {
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "python": "3.12.14",
+  "cpus": 3,
+  "cpu": "AMD EPYC 9V74 80-Core Processor",
+  "loadavg_start": [
+   2.20703125,
+   2.0703125,
+   1.41015625
+  ]
+ },
+ "elapsed_s": 179.3,
+ "summary": {
+  "threatorder vs baseline": {
+   "pairs": 11,
+   "pentanomial": [
+    0,
+    4,
+    5,
+    2,
+    0
+   ],
+   "score": 0.45454545454545453,
+   "elo": -31.672498419049962,
+   "elo_95": [
+    -108.46283689948719,
+    42.10632450985925
+   ],
+   "los": 0.19977546082435366,
+   "nelo": -62.40127327263623,
+   "nelo_95": [
+    -207.58536408550142,
+    82.78281754022896
+   ]
+  }
+ },
+ "sprt": null,
+ "terminations": {
+  "threefold_repetition": 5,
+  "adjudication": 12,
+  "fifty_moves": 3,
+  "insufficient_material": 2
+ },
+ "natural_fraction": 0.455,
+ "engine_stats": {
+  "threatorder": {
+   "avg_depth": 18.13,
+   "avg_ms_per_move": 93.1,
+   "nps": 1336346
+  },
+  "baseline": {
+   "avg_depth": 18.25,
+   "avg_ms_per_move": 93.4,
+   "nps": 1399130
+  }
+ },
+ "games": [
+  [
+   "threatorder",
+   "baseline",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "baseline",
+   "threatorder",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "threatorder",
+   "baseline",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "baseline",
+   "threatorder",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "threatorder",
+   "baseline",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "baseline",
+   "threatorder",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "threatorder",
+   "baseline",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "baseline",
+   "threatorder",
+   "1/2-1/2",
+   "fifty_moves"
+  ],
+  [
+   "threatorder",
+   "baseline",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "baseline",
+   "threatorder",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "threatorder",
+   "baseline",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "baseline",
+   "threatorder",
+   "1/2-1/2",
+   "insufficient_material"
+  ],
+  [
+   "threatorder",
+   "baseline",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "baseline",
+   "threatorder",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "threatorder",
+   "baseline",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "baseline",
+   "threatorder",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "threatorder",
+   "baseline",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "baseline",
+   "threatorder",
+   "1/2-1/2",
+   "insufficient_material"
+  ],
+  [
+   "threatorder",
+   "baseline",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "baseline",
+   "threatorder",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "threatorder",
+   "baseline",
+   "1/2-1/2",
+   "fifty_moves"
+  ],
+  [
+   "baseline",
+   "threatorder",
+   "1/2-1/2",
+   "fifty_moves"
+  ]
+ ]
+}

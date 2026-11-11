@@ -1,0 +1,353 @@
+{
+  "network_sha256": "f7bb0b7ef9857c3a4f24b39f5152e381e978d76d0c24817b0bebbefb1b6e220c",
+  "positions_sha256": "641f7b2b5fb78348a7dc5ddc60fe8e1dd304ee806170e3080d9a635b1cb771f5",
+  "binaries": {
+    "baseline": {
+      "path": "/workspace/farzin-research/baseline-audit",
+      "sha256": "b1362430bc023185657b8e301f493960febd5631c1d325a058ec93ed869ee978"
+    },
+    "correctness": {
+      "path": "/workspace/farzin-research/correctness-audit",
+      "sha256": "18d4e69a927f72c283bc57c04b3530a517253feed7fe2cd803f0ae65cfc8dc14"
+    },
+    "threat": {
+      "path": "/workspace/farzin-research/threat-audit",
+      "sha256": "2b76a18a410e2cdc5447c827e2041f9f5a594cfd614b6ab5265929a94270f9fa"
+    },
+    "residual": {
+      "path": "/workspace/farzin-research/residual-audit",
+      "sha256": "3be4fce7e69cd8afa3934667c9ef45b1efef0b54b0fdc0e2b580abd1943edac2"
+    }
+  },
+  "positions": 22,
+  "repeats": 3,
+  "runs": [
+    {
+      "engine": "baseline",
+      "mode": "nodes",
+      "repeat": 0,
+      "tsv": "baseline-nodes-0.tsv",
+      "resource": "baseline-nodes-0.resource.json"
+    },
+    {
+      "engine": "correctness",
+      "mode": "nodes",
+      "repeat": 0,
+      "tsv": "correctness-nodes-0.tsv",
+      "resource": "correctness-nodes-0.resource.json"
+    },
+    {
+      "engine": "threat",
+      "mode": "nodes",
+      "repeat": 0,
+      "tsv": "threat-nodes-0.tsv",
+      "resource": "threat-nodes-0.resource.json"
+    },
+    {
+      "engine": "residual",
+      "mode": "nodes",
+      "repeat": 0,
+      "tsv": "residual-nodes-0.tsv",
+      "resource": "residual-nodes-0.resource.json"
+    },
+    {
+      "engine": "residual",
+      "mode": "nodes",
+      "repeat": 1,
+      "tsv": "residual-nodes-1.tsv",
+      "resource": "residual-nodes-1.resource.json"
+    },
+    {
+      "engine": "threat",
+      "mode": "nodes",
+      "repeat": 1,
+      "tsv": "threat-nodes-1.tsv",
+      "resource": "threat-nodes-1.resource.json"
+    },
+    {
+      "engine": "correctness",
+      "mode": "nodes",
+      "repeat": 1,
+      "tsv": "correctness-nodes-1.tsv",
+      "resource": "correctness-nodes-1.resource.json"
+    },
+    {
+      "engine": "baseline",
+      "mode": "nodes",
+      "repeat": 1,
+      "tsv": "baseline-nodes-1.tsv",
+      "resource": "baseline-nodes-1.resource.json"
+    },
+    {
+      "engine": "baseline",
+      "mode": "nodes",
+      "repeat": 2,
+      "tsv": "baseline-nodes-2.tsv",
+      "resource": "baseline-nodes-2.resource.json"
+    },
+    {
+      "engine": "correctness",
+      "mode": "nodes",
+      "repeat": 2,
+      "tsv": "correctness-nodes-2.tsv",
+      "resource": "correctness-nodes-2.resource.json"
+    },
+    {
+      "engine": "threat",
+      "mode": "nodes",
+      "repeat": 2,
+      "tsv": "threat-nodes-2.tsv",
+      "resource": "threat-nodes-2.resource.json"
+    },
+    {
+      "engine": "residual",
+      "mode": "nodes",
+      "repeat": 2,
+      "tsv": "residual-nodes-2.tsv",
+      "resource": "residual-nodes-2.resource.json"
+    },
+    {
+      "engine": "residual",
+      "mode": "depth",
+      "repeat": 0,
+      "tsv": "residual-depth-0.tsv",
+      "resource": "residual-depth-0.resource.json"
+    },
+    {
+      "engine": "threat",
+      "mode": "depth",
+      "repeat": 0,
+      "tsv": "threat-depth-0.tsv",
+      "resource": "threat-depth-0.resource.json"
+    },
+    {
+      "engine": "correctness",
+      "mode": "depth",
+      "repeat": 0,
+      "tsv": "correctness-depth-0.tsv",
+      "resource": "correctness-depth-0.resource.json"
+    },
+    {
+      "engine": "baseline",
+      "mode": "depth",
+      "repeat": 0,
+      "tsv": "baseline-depth-0.tsv",
+      "resource": "baseline-depth-0.resource.json"
+    },
+    {
+      "engine": "baseline",
+      "mode": "depth",
+      "repeat": 1,
+      "tsv": "baseline-depth-1.tsv",
+      "resource": "baseline-depth-1.resource.json"
+    },
+    {
+      "engine": "correctness",
+      "mode": "depth",
+      "repeat": 1,
+      "tsv": "correctness-depth-1.tsv",
+      "resource": "correctness-depth-1.resource.json"
+    },
+    {
+      "engine": "threat",
+      "mode": "depth",
+      "repeat": 1,
+      "tsv": "threat-depth-1.tsv",
+      "resource": "threat-depth-1.resource.json"
+    },
+    {
+      "engine": "residual",
+      "mode": "depth",
+      "repeat": 1,
+      "tsv": "residual-depth-1.tsv",
+      "resource": "residual-depth-1.resource.json"
+    },
+    {
+      "engine": "residual",
+      "mode": "depth",
+      "repeat": 2,
+      "tsv": "residual-depth-2.tsv",
+      "resource": "residual-depth-2.resource.json"
+    },
+    {
+      "engine": "threat",
+      "mode": "depth",
+      "repeat": 2,
+      "tsv": "threat-depth-2.tsv",
+      "resource": "threat-depth-2.resource.json"
+    },
+    {
+      "engine": "correctness",
+      "mode": "depth",
+      "repeat": 2,
+      "tsv": "correctness-depth-2.tsv",
+      "resource": "correctness-depth-2.resource.json"
+    },
+    {
+      "engine": "baseline",
+      "mode": "depth",
+      "repeat": 2,
+      "tsv": "baseline-depth-2.tsv",
+      "resource": "baseline-depth-2.resource.json"
+    }
+  ],
+  "summary": {
+    "baseline/nodes": {
+      "actual_nodes": 6600087,
+      "search_s": 4.090338483,
+      "actual_nps": 1613580,
+      "process_cpu_s": 4.247236,
+      "peak_rss_kib": 33564,
+      "depth_min": 12,
+      "depth_median": 13.0,
+      "depth_max": 31,
+      "depth_distribution": {
+        "12": 15,
+        "13": 21,
+        "14": 12,
+        "16": 6,
+        "18": 3,
+        "19": 3,
+        "23": 3,
+        "31": 3
+      },
+      "all_repeats_same_signature": true,
+      "signature_matches_baseline": true,
+      "all_returned_pvs_checked_legal": true
+    },
+    "correctness/nodes": {
+      "actual_nodes": 6600087,
+      "search_s": 4.021408552,
+      "actual_nps": 1641238,
+      "process_cpu_s": 4.159847,
+      "peak_rss_kib": 33628,
+      "depth_min": 12,
+      "depth_median": 13.0,
+      "depth_max": 31,
+      "depth_distribution": {
+        "12": 15,
+        "13": 21,
+        "14": 12,
+        "16": 6,
+        "18": 3,
+        "19": 3,
+        "23": 3,
+        "31": 3
+      },
+      "all_repeats_same_signature": true,
+      "signature_matches_baseline": true,
+      "all_returned_pvs_checked_legal": true
+    },
+    "threat/nodes": {
+      "actual_nodes": 6600075,
+      "search_s": 4.167659207,
+      "actual_nps": 1583641,
+      "process_cpu_s": 4.257897,
+      "peak_rss_kib": 33636,
+      "depth_min": 12,
+      "depth_median": 13.0,
+      "depth_max": 31,
+      "depth_distribution": {
+        "12": 15,
+        "13": 27,
+        "14": 6,
+        "15": 6,
+        "16": 3,
+        "19": 3,
+        "23": 3,
+        "31": 3
+      },
+      "all_repeats_same_signature": true,
+      "signature_matches_baseline": false,
+      "all_returned_pvs_checked_legal": true
+    },
+    "residual/nodes": {
+      "actual_nodes": 6600051,
+      "search_s": 4.163384177,
+      "actual_nps": 1585261,
+      "process_cpu_s": 4.292453,
+      "peak_rss_kib": 33648,
+      "depth_min": 12,
+      "depth_median": 13.0,
+      "depth_max": 30,
+      "depth_distribution": {
+        "12": 3,
+        "13": 36,
+        "14": 9,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "19": 3,
+        "24": 3,
+        "30": 3
+      },
+      "all_repeats_same_signature": true,
+      "signature_matches_baseline": false,
+      "all_returned_pvs_checked_legal": true
+    },
+    "residual/depth": {
+      "actual_nodes": 6778239,
+      "search_s": 4.375502489,
+      "actual_nps": 1549134,
+      "process_cpu_s": 4.468490999999999,
+      "peak_rss_kib": 33624,
+      "depth_min": 14,
+      "depth_median": 14.0,
+      "depth_max": 14,
+      "depth_distribution": {
+        "14": 66
+      },
+      "all_repeats_same_signature": true,
+      "signature_matches_baseline": false,
+      "all_returned_pvs_checked_legal": true
+    },
+    "threat/depth": {
+      "actual_nodes": 7549287,
+      "search_s": 5.001844729,
+      "actual_nps": 1509301,
+      "process_cpu_s": 5.079658,
+      "peak_rss_kib": 33628,
+      "depth_min": 14,
+      "depth_median": 14.0,
+      "depth_max": 14,
+      "depth_distribution": {
+        "14": 66
+      },
+      "all_repeats_same_signature": true,
+      "signature_matches_baseline": false,
+      "all_returned_pvs_checked_legal": true
+    },
+    "correctness/depth": {
+      "actual_nodes": 7175526,
+      "search_s": 4.718134407,
+      "actual_nps": 1520840,
+      "process_cpu_s": 4.792190000000001,
+      "peak_rss_kib": 33624,
+      "depth_min": 14,
+      "depth_median": 14.0,
+      "depth_max": 14,
+      "depth_distribution": {
+        "14": 66
+      },
+      "all_repeats_same_signature": true,
+      "signature_matches_baseline": true,
+      "all_returned_pvs_checked_legal": true
+    },
+    "baseline/depth": {
+      "actual_nodes": 7175526,
+      "search_s": 4.608680205,
+      "actual_nps": 1556959,
+      "process_cpu_s": 4.7064889999999995,
+      "peak_rss_kib": 33652,
+      "depth_min": 14,
+      "depth_median": 14.0,
+      "depth_max": 14,
+      "depth_distribution": {
+        "14": 66
+      },
+      "all_repeats_same_signature": true,
+      "signature_matches_baseline": true,
+      "all_returned_pvs_checked_legal": true
+    }
+  }
+}

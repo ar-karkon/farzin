@@ -1,0 +1,24 @@
+{
+  "command": [
+    "/workspace/farzin-research/correctness-audit",
+    "/workspace/farzin/nets/fzn2-a1.nnue",
+    "tools/positions-v3.fen",
+    "depth",
+    "14",
+    "1"
+  ],
+  "cwd": "/workspace/farzin",
+  "finished_utc": "2026-11-11T12:12:30.550493+00:00",
+  "returncode": 0,
+  "wall_s": 1.549898908000614,
+  "child_user_s": 1.5306790000000001,
+  "child_system_s": 0.012313,
+  "max_child_rss_kib": 33624,
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "affinity": [
+    0,
+    1,
+    2
+  ],
+  "cpu_quota": "200000 100000"
+}
