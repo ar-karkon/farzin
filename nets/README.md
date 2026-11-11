@@ -37,7 +37,8 @@ Two kinds of network are kept here:
   vs fzn2-a1: +63.1 Elo [+36.5, +90.5] at 5+0.05 (SPRT [0,10] H1, 89 pairs;
   measured with an intermediate research search, `farzin-s3`). Re-measured
   as the shipped 0.5.1 binary vs the 0.5.0 binary at 10+0.1, 40/20 and
-  60+0.6: see `docs/release-0.5.1-report.md`. Contains 0 indexed chunks of
+  60+0.6: +38.4 [+16.3, +60.8], +49.6 [+23.8, +75.9] and +52.5 [+30.1, +75.3]
+  (`docs/release-0.5.1-report.md`). Contains 0 indexed chunks of
   `default.nnue`; about 12% of its 32-byte blocks are unchanged from a1.
   **Embedded in the OwnNet edition since 0.5.1.**
   Effective training data: 105M (a1) + 100M positions, all from Farzin's own

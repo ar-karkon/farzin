@@ -1,0 +1,68 @@
+{
+ "cmd": [
+  "/tmp/claude-0/-home-user-farzin/6a1b750e-4023-5b48-8abe-ba21be2d9749/scratchpad/dist-final/farzin-0.5.1-linux-x64-avx2-bmi2"
+ ],
+ "ok": true,
+ "checks": [
+  {
+   "check": "uci handshake",
+   "ok": true,
+   "detail": "Farzin 0.5.1; 6 options; uciok after 0.01s",
+   "s": 0.02
+  },
+  {
+   "check": "options: set every advertised option",
+   "ok": true,
+   "detail": "ok",
+   "s": 0.79
+  },
+  {
+   "check": "perft (move generation)",
+   "ok": true,
+   "detail": "6 positions, 16046250 leaf nodes match",
+   "s": 0.15
+  },
+  {
+   "check": "special positions and terminal answers",
+   "ok": true,
+   "detail": "9 positions",
+   "s": 0.06
+  },
+  {
+   "check": "legality: random games, every bestmove legal",
+   "ok": true,
+   "detail": "30 games, 2155 engine moves",
+   "s": 4.06
+  },
+  {
+   "check": "pv legality",
+   "ok": true,
+   "detail": "72 pv lines replayed",
+   "s": 0.15
+  },
+  {
+   "check": "go limits: depth, nodes, movetime, infinite/stop, isready while searching",
+   "ok": true,
+   "detail": "movetime 1000 -> 0.951s, readyok during search after 0 ms",
+   "s": 1.48
+  },
+  {
+   "check": "ponder / ponderhit / stop",
+   "ok": true,
+   "detail": "answered 47 ms after ponderhit",
+   "s": 1.95
+  },
+  {
+   "check": "clock: extreme time situations never overstep",
+   "ok": true,
+   "detail": "100ms:16; 100ms:2; 30ms:2; 30ms:1; 1000ms/mtg1:444; 1000ms/mtg1:627; 500ms:79; 500ms:62; 2000ms/mtg40:47; 2000ms/mtg40:37; 15ms:2; 15ms:1",
+   "s": 1.33
+  },
+  {
+   "check": "threads + hash stress, quit during search",
+   "ok": true,
+   "detail": "4 threads 20s: depth 28, 4556117 nps, hashfull 999; 40 start/stop cycles; quit in 0.03s",
+   "s": 21.68
+  }
+ ]
+}

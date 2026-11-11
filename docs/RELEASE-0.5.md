@@ -6,8 +6,11 @@ for rating lists such as CCRL. It embeds only Farzin's own network,
 source code.
 
 0.5.1 differs from the 0.5.0 candidate (`fzn2-a1.nnue`) only in the
-embedded network and a start-up CPU check; the search is identical. See
-`docs/release-0.5.1-report.md` for the release tests.
+embedded network and a start-up CPU check; the search is identical. In
+self-play against the 0.5.0 binary it scored +38.4 Elo at 10+0.1, +49.6 at
+40/20 (Windows exes) and +52.5 at 60+0.6, with no forfeits or crashes in
+668 games; see `docs/release-0.5.1-report.md` for all release tests.
+Self-play overstates gains; these are not CCRL numbers.
 
 ## Hardware requirements (files)
 

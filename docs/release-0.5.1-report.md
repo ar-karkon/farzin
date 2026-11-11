@@ -108,9 +108,14 @@ path.
 
 | where | binary | result |
 |---|---|---|
-| Linux (local) | `linux-x64-avx2-bmi2` | **10/10**. 30 random games / 2155 moves legal; 4 threads 20 s: depth 28, 4.30M nps, hashfull 984; quit 0.03 s |
-| Wine 9.0 (local) | `windows-x64-avx2-bmi2.exe` | **10/10**. 4 threads: depth 28, 4.00M nps, hashfull 997 |
-| native Windows (GitHub `windows-latest`) | `windows-x64-avx2-bmi2.exe` | see CI job `windows` |
+| Linux (local) | `linux-x64-avx2-bmi2` (final) | **10/10**. 30 random games / 2155 moves legal; 4 threads 20 s: depth 28, 4.56M nps, hashfull 999; quit 0.03 s |
+| Wine 9.0 (local) | `windows-x64-avx2-bmi2.exe` (final) | **10/10**. 4 threads 20 s: depth 28, 4.51M nps, hashfull 999 |
+| native Windows (GitHub `windows-latest`) | `windows-x64-avx2-bmi2.exe` (final, `7392c4f`) | **10/10** (CI job `windows`) |
+
+All four final binaries give `bench` 992681 (Linux natively, the three
+exes under Wine), and the foreign-weights scan of the final files again
+finds 0 chunks of `default.nnue` (control 148,017/148,017). JSON:
+`release-check-linux.json`, `release-check-wine.json`.
 
 `cargo fmt`, `clippy -D warnings` (default, `ownnet`, `legacy`,
 `nnue-stack`, x86-64-v3, Windows gnu/msvc) and all tests pass with rustc
@@ -118,4 +123,60 @@ path.
 
 ## 6. Games: 0.5.1 vs 0.5.0 (the shipped binaries)
 
-Results pending; this section is filled in when the matches finish.
+Opponent: the 0.5.0 OwnNet candidate built from `e2d1e49` (`fzn2-a1`, the
+same search). Book `tools/books/farzin-openings.epd`, every opening played
+with both colours, conservative adjudication, no time margin, 1 thread and
+1 core per engine unless noted. Elo with 95 % interval from pentanomial
+pair statistics (`tools/arena.py`).
+
+| time control | binaries | pairs (games) | pentanomial LL…WW | Elo [95 %] | LOS |
+|---|---|---|---|---|---|
+| 10+0.1, hash 16 | Linux | 150 (300) | 2 / 21 / 76 / 44 / 7 | **+38.4** [+16.3, +60.8] | 99.97 % |
+| 40/20 repeating, hash 64 | Windows exes (Wine) | 60 (120) | 0 / 3 / 38 / 18 / 1 | **+49.6** [+23.8, +75.9] | 99.99 % |
+| 60+0.6, hash 64 | Linux | 50 (100) | 0 / 0 / 35 / 15 / 0 | **+52.5** [+30.1, +75.3] | >99.99 % |
+| 10+0.1, 2 threads each, hash 64 | Linux | 50 (100) | 0 / 8 / 26 / 14 / 2 | +34.9 [−1.3, +71.8] | 97.1 % |
+| 10+0.1, hash 64 (CI, `4a864fa`) | native Windows | 12 (24) | — | +43.7 | — |
+| 10+0.1, hash 64 (CI, `7392c4f`) | native Windows | 12 (24) | — | −14.5 [−78.7, +48.8] | — |
+
+620 local games plus 48 on native Windows: **0 time forfeits, 0 crashes,
+0 illegal moves, 0 disconnects**. Both engines reach the same depth at
+each time control (20.6 vs 20.7 at 10+0.1, 25.3 vs 25.2 at 40/20, 28.5
+vs 28.4 at 60+0.6) at the same speed (within 1 % nps), so the gain is
+evaluation quality, not speed.
+
+**Reading the numbers.** The `+63.1` in `nets/README.md` came from the net
+selection run (intermediate `farzin-s3` search, 5+0.05, SPRT stopped
+early, which biases upwards). With the final search the gain is
+smaller, about +35 to +50 here, but it does **not** shrink with more
+time: the longest control (60+0.6, the closest to CCRL 40/15 that this
+VM allows) gave the largest and most significant result, with no lost
+game pair at all. The two 12-pair native-Windows runs are too short to
+mean anything individually (they disagree within their noise); they are
+there to show that the exe plays full games on real Windows without
+forfeits. The 2-thread run is consistent with the others but on its own
+not significant at 95 %.
+
+What this does **not** tell us: Elo against other engines (self-play
+between two nets of the same engine usually overstates the gain), and
+behaviour on CCRL hardware. Expect the CCRL difference between 0.5.1 and
+0.5.0 to be positive but smaller than these numbers.
+
+## 7. Observations and remaining items
+
+* **Time use near the end of the clock (pre-existing, unchanged).** At
+  short increments the time manager sometimes spends a large share of the
+  remaining time on one move (max share 0.62 at 10+0.1, 0.69 at 40/20 and
+  60+0.6), and the lowest clock seen was 0.05 s (0.5.0 at 40/20) and
+  0.09 s (0.5.1 at 10+0.1). It happens equally with 0.5.0, never caused a
+  forfeit in 668 games, and is the documented hard limit min(3 × soft,
+  70 % of remaining time). It is unchanged on purpose (no unrelated engine
+  changes in this release) and worth watching in the first CCRL games.
+* **Unsupported CPUs on Windows:** verified statically (disassembly,
+  CRT initializer order) and by the identical Linux code under qemu; no
+  real pre-AVX2 Windows machine was available.
+* **No CCRL hardware:** all games ran on one 4-core cloud VM, 1–2 threads
+  per engine; CCRL testers usually run 1 thread at 40/15.
+* **Owner steps:** tag `v0.5.1` on the merge commit; the tag workflow
+  builds the binaries, checks the network hash on Linux and native
+  Windows, and creates a **draft** release; compare its `SHA256SUMS`
+  with §2 before publishing and sending it to CCRL.
