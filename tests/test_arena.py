@@ -131,3 +131,14 @@ class AdjudicatorTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TimeControlTest(unittest.TestCase):
+    def test_increment_tc(self):
+        self.assertEqual(arena.parse_tc("10+0.1"), (10.0, 0.1))
+        self.assertEqual(arena.parse_tc("60"), (60.0, 0.0))
+
+    def test_moves_per_control_tc(self):
+        # CCRL 40/15: 40 moves in 15 minutes, repeating.
+        self.assertEqual(arena.parse_tc("40/900"), (900.0, 0.0, 40))
+        self.assertEqual(arena.parse_tc("40/20+0.5"), (20.0, 0.5, 40))

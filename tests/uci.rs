@@ -167,3 +167,90 @@ fn threads_and_hash_options_work() {
     let board = Board::startpos().make_move(Board::startpos().parse_move("d2d4").unwrap());
     assert!(board.parse_move(&mv).is_some());
 }
+
+#[test]
+fn ponder_waits_for_ponderhit_then_obeys_clock() {
+    let mut e = Engine::new();
+    e.send("uci");
+    let lines = e.until("uciok");
+    assert!(lines.iter().any(|l| l.starts_with("option name Ponder ")));
+    // A tiny clock would end the search at once, but while pondering the
+    // engine must keep searching and never answer before ponderhit.
+    e.send("position startpos moves e2e4 e7e5\ngo ponder wtime 300 btime 300");
+    std::thread::sleep(Duration::from_millis(600));
+    e.send("isready");
+    let lines = e.until("readyok");
+    assert!(
+        !lines.iter().any(|l| l.starts_with("bestmove ")),
+        "bestmove sent while pondering"
+    );
+    let start = Instant::now();
+    e.send("ponderhit");
+    let lines = e.until("bestmove");
+    assert!(
+        start.elapsed() < Duration::from_millis(400),
+        "ignored clock after ponderhit"
+    );
+    let board = Board::startpos();
+    let board = board.make_move(board.parse_move("e2e4").unwrap());
+    let board = board.make_move(board.parse_move("e7e5").unwrap());
+    assert!(board.parse_move(&bestmove(&lines)).is_some());
+}
+
+#[test]
+fn stop_ends_ponder_search() {
+    let mut e = Engine::new();
+    e.send(
+        "position fen 6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1\ngo ponder wtime 100000 btime 100000",
+    );
+    // A mate is found immediately; the answer must still wait for stop.
+    std::thread::sleep(Duration::from_millis(300));
+    e.send("isready");
+    assert!(!e
+        .until("readyok")
+        .iter()
+        .any(|l| l.starts_with("bestmove ")));
+    e.send("stop");
+    assert_eq!(bestmove(&e.until("bestmove")), "d1d8");
+}
+
+#[test]
+fn movestogo_clock_is_respected() {
+    // 40/15-style: 2 moves left on a 1 s clock must not lose on time.
+    let mut e = Engine::new();
+    e.send("position startpos moves d2d4 d7d5\ngo wtime 1000 btime 1000 movestogo 2");
+    let start = Instant::now();
+    e.until("bestmove");
+    assert!(start.elapsed() < Duration::from_millis(900));
+}
+
+#[test]
+fn version_reports_embedded_network() {
+    let out = std::process::Command::new(env!("CARGO_BIN_EXE_farzin"))
+        .arg("--version")
+        .output()
+        .unwrap();
+    let text = String::from_utf8(out.stdout).unwrap();
+    assert!(text.starts_with("Farzin "), "{text}");
+    assert!(text.contains(" net "), "{text}");
+    if cfg!(feature = "ownnet") {
+        assert!(text.contains("fzn2-a1.nnue FZN2"), "{text}");
+        assert!(text.contains("f7bb0b7ef9857c3a4f24b39f5152e381e978d76d0c24817b0bebbefb1b6e220c"));
+    }
+}
+
+#[test]
+fn one_node_search_after_another_game_returns_legal_move() {
+    // Regression: a search stopped inside depth 1 used to report the first
+    // PV move of the previous search, which can be illegal here.
+    let mut e = Engine::new();
+    e.send("position startpos moves e2e4 e7e5 g1f3\ngo depth 8");
+    e.until("bestmove");
+    let fen = "r1b2bkr/p3p1pp/p1p5/3p4/3P1P2/2B1p3/PPP3PP/RN1QK1NR w - - 2 13";
+    for _ in 0..3 {
+        e.send(&format!("position fen {fen}\ngo nodes 1"));
+        let mv = bestmove(&e.until("bestmove"));
+        let board = Board::from_fen(fen).unwrap();
+        assert!(board.parse_move(&mv).is_some(), "illegal bestmove {mv}");
+    }
+}

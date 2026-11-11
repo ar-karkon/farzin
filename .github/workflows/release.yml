@@ -1,0 +1,64 @@
+name: Release candidate
+# Pushing a tag v* (owner action) builds the competition binaries with the
+# pinned toolchain, re-runs the release checks on Linux and Windows and
+# creates a DRAFT GitHub release. Nothing is published automatically.
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.97.0
+        with:
+          targets: x86_64-pc-windows-gnu
+      - run: sudo apt-get update && sudo apt-get install -y mingw-w64
+      - run: tools/build_release.sh dist
+      - run: pip install chess==1.10.0
+      - run: python3 tools/release_check.py --expect-sha256 f7bb0b7ef9857c3a4f24b39f5152e381e978d76d0c24817b0bebbefb1b6e220c dist/farzin-*-linux-x64-avx2-bmi2
+      - run: |
+          cp docs/RELEASE-0.5.md dist/README.md
+          cp nets/README.md dist/NETWORK-PROVENANCE.md
+          cd dist && zip -9 "farzin-${GITHUB_REF_NAME#v}-windows-x64-avx2-bmi2.zip" \
+            farzin-*-windows-x64-avx2-bmi2.exe SHA256SUMS README.md NETWORK-PROVENANCE.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+  windows-check:
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install chess==1.10.0
+      - shell: bash
+        run: python tools/release_check.py --expect-sha256 f7bb0b7ef9857c3a4f24b39f5152e381e978d76d0c24817b0bebbefb1b6e220c $(ls dist/farzin-*-windows-x64-avx2-bmi2.exe)
+  draft-release:
+    needs: [build, windows-check]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          prerelease: true
+          name: Farzin ${{ github.ref_name }} (OwnNet, Windows x64 AVX2/BMI2)
+          body_path: docs/RELEASE-0.5.md
+          files: |
+            dist/*.zip
+            dist/*.exe
+            dist/SHA256SUMS

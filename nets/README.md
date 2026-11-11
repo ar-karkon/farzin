@@ -1,5 +1,12 @@
 # Farzin networks
 
+**Editions.** The competition edition (`cargo build --release --features
+ownnet`, or `tools/build_release.sh`) embeds **only** `fzn2-a1.nnue`.
+`build.rs` checks its FZN2 header and SHA-256 and refuses to build with
+anything else. The research edition (plain `cargo build --release`) embeds
+`default.nnue` (third-party CC0 weights, see below) and names itself
+"Farzin x.y Research".
+
 `default.nnue` is embedded into the engine at build time (override with
 `FARZIN_EVALFILE=/path/net.nnue cargo build --release`, or at run time with
 `setoption name EvalFile value /path/net.nnue`; `<empty>` selects the

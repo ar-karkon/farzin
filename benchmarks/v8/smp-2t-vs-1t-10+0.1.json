@@ -1,0 +1,580 @@
+{
+ "engines": {
+  "ownnet05-2t": {
+   "cmd": "/tmp/claude-0/eng/farzin05-ownnet",
+   "options": {
+    "Threads": "2",
+    "Hash": "256"
+   },
+   "nodes": null,
+   "sha256": "20842fef854b62d6e1fcd04d081e0ef032df6d5c9b1b59eca971c213e71b5fa6"
+  },
+  "ownnet05-1t": {
+   "cmd": "/tmp/claude-0/eng/farzin05-ownnet",
+   "options": {
+    "Hash": "256"
+   },
+   "nodes": null,
+   "sha256": "20842fef854b62d6e1fcd04d081e0ef032df6d5c9b1b59eca971c213e71b5fa6"
+  }
+ },
+ "tc": "10+0.1",
+ "nodes": null,
+ "movetime": null,
+ "book": "farzin-openings.epd",
+ "book_sha256": "29d02b4cf9e26a9ed5f5cc45a6f48a6fc94f4dbaf03617d5d180242711433d48",
+ "seed": 807,
+ "concurrency": 1,
+ "threads": 1,
+ "hash": 16,
+ "adjudication": "conservative",
+ "hardware": {
+  "platform": "Linux-6.18.44-fc-v378-x86_64-with-glibc2.39",
+  "python": "3.13.18",
+  "cpus": 4,
+  "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+  "loadavg_start": [
+   1.7451171875,
+   3.43408203125,
+   3.650390625
+  ]
+ },
+ "elapsed_s": 2318.5,
+ "summary": {
+  "ownnet05-2t vs ownnet05-1t": {
+   "pairs": 40,
+   "pentanomial": [
+    0,
+    0,
+    22,
+    15,
+    3
+   ],
+   "score": 0.63125,
+   "elo": 93.38774485619933,
+   "elo_95": [
+    57.704566873337846,
+    131.11261400573122
+   ],
+   "los": 0.9999999256275518,
+   "nelo": 204.0930266056235,
+   "nelo_95": [
+    127.95784707658758,
+    280.2282061346594
+   ]
+  }
+ },
+ "sprt": null,
+ "terminations": {
+  "adjudication": 47,
+  "threefold_repetition": 24,
+  "fifty_moves": 5,
+  "insufficient_material": 4
+ },
+ "natural_fraction": 0.412,
+ "engine_stats": {
+  "ownnet05-2t": {
+   "avg_depth": 20.2,
+   "avg_ms_per_move": 196.3,
+   "nps": 2257262,
+   "min_clock_s": 0.553,
+   "max_move_share": 0.372
+  },
+  "ownnet05-1t": {
+   "avg_depth": 19.2,
+   "avg_ms_per_move": 201.6,
+   "nps": 1128873,
+   "min_clock_s": 0.178,
+   "max_move_share": 0.542
+  }
+ },
+ "games": [
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "fifty_moves"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "insufficient_material"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "fifty_moves"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "fifty_moves"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "insufficient_material"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "insufficient_material"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "insufficient_material"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "fifty_moves"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "fifty_moves"
+  ],
+  [
+   "ownnet05-2t",
+   "ownnet05-1t",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "ownnet05-1t",
+   "ownnet05-2t",
+   "1/2-1/2",
+   "adjudication"
+  ]
+ ],
+ "scheduler": {
+  "completed": 40,
+  "cancelled": 0,
+  "failed": 0,
+  "skipped": 0
+ },
+ "scheduler_errors": []
+}

@@ -7,7 +7,7 @@ use crate::board::Board;
 use crate::evalnet::EvalNet as Network;
 use crate::movegen::legal_moves;
 use crate::search::{Limits, Shared, Thread};
-use crate::tt::{TranspositionTable, MATE_BOUND};
+use crate::tt::MATE_BOUND;
 use crate::types::*;
 use std::io::{BufWriter, Write};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
@@ -261,11 +261,7 @@ pub fn run(cfg: Config) {
             done.clone(),
         );
         handles.push(std::thread::spawn(move || {
-            let shared = Shared {
-                tt: TranspositionTable::new(16),
-                stop: AtomicBool::new(false),
-                nodes: AtomicU64::new(0),
-            };
+            let shared = Shared::new(16);
             let mut thread = Thread::new(0);
             thread.silent = true;
             thread.net = cfg.net.clone();
