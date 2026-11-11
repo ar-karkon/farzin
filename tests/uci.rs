@@ -126,6 +126,16 @@ fn quiet_mate_at_fifty_move_boundary_in_depth_one_search() {
 }
 
 #[test]
+fn non_mating_fifty_move_boundary_still_returns_a_draw() {
+    let mut e = Engine::new();
+    e.send("position fen 7k/8/8/8/8/8/8/RK6 w - - 99 1\ngo depth 1");
+    let lines = e.until("bestmove");
+    assert!(lines.iter().any(|l| l.contains("score cp 0 ")
+        || l.contains("score cp 1 ")
+        || l.contains("score cp -1 ")));
+}
+
+#[test]
 fn stop_ends_infinite_search_with_one_bestmove() {
     let mut e = Engine::new();
     e.send("position startpos\ngo infinite");
