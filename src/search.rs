@@ -46,6 +46,8 @@ pub struct Params {
     pub x_cutoff: i32,
     pub x_checkext: i32,
     pub x_optimism: i32,
+    /// Soft time target scale in percent.
+    pub tm_pct: i32,
 }
 
 impl Default for Params {
@@ -77,6 +79,7 @@ impl Default for Params {
             x_cutoff: 0,
             x_checkext: 0,
             x_optimism: 0,
+            tm_pct: 100,
         }
     }
 }
@@ -1359,7 +1362,8 @@ impl Thread {
                 let fraction = best_nodes as f64 / total as f64;
                 let node_scale = (1.5 - fraction) * 1.35;
                 let stab_scale = [2.2, 1.6, 1.3, 1.1, 1.0, 0.9, 0.8][stability];
-                let mut target = soft as f64 * node_scale * stab_scale;
+                let mut target =
+                    soft as f64 * node_scale * stab_scale * f64::from(self.params.tm_pct) / 100.0;
                 if self.params.x_tm != 0 && scores.len() >= 4 {
                     // Spend more when the score is falling, less when rising.
                     let prev = scores[scores.len() - 4];

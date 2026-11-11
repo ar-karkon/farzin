@@ -406,6 +406,7 @@ macro_rules! params_table {
             x_cutoff,
             x_checkext,
             x_optimism,
+            tm_pct,
             probcut_margin,
             singular_depth,
             asp_delta,

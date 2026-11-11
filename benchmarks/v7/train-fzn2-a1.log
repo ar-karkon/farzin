@@ -1,0 +1,6 @@
+loaded 105389008 train / 200000 val positions in 4.9s; model 4x768x768 -> 1x8 (mirrored)
+epoch   1 train loss 0.005427 val loss 0.003589 (752s, 140081 pos/s)
+epoch   2 train loss 0.003065 val loss 0.002707 (756s, 139489 pos/s)
+epoch   3 train loss 0.002486 val loss 0.002426 (767s, 137364 pos/s)
+epoch   4 train loss 0.002297 val loss 0.002354 (763s, 138107 pos/s)
+wrote /tmp/claude-0/data/m1-4m-768.nnue
