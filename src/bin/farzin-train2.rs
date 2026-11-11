@@ -2,6 +2,7 @@
 //!
 //! farzin-train2 data=a.data[,b.data] out=net.fzn2 hidden=768 kb=16m obuckets=8 \
 //!     epochs=12 batch=16384 lr=0.001 wdl=0.0 scale=400 threads=4 [resume=1]
+//!     [init=old.nnue] [valdata=heldout.data]
 //!
 //! Model: `(KB x 768 -> H) x 2 -> 1 x OB`, SCReLU (see `src/fzn2.rs`).
 //! Loss: MSE between sigmoid(out) and a blend of sigmoid(label / scale) and
@@ -518,16 +519,28 @@ fn main() {
     if max_samples > 0 && n > max_samples {
         n = max_samples;
     }
-    let mut order: Vec<u32> = (0..n as u32).collect();
-    for i in (1..order.len()).rev() {
-        let j = (rng.next() % (i as u64 + 1)) as usize;
-        order.swap(i, j);
-    }
-    let n_val = val_n.min(n / 20);
-    let (val_idx, train_idx) = order.split_at_mut(n_val);
-    let val_idx = val_idx.to_vec();
-    let mut train_idx = train_idx.to_vec();
-    drop(order);
+    // Validation must not share games with training: tree-sampled data has
+    // thousands of strongly correlated positions per game, so a random split
+    // leaks and badly overstates accuracy. Use `valdata=FILE` (preferred), or
+    // else the contiguous tail of the data (only one game straddles it).
+    let (val_idx, mut train_idx): (Vec<u32>, Vec<u32>) = if let Some(vpath) = arg(&args, "valdata")
+    {
+        let mut v = std::fs::read(&vpath).unwrap_or_else(|e| panic!("{vpath}: {e}"));
+        v.truncate(v.len() / RECORD_SIZE * RECORD_SIZE);
+        let nv = (v.len() / RECORD_SIZE).min(val_n);
+        raw.truncate(n * RECORD_SIZE);
+        raw.extend_from_slice(&v[..nv * RECORD_SIZE]);
+        (
+            (n as u32..(n + nv) as u32).collect(),
+            (0..n as u32).collect(),
+        )
+    } else {
+        let nv = val_n.min(n / 20);
+        (
+            ((n - nv) as u32..n as u32).collect(),
+            (0..(n - nv) as u32).collect(),
+        )
+    };
     eprintln!(
         "loaded {} train / {} val positions in {:.1}s; model {}x768x{} -> 1x{}{}",
         train_idx.len(),
