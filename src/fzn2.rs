@@ -304,7 +304,12 @@ fn screlu_dot(acc: &[i16], weights: &[i16]) -> i32 {
 #[inline]
 fn screlu_dot_scalar(acc: &[i16], weights: &[i16]) -> i32 {
     let mut sums = [0i32; 32];
-    for (a, w) in acc.chunks_exact(32).zip(weights.chunks_exact(32)) {
+    for (a, w) in acc
+        .as_chunks::<32>()
+        .0
+        .iter()
+        .zip(weights.as_chunks::<32>().0)
+    {
         for i in 0..32 {
             let c = a[i].clamp(0, QA as i16);
             let cw = c.wrapping_mul(w[i]);

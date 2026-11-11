@@ -21,7 +21,13 @@ fn main() {
         .ok()
         .and_then(|v| v.parse().ok())
         .unwrap_or(200_000);
-    let recs: Vec<&[u8]> = data.chunks_exact(RECORD_SIZE).take(limit).collect();
+    let recs: Vec<&[u8]> = data
+        .as_chunks::<RECORD_SIZE>()
+        .0
+        .iter()
+        .take(limit)
+        .map(|r| &r[..])
+        .collect();
     let boards: Vec<(Board, i32)> = recs
         .iter()
         .map(|r| {

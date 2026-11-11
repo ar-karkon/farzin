@@ -25,7 +25,7 @@ fn main() {
             assert!(m > 0, "truncated file");
             n += m;
         }
-        for rec in buf[..n].chunks_exact(RECORD_SIZE) {
+        for rec in buf[..n].as_chunks::<RECORD_SIZE>().0 {
             total += 1;
             let b = board_util::board_from(rec);
             if farzin::search::is_quiet(&b) {
