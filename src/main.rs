@@ -17,9 +17,17 @@ fn main() {
 mod cpu_guard {
     use core::arch::x86_64::{__cpuid, __cpuid_count};
 
+    use core::ffi::c_void;
+
+    #[cfg(not(windows))]
     extern "C" {
-        #[cfg_attr(windows, link_name = "_write")]
-        fn write(fd: i32, buf: *const u8, len: usize) -> isize;
+        fn write(fd: i32, buf: *const c_void, count: usize) -> isize;
+        fn _exit(code: i32) -> !;
+    }
+    #[cfg(windows)]
+    extern "C" {
+        #[link_name = "_write"]
+        fn write(fd: i32, buf: *const c_void, count: u32) -> i32;
         fn _exit(code: i32) -> !;
     }
 
@@ -27,7 +35,7 @@ mod cpu_guard {
     fn put(fd: i32, s: &[u8]) {
         // SAFETY: writes a static byte string to a standard stream.
         unsafe {
-            write(fd, s.as_ptr(), s.len() as _);
+            write(fd, s.as_ptr().cast(), s.len() as _);
         }
     }
 
