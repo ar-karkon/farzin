@@ -1,0 +1,24 @@
+{
+  "command": [
+    "/workspace/farzin-research/residual-audit",
+    "/workspace/farzin/nets/fzn2-a1.nnue",
+    "tools/positions-v3.fen",
+    "nodes",
+    "100000",
+    "1"
+  ],
+  "cwd": "/workspace/farzin",
+  "finished_utc": "2026-11-11T12:12:12.722958+00:00",
+  "returncode": 0,
+  "wall_s": 1.4349096900004952,
+  "child_user_s": 1.4303249999999998,
+  "child_system_s": 0.004177,
+  "max_child_rss_kib": 33648,
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "affinity": [
+    0,
+    1,
+    2
+  ],
+  "cpu_quota": "200000 100000"
+}

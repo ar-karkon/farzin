@@ -1,0 +1,40 @@
+{
+  "command": [
+    "/workspace/farzin-research/venv/bin/python",
+    "-u",
+    "tools/arena.py",
+    "--engine",
+    "name=threatorder,cmd=/workspace/farzin-research/threatorder-mate,opt.EvalFile=/workspace/farzin/nets/fzn2-a1.nnue",
+    "--engine",
+    "name=baseline,cmd=/workspace/farzin-research/baseline,opt.EvalFile=/workspace/farzin/nets/fzn2-a1.nnue",
+    "--tc",
+    "5+0.05",
+    "--pairs",
+    "200",
+    "--seed",
+    "11",
+    "--concurrency",
+    "2",
+    "--adjudicate",
+    "conservative",
+    "--out",
+    "/workspace/farzin-research/threatorder-5s.json",
+    "--pgn",
+    "/workspace/farzin-research/threatorder-5s.pgn"
+  ],
+  "cwd": "/workspace/farzin",
+  "finished_utc": "2026-11-11T11:29:56.172341+00:00",
+  "returncode": -15,
+  "wall_s": 190.34776991400008,
+  "child_user_s": 7.573276,
+  "child_system_s": 0.715633,
+  "max_child_rss_kib": 32124,
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "affinity": [
+    0,
+    1,
+    2
+  ],
+  "cpu_quota": "200000 100000",
+  "note": "Aborted calibration only. Engine grandchildren were not reaped by the terminated arena, so child CPU/RSS fields do not represent aggregate engine usage. Excluded from final validation and CPU totals."
+}

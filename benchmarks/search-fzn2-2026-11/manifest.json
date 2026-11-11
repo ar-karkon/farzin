@@ -1,0 +1,101 @@
+{
+  "baseline_commit": "0657431a154d3d69951173d4bdbde9af7474c535",
+  "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+  "build_env": {
+    "FARZIN_EVALFILE": "nets/fzn2-a1.nnue"
+  },
+  "rustflags": "[build]\nrustflags = [\"-C\", \"target-cpu=native\"]\n",
+  "network_sha256": "f7bb0b7ef9857c3a4f24b39f5152e381e978d76d0c24817b0bebbefb1b6e220c",
+  "binaries": {
+    "baseline": {
+      "path": "/workspace/farzin-research/baseline",
+      "sha256": "a73486bc8dd4e650714a15f6d28b711a23dffdf42f07f4489675c6a6b266a7bf",
+      "size_bytes": 6520768
+    },
+    "qevasions": {
+      "path": "/workspace/farzin-research/qevasions",
+      "sha256": "d8c62d352708197ea39d6c0428aa7a0b5f9654c9d88eb6c949e69676890bc3d8",
+      "size_bytes": 6520688
+    },
+    "fullasp": {
+      "path": "/workspace/farzin-research/fullasp",
+      "sha256": "95ce71c4ad58d5cafb6a82c99be5df849646f9569a6d21b3a4f8e3c137077b38",
+      "size_bytes": 6520640
+    },
+    "threatorder": {
+      "path": "/workspace/farzin-research/threatorder",
+      "sha256": "77d07926c676bdf5733369ab176b873dbab5dd4b26354230d6053439932d05b4",
+      "size_bytes": 6525592
+    },
+    "threatorder-mate": {
+      "path": "/workspace/farzin-research/threatorder-mate",
+      "sha256": "938ac1a65276b28b6ef56a6fee5cde3dccd06a006f5f4305fe79fcf4373be433",
+      "size_bytes": 6525752
+    },
+    "lazy": {
+      "path": "/workspace/farzin-research/lazy",
+      "sha256": "e484695f4a94a24c5ee2bcc485793e7b3b67560e59fd481b71cb727ce14f30ca",
+      "size_bytes": 6524176
+    },
+    "lazy-compact": {
+      "path": "/workspace/farzin-research/lazy-compact",
+      "sha256": "883c0cdb2a3bef09fdb109685e8fa33604191de38f385f845cca5ca100a85e2b",
+      "size_bytes": 6523024
+    },
+    "lazy-frame": {
+      "path": "/workspace/farzin-research/lazy-frame",
+      "sha256": "7ebe7405577d82f897cf459880f241e6d4a113a56496bbda7aa61b156908580f",
+      "size_bytes": 6521944
+    }
+  },
+  "opening_overlap": {
+    "screen_seed1_100_vs_fixed_seed2_150": 5,
+    "holdout80_vs_screen": 0,
+    "holdout80_vs_fixed": 0,
+    "holdout80_vs_discarded_timed_selection": 0
+  },
+  "note": "Screening and 32k-node matches use different seeds with five common openings. Final timed holdout excludes all prior selections. The initial 200-pair timed run was stopped for compute allocation, is retained as calibration only, and is not pooled with validation. Baseline and validation binaries are write-protected.",
+  "timed_validation": {
+    "tc": "5+0.05",
+    "pairs": 80,
+    "seed": 13,
+    "book": "holdout-80.fen"
+  },
+  "threatorder_validation_commit": "d114bab6eef8389b84f0af9da42ffb135fa7c625",
+  "residual_source": {
+    "base_commit": "0657431a154d3d69951173d4bdbde9af7474c535",
+    "patch": "residual-correction.patch",
+    "binary_sha256": "5836591a97bbde2c9d1c851afa71180e3ebd24bc625a031c913380124656b424"
+  },
+  "rebuild_verification": {
+    "residual_binary_after_forced_clean": "5836591a97bbde2c9d1c851afa71180e3ebd24bc625a031c913380124656b424",
+    "residual_match_binary_identical": true,
+    "note": "A shared target-dir cache reused a diagnostic example across worktrees. Those profiler outputs were discarded. All retained diagnostic examples are rebuilt after cargo clean -p farzin --release, with signature verification against the immutable UCI baseline.",
+    "threatorder_binary_after_forced_clean": "938ac1a65276b28b6ef56a6fee5cde3dccd06a006f5f4305fe79fcf4373be433",
+    "threatorder_match_binary_identical": true,
+    "baseline_api_signature_verified_positions": 22,
+    "baseline_api_signature_fields": [
+      "nodes",
+      "bestmove",
+      "full_pv"
+    ],
+    "correctness_binary_after_forced_clean": "3c883f48c7d263647c248c02b6a6d1292ea7187c9d521f954560b46c5cfd0246",
+    "correctness_binary_identical": true
+  },
+  "residual_screening": {
+    "nodes": 8000,
+    "pairs": 100,
+    "seed": 1
+  },
+  "residual_validation": {
+    "nodes": 32000,
+    "pairs": 100,
+    "seed": 17,
+    "book": "residual-holdout-100.fen"
+  },
+  "final_core_commit": "4dc36fe",
+  "final_binary": {
+    "path": "/workspace/farzin-research/correctness",
+    "sha256": "3c883f48c7d263647c248c02b6a6d1292ea7187c9d521f954560b46c5cfd0246"
+  }
+}

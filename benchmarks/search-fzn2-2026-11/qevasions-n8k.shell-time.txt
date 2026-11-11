@@ -1,0 +1,4 @@
+bash time, captured from the completed screening command:
+real 98.258 s
+user 131.819 s
+sys 6.076 s

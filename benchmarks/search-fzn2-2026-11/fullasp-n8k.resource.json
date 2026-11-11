@@ -1,0 +1,35 @@
+{
+  "command": [
+    "/workspace/farzin-research/venv/bin/python",
+    "-u",
+    "tools/arena.py",
+    "--engine",
+    "name=fullasp,cmd=/workspace/farzin-research/fullasp,opt.EvalFile=/workspace/farzin/nets/fzn2-a1.nnue",
+    "--engine",
+    "name=baseline,cmd=/workspace/farzin-research/baseline,opt.EvalFile=/workspace/farzin/nets/fzn2-a1.nnue",
+    "--nodes",
+    "8000",
+    "--pairs",
+    "100",
+    "--concurrency",
+    "2",
+    "--adjudicate",
+    "conservative",
+    "--out",
+    "/workspace/farzin-research/fullasp-n8k.json"
+  ],
+  "cwd": "/workspace/farzin",
+  "finished_utc": "2026-11-11T11:14:26.796217+00:00",
+  "returncode": 0,
+  "wall_s": 106.12977338799999,
+  "child_user_s": 162.165684,
+  "child_system_s": 7.688009,
+  "max_child_rss_kib": 40480,
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "affinity": [
+    0,
+    1,
+    2
+  ],
+  "cpu_quota": "200000 100000"
+}

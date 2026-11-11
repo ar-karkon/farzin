@@ -1,0 +1,24 @@
+{
+  "command": [
+    "/workspace/farzin-research/baseline-audit",
+    "/workspace/farzin/nets/fzn2-a1.nnue",
+    "tools/positions-v3.fen",
+    "depth",
+    "14",
+    "1"
+  ],
+  "cwd": "/workspace/farzin",
+  "finished_utc": "2026-11-11T12:12:19.333250+00:00",
+  "returncode": 0,
+  "wall_s": 1.5708575960006783,
+  "child_user_s": 1.547904,
+  "child_system_s": 0.020314,
+  "max_child_rss_kib": 33652,
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "affinity": [
+    0,
+    1,
+    2
+  ],
+  "cpu_quota": "200000 100000"
+}

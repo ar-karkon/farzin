@@ -1,0 +1,39 @@
+{
+  "command": [
+    "/workspace/farzin-research/venv/bin/python",
+    "-u",
+    "tools/arena.py",
+    "--engine",
+    "name=residual,cmd=/workspace/farzin-research/residual,opt.EvalFile=/workspace/farzin/nets/fzn2-a1.nnue",
+    "--engine",
+    "name=baseline,cmd=/workspace/farzin-research/baseline,opt.EvalFile=/workspace/farzin/nets/fzn2-a1.nnue",
+    "--nodes",
+    "32000",
+    "--pairs",
+    "100",
+    "--seed",
+    "17",
+    "--book",
+    "benchmarks/search-fzn2-2026-11/residual-holdout-100.fen",
+    "--concurrency",
+    "2",
+    "--adjudicate",
+    "conservative",
+    "--out",
+    "/workspace/farzin-research/residual-n32k.json"
+  ],
+  "cwd": "/workspace/farzin",
+  "finished_utc": "2026-11-11T12:02:21.451179+00:00",
+  "returncode": 0,
+  "wall_s": 440.5366071839999,
+  "child_user_s": 639.604459,
+  "child_system_s": 12.67905,
+  "max_child_rss_kib": 40480,
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "affinity": [
+    0,
+    1,
+    2
+  ],
+  "cpu_quota": "200000 100000"
+}
