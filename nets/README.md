@@ -18,6 +18,18 @@ Two kinds of network are kept here:
   Farzin runs it with its own independent Rust inference (`src/hka.rs`); no
   Stockfish source code is included. Other CC0 nets of the same family can be
   fetched and verified with `tools/fetch_nets.sh`.
+* `fzn2-a1.nnue` — **Farzin's own FZN2 net** (Farzin 0.4, Track B):
+  (4 mirrored king buckets x 768 -> 768) x 2 -> 1 x 8, SCReLU (`src/fzn2.rs`).
+  Data: 105.4M positions *sampled from Farzin's search trees* (`datagen
+  tree_rate=48`, mover = Farzin with `default.nnue` at 2500 soft nodes,
+  8-9 random opening plies, 5% random moves in the first 30 plies), each
+  labelled with `default.nnue`'s static evaluation (x EvalScale 560/1024).
+  Trained by `farzin-train2` (4 epochs, batch 16384, Adam lr 1e-3 cosine to
+  5e-5, wdl 0, sigmoid scale 400) in 50 minutes on 3 CPU threads.
+  sha256 `f7bb0b7ef9857c3a4f24b39f5152e381e978d76d0c24817b0bebbefb1b6e220c`.
+  vs d1-512: +164.3 Elo [+123.2, +210.2] at 5+0.05 (SPRT [0,10] H1, 42 pairs);
+  vs `default.nnue`: -230.2 [-265.2, -198.8] at 5+0.05 (100 pairs).
+  Derived only from CC0 labels and Farzin's own play, no third-party restrictions.
 * `d1-512.nnue` — Farzin's own FZN1 (768→512)×2→1 net **distilled** from
   `default.nnue`: 11.5M positions from g2 self-play (400 soft nodes), each
   labelled with the teacher's static eval (`datagen teacher=`), 12 epochs,

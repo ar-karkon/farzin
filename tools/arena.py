@@ -4,16 +4,29 @@
 Each opening is played twice with colours swapped ("game pair"), so results
 can be summarised with the pentanomial model. Requires python-chess.
 
-Engine spec:  name=NAME,cmd=PATH[,opt.KEY=VALUE...]
+Engine spec:  name=NAME,cmd=PATH[,nodes=N][,opt.KEY=VALUE...]
 Examples:
-  tools/arena.py --engine name=new,cmd=target/release/farzin \
-      --engine name=sf1800,cmd=/opt/engines/stockfish,opt.UCI_LimitStrength=true,opt.UCI_Elo=1800 \
-      --tc 10+0.1 --pairs 100 --concurrency 4 --book tools/books/farzin-openings.epd \
+  tools/arena.py --engine name=new,cmd=target/release/farzin \\
+      --engine name=sf1800,cmd=/opt/engines/stockfish,opt.UCI_LimitStrength=true,opt.UCI_Elo=1800 \\
+      --tc 10+0.1 --pairs 100 --concurrency 4 --book tools/books/farzin-openings.epd \\
       --out results/run.json
 
 Modes: with exactly two engines a head-to-head match (optionally SPRT);
 with more, --gauntlet makes the first engine play all others, otherwise a
 round robin is played.
+
+Limits: clock (--tc), fixed nodes (--nodes, or per engine nodes=N), or
+fixed time per move (--movetime seconds).
+
+Adjudication (--adjudicate):
+  none          every game is played to mate / stalemate / repetition /
+                50-move rule / insufficient material (max-plies still applies)
+  conservative  resign only when BOTH engines agree on >= 1500 cp for 5
+                consecutive moves each; draw only after move 60 when both
+                report |score| <= 5 for 12 moves each
+  default       resign >= --resign-cp for --resign-moves moves, draw after
+                --draw-after when |score| <= --draw-cp for --draw-moves moves
+The summary reports how many games ended naturally.
 """
 import argparse
 import hashlib
@@ -21,15 +34,24 @@ import itertools
 import json
 import math
 import os
+import platform
 import random
-import sys
 import threading
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed, CancelledError
 
-import chess
-import chess.engine
-import chess.pgn
+try:  # python-chess is only needed to actually play games
+    import chess
+    import chess.engine
+    import chess.pgn
+except ImportError:  # pragma: no cover - exercised in CI without python-chess
+    chess = None
+
+
+ADJUDICATION_PRESETS = {
+    "none": None,
+    "conservative": dict(resign_cp=1500, resign_moves=5, draw_cp=5, draw_moves=12, draw_after=60),
+}
 
 
 def parse_engine(spec):
@@ -43,6 +65,8 @@ def parse_engine(spec):
     if "cmd" not in out:
         raise SystemExit(f"engine spec needs cmd=: {spec}")
     out.setdefault("name", os.path.basename(out["cmd"]))
+    if "nodes" in out:
+        out["nodes"] = int(out["nodes"])
     return out
 
 
@@ -78,9 +102,10 @@ def load_book(path):
 class EnginePool:
     """Per-thread engine processes, reused across games."""
 
-    def __init__(self, specs, hash_mb):
+    def __init__(self, specs, hash_mb, threads=1):
         self.specs = specs
         self.hash_mb = hash_mb
+        self.threads = threads
         self.local = threading.local()
         self.all = []
         self.lock = threading.Lock()
@@ -93,7 +118,7 @@ class EnginePool:
         if eng is None:
             spec = self.specs[name]
             eng = chess.engine.SimpleEngine.popen_uci(spec["cmd"].split())
-            opts = {"Hash": self.hash_mb, "Threads": 1}
+            opts = {"Hash": self.hash_mb, "Threads": self.threads}
             opts.update(spec["options"])
             for k, v in opts.items():
                 if k in eng.options:
@@ -120,7 +145,60 @@ class EnginePool:
                 pass
 
 
-def play_game(pool, white, black, fen, tc, args):
+class Adjudicator:
+    """Score-based adjudication from both engines' reported evaluations.
+
+    ``scores`` holds the white-relative score reported by the side that made
+    each ply (None when no score was reported)."""
+
+    def __init__(self, resign_cp, resign_moves, draw_cp, draw_moves, draw_after):
+        self.resign_cp = resign_cp
+        self.resign_moves = resign_moves
+        self.draw_cp = draw_cp
+        self.draw_moves = draw_moves
+        self.draw_after = draw_after
+
+    def check(self, scores, fullmove_number):
+        n = len(scores)
+        k = 2 * self.resign_moves
+        if n >= k:
+            last = scores[-k:]
+            if all(s is not None for s in last):
+                if all(s >= self.resign_cp for s in last):
+                    return "1-0"
+                if all(s <= -self.resign_cp for s in last):
+                    return "0-1"
+        k = 2 * self.draw_moves
+        if fullmove_number >= self.draw_after and n >= k:
+            last = scores[-k:]
+            if all(s is not None and abs(s) <= self.draw_cp for s in last):
+                return "1/2-1/2"
+        return None
+
+
+def make_adjudicator(args):
+    if args.adjudicate == "none":
+        return None
+    if args.adjudicate == "conservative":
+        return Adjudicator(**ADJUDICATION_PRESETS["conservative"])
+    return Adjudicator(args.resign_cp, args.resign_moves, args.draw_cp, args.draw_moves, args.draw_after)
+
+
+def move_limit(spec, clocks, tc, args):
+    if spec.get("nodes") is not None:
+        return chess.engine.Limit(nodes=spec["nodes"]), False
+    if args.nodes is not None:
+        return chess.engine.Limit(nodes=args.nodes), False
+    if args.movetime is not None:
+        return chess.engine.Limit(time=args.movetime), False
+    base, inc = tc
+    return chess.engine.Limit(
+        white_clock=clocks[chess.WHITE], black_clock=clocks[chess.BLACK],
+        white_inc=inc, black_inc=inc,
+    ), True
+
+
+def play_game(pool, white, black, fen, tc, args, adjudicator=None):
     board = chess.Board(fen)
     base, inc = tc
     clocks = {chess.WHITE: base, chess.BLACK: base}
@@ -140,6 +218,8 @@ def play_game(pool, white, black, fen, tc, args):
     node = game
     scores = []  # white-relative cp per ply
     result, reason = None, None
+    stats = {"plies": 0, "time": {white: 0.0, black: 0.0}, "moves": {white: 0, black: 0},
+             "depth": {white: 0, black: 0}, "nodes": {white: 0, black: 0}}
     while result is None:
         if board.is_game_over(claim_draw=True):
             outcome = board.outcome(claim_draw=True)
@@ -147,21 +227,23 @@ def play_game(pool, white, black, fen, tc, args):
             reason = outcome.termination.name.lower()
             break
         side = board.turn
-        eng = pool.get(names[side])
-        limit = chess.engine.Limit(
-            white_clock=clocks[chess.WHITE], black_clock=clocks[chess.BLACK],
-            white_inc=inc, black_inc=inc,
-        ) if args.nodes is None else chess.engine.Limit(nodes=args.nodes)
+        name = names[side]
+        eng = pool.get(name)
+        limit, clocked = move_limit(pool.specs[name], clocks, tc, args)
         start = time.perf_counter()
         try:
-            res = eng.play(board, limit, info=chess.engine.INFO_SCORE)
-        except Exception as e:  # crash or protocol error: loss for that side
-            pool.drop(names[side])
+            res = eng.play(board, limit, info=chess.engine.INFO_SCORE | chess.engine.INFO_BASIC)
+        except Exception as e:  # crash, protocol error or hang: loss for that side
+            pool.drop(name)
             result = "0-1" if side == chess.WHITE else "1-0"
-            reason = f"crash: {e}"
+            reason = f"crash: {type(e).__name__}: {e}"
             break
         elapsed = time.perf_counter() - start
-        if args.nodes is None:
+        stats["time"][name] += elapsed
+        stats["moves"][name] += 1
+        stats["depth"][name] += res.info.get("depth", 0) or 0
+        stats["nodes"][name] += res.info.get("nodes", 0) or 0
+        if clocked:
             clocks[side] -= elapsed
             if clocks[side] < -args.time_margin:
                 result = "0-1" if side == chess.WHITE else "1-0"
@@ -182,25 +264,22 @@ def play_game(pool, white, black, fen, tc, args):
         node = node.add_variation(move)
         if cp is not None:
             node.comment = f"{cp / 100:+.2f}"
-        # Adjudication.
-        n = len(scores)
-        if n >= 2 * args.resign_moves and all(s is not None for s in scores[-2 * args.resign_moves:]):
-            last = scores[-2 * args.resign_moves:]
-            if all(s >= args.resign_cp for s in last):
-                result, reason = "1-0", "adjudication"
-            elif all(s <= -args.resign_cp for s in last):
-                result, reason = "0-1", "adjudication"
-        if result is None and board.fullmove_number >= args.draw_after and n >= 2 * args.draw_moves:
-            last = scores[-2 * args.draw_moves:]
-            if all(s is not None and abs(s) <= args.draw_cp for s in last):
-                result, reason = "1/2-1/2", "adjudication"
+        if adjudicator is not None:
+            r = adjudicator.check(scores, board.fullmove_number)
+            if r is not None:
+                result, reason = r, "adjudication"
         if result is None and board.ply() >= args.max_plies:
             result, reason = "1/2-1/2", "max plies"
+    stats["plies"] = len(scores)
     game.headers["Result"] = result
     game.headers["Termination"] = reason
     game.headers["FEN"] = fen
     game.headers["SetUp"] = "1"
-    return result, reason, str(game)
+    return result, reason, str(game), stats
+
+
+# ---------------------------------------------------------------------------
+# Statistics
 
 
 def elo_from_score(s):
@@ -208,33 +287,56 @@ def elo_from_score(s):
     return -400 * math.log10(1 / s - 1)
 
 
+def pentanomial_counts(pairs):
+    return [sum(1 for p in pairs if abs(p - k / 2) < 1e-9) for k in range(5)]
+
+
 def pentanomial_summary(pairs):
-    """pairs: list of pair scores for engine A in {0,0.5,1,1.5,2}."""
+    """pairs: list of pair scores for engine A in {0,0.5,1,1.5,2}.
+
+    Returns logistic Elo with a 95% interval from the pentanomial variance
+    and normalized Elo (nElo, Elo divided by the per-pair standard deviation
+    and scaled as in fishtest), which is comparable across time controls and
+    draw rates."""
     n = len(pairs)
     if n == 0:
         return {}
-    counts = [sum(1 for p in pairs if abs(p - k / 2) < 1e-9) for k in range(5)]
+    counts = pentanomial_counts(pairs)
     mean = sum(pairs) / (2 * n)
     var = sum((p / 2 - mean) ** 2 for p in pairs) / n
-    se = math.sqrt(var / n) if n > 1 else 0.5
+    if n > 1 and var > 0:
+        se = math.sqrt(var / n)
+    else:
+        # Degenerate sample (all pairs identical): fall back to the
+        # variance of a pair with one decisive game, so the interval is
+        # honest about the tiny sample instead of collapsing to a point.
+        se = math.sqrt(0.0625 / n)
     lo, hi = mean - 1.96 * se, mean + 1.96 * se
-    return {
+    out = {
         "pairs": n,
         "pentanomial": counts,
         "score": mean,
         "elo": elo_from_score(mean),
         "elo_95": [elo_from_score(lo), elo_from_score(hi)],
-        "los": 0.5 * (1 + math.erf((mean - 0.5) / (se * math.sqrt(2)))) if se > 0 else None,
+        "los": 0.5 * (1 + math.erf((mean - 0.5) / (se * math.sqrt(2)))),
     }
+    if var > 0:
+        # Fishtest convention: per-game sigma = sqrt(2 * var of pair score/2).
+        sigma = math.sqrt(2 * var)
+        k = 800 / math.log(10)
+        out["nelo"] = (mean - 0.5) / sigma * k
+        out["nelo_95"] = [(lo - 0.5) / sigma * k, (hi - 0.5) / sigma * k]
+    return out
 
 
 def sprt_llr(pairs, elo0, elo1):
-    """Pentanomial GSPRT log-likelihood ratio (normalized-free, logistic Elo)."""
+    """Pentanomial GSPRT log-likelihood ratio (normal approximation,
+    logistic Elo bounds)."""
     n = len(pairs)
     if n < 2:
         return 0.0
     # A small symmetric prior keeps the variance estimate sane for tiny samples.
-    counts = [sum(1 for p in pairs if abs(p - k / 2) < 1e-9) + 0.5 for k in range(5)]
+    counts = [c + 0.5 for c in pentanomial_counts(pairs)]
     total = sum(counts)
     probs = [c / total for c in counts]
     xs = [k / 4 for k in range(5)]
@@ -245,13 +347,87 @@ def sprt_llr(pairs, elo0, elo1):
     return n * (s1 - s0) * (2 * mean - s0 - s1) / (2 * var) if var > 0 else 0.0
 
 
-def main():
+def sprt_bounds(alpha, beta):
+    return math.log(beta / (1 - alpha)), math.log((1 - beta) / alpha)
+
+
+def score_for(a, white, r):
+    if r == "1/2-1/2":
+        return 0.5
+    white_won = r == "1-0"
+    return 1.0 if (white == a) == white_won else 0.0
+
+
+# ---------------------------------------------------------------------------
+# Scheduling
+
+
+def run_jobs(jobs, worker, on_result, concurrency, stop):
+    """Run ``worker(job)`` for every job on a thread pool and feed results
+    to ``on_result(job, result)`` in completion order.
+
+    ``stop`` is a threading.Event; once set (by ``on_result`` or anyone
+    else), pending jobs are cancelled and in-flight jobs are allowed to
+    finish (their results are still delivered so no played game is lost).
+    Cancelled futures are skipped instead of raising CancelledError, and a
+    worker that raises is reported as an error instead of aborting the run.
+    Returns a dict with counts of completed / cancelled / failed jobs."""
+    counts = {"completed": 0, "cancelled": 0, "failed": 0, "skipped": 0, "errors": []}
+    with ThreadPoolExecutor(max_workers=max(1, concurrency)) as ex:
+        futures = {ex.submit(worker, j): j for j in jobs}
+        cancelled_all = False
+        for fut in as_completed(futures):
+            if fut.cancelled():
+                counts["cancelled"] += 1
+                continue
+            try:
+                res = fut.result()
+            except CancelledError:  # cancelled between the check and result()
+                counts["cancelled"] += 1
+                continue
+            except Exception as e:  # a crashed worker must not kill the match
+                counts["failed"] += 1
+                counts["errors"].append(f"{type(e).__name__}: {e}")
+                continue
+            if res is None:
+                counts["skipped"] += 1
+            else:
+                counts["completed"] += 1
+                on_result(futures[fut], res)
+            if stop.is_set() and not cancelled_all:
+                for f in futures:
+                    f.cancel()
+                cancelled_all = True
+    return counts
+
+
+def hardware_info():
+    info = {"platform": platform.platform(), "python": platform.python_version(),
+            "cpus": os.cpu_count()}
+    try:
+        with open("/proc/cpuinfo") as f:
+            for line in f:
+                if line.startswith("model name"):
+                    info["cpu"] = line.split(":", 1)[1].strip()
+                    break
+    except OSError:
+        pass
+    try:
+        info["loadavg_start"] = os.getloadavg()
+    except OSError:
+        pass
+    return info
+
+
+def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--engine", action="append", required=True)
     ap.add_argument("--tc", default="10+0.1")
     ap.add_argument("--nodes", type=int, default=None, help="fixed nodes per move instead of clocks")
+    ap.add_argument("--movetime", type=float, default=None, help="fixed seconds per move instead of clocks")
     ap.add_argument("--pairs", type=int, default=50, help="game pairs per engine pairing")
     ap.add_argument("--concurrency", type=int, default=os.cpu_count())
+    ap.add_argument("--threads", type=int, default=1, help="UCI Threads for every engine")
     ap.add_argument("--book", default=os.path.join(os.path.dirname(__file__), "books", "farzin-openings.epd"))
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--hash", type=int, default=16)
@@ -260,6 +436,7 @@ def main():
     ap.add_argument("--sprt-min-pairs", type=int, default=20)
     ap.add_argument("--alpha", type=float, default=0.05)
     ap.add_argument("--beta", type=float, default=0.05)
+    ap.add_argument("--adjudicate", choices=["default", "conservative", "none"], default="default")
     ap.add_argument("--resign-cp", type=int, default=1000)
     ap.add_argument("--resign-moves", type=int, default=4)
     ap.add_argument("--draw-cp", type=int, default=8)
@@ -269,7 +446,9 @@ def main():
     ap.add_argument("--time-margin", type=float, default=0.25)
     ap.add_argument("--out", default=None, help="JSON results file")
     ap.add_argument("--pgn", default=None)
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
+    if chess is None:
+        raise SystemExit("arena.py needs python-chess: pip install chess")
 
     specs = [parse_engine(e) for e in args.engine]
     by_name = {s["name"]: s for s in specs}
@@ -293,16 +472,18 @@ def main():
             jobs.append((a, b, k, fen))
     rng.shuffle(jobs)
 
-    pool = EnginePool(by_name, args.hash)
+    adjudicator = make_adjudicator(args)
+    pool = EnginePool(by_name, args.hash, args.threads)
     results = {f"{a} vs {b}": {} for a, b in pairings}
     games = []
-    lock = threading.Lock()
+    terminations = {}
+    engine_stats = {n: {"moves": 0, "time": 0.0, "depth": 0, "nodes": 0} for n in names}
     stop = threading.Event()
     pgn_file = open(args.pgn, "a") if args.pgn else None
     started = time.time()
     sprt_state = {"llr": 0.0, "decision": None}
-    lower = math.log(args.beta / (1 - args.alpha))
-    upper = math.log((1 - args.beta) / args.alpha)
+    lower, upper = sprt_bounds(args.alpha, args.beta)
+    hw = hardware_info()
 
     def run_pair(job):
         a, b, k, fen = job
@@ -310,29 +491,43 @@ def main():
             return None
         out = []
         for white, black in ((a, b), (b, a)):
-            r, reason, pgn = play_game(pool, white, black, fen, tc, args)
-            out.append((white, black, r, reason, pgn))
-        return job, out
+            out.append((white, black) + play_game(pool, white, black, fen, tc, args, adjudicator))
+        return out
 
-    def score_for(a, white, r):
-        if r == "1/2-1/2":
-            return 0.5
-        white_won = r == "1-0"
-        return 1.0 if (white == a) == white_won else 0.0
-
-    def save():
+    def save(final=False, sched=None):
         summary = {}
         for key, pair_map in results.items():
             summary[key] = pentanomial_summary(list(pair_map.values()))
+        n_games = len(games)
+        natural = sum(v for k, v in terminations.items()
+                      if k not in ("adjudication", "max plies", "time forfeit") and not k.startswith(("crash", "illegal")))
+        per_engine = {}
+        for n, s in engine_stats.items():
+            if s["moves"]:
+                per_engine[n] = {"avg_depth": round(s["depth"] / s["moves"], 2),
+                                 "avg_ms_per_move": round(1000 * s["time"] / s["moves"], 1),
+                                 "nps": round(s["nodes"] / s["time"]) if s["time"] > 0 else None}
         payload = {
-            "engines": {n: {"cmd": s["cmd"], "options": s["options"], "sha256": sha256(s["cmd"].split()[0])}
+            "engines": {n: {"cmd": s["cmd"], "options": s["options"], "nodes": s.get("nodes"),
+                            "sha256": sha256(s["cmd"].split()[0])}
                         for n, s in by_name.items()},
-            "tc": args.tc, "nodes": args.nodes, "book": os.path.basename(args.book),
-            "seed": args.seed, "concurrency": args.concurrency,
+            "tc": args.tc, "nodes": args.nodes, "movetime": args.movetime,
+            "book": os.path.basename(args.book), "book_sha256": sha256(args.book),
+            "seed": args.seed, "concurrency": args.concurrency, "threads": args.threads, "hash": args.hash,
+            "adjudication": args.adjudicate if args.adjudicate != "default" else {
+                "resign_cp": args.resign_cp, "resign_moves": args.resign_moves, "draw_cp": args.draw_cp,
+                "draw_moves": args.draw_moves, "draw_after": args.draw_after},
+            "hardware": hw,
             "elapsed_s": round(time.time() - started, 1),
             "summary": summary, "sprt": sprt_state if args.sprt else None,
+            "terminations": terminations,
+            "natural_fraction": round(natural / n_games, 3) if n_games else None,
+            "engine_stats": per_engine,
             "games": [g[:4] for g in games],
         }
+        if sched is not None:
+            payload["scheduler"] = {k: v for k, v in sched.items() if k != "errors"}
+            payload["scheduler_errors"] = sched["errors"][:20]
         if args.out:
             tmp = args.out + ".tmp"
             with open(tmp, "w") as f:
@@ -340,54 +535,60 @@ def main():
             os.replace(tmp, args.out)
         return summary
 
+    done = [0]
+
+    def on_result(job, out):
+        a, b, k, fen = job
+        pair_score = 0.0
+        for white, black, r, reason, pgn, st in out:
+            games.append((white, black, r, reason))
+            terminations[reason] = terminations.get(reason, 0) + 1
+            for n in (white, black):
+                es = engine_stats[n]
+                es["moves"] += st["moves"][n]
+                es["time"] += st["time"][n]
+                es["depth"] += st["depth"][n]
+                es["nodes"] += st["nodes"][n]
+            pair_score += score_for(a, white, r)
+            if pgn_file:
+                pgn_file.write(pgn + "\n\n")
+        results[f"{a} vs {b}"][k] = pair_score
+        done[0] += 1
+        if args.sprt and sprt_state["decision"] is None:
+            pairs = list(results[f"{a} vs {b}"].values())
+            llr = sprt_llr(pairs, *args.sprt)
+            sprt_state["llr"] = llr
+            sprt_state["bounds"] = [lower, upper]
+            sprt_state["pairs_at_decision"] = None
+            if len(pairs) >= args.sprt_min_pairs:
+                if llr >= upper:
+                    sprt_state["decision"] = "H1 accepted"
+                elif llr <= lower:
+                    sprt_state["decision"] = "H0 accepted"
+                if sprt_state["decision"]:
+                    sprt_state["pairs_at_decision"] = len(pairs)
+                    stop.set()
+        summary = save()
+        if done[0] % max(1, args.concurrency) == 0 or stop.is_set():
+            line = " | ".join(
+                f"{key}: {s.get('pairs', 0)}p {s.get('elo', 0):+.1f} [{s['elo_95'][0]:+.1f},{s['elo_95'][1]:+.1f}]"
+                for key, s in summary.items() if s)
+            if args.sprt:
+                line += f" LLR {sprt_state['llr']:.2f} {sprt_state['decision'] or ''}"
+            print(f"[{time.time() - started:7.0f}s] {line}", flush=True)
+
+    sched = None
     try:
-        with ThreadPoolExecutor(max_workers=args.concurrency) as ex:
-            futures = [ex.submit(run_pair, j) for j in jobs]
-            done = 0
-            for fut in as_completed(futures):
-                res = fut.result()
-                if res is None:
-                    continue
-                (a, b, k, fen), out = res
-                with lock:
-                    pair_score = 0.0
-                    for white, black, r, reason, pgn in out:
-                        games.append((white, black, r, reason))
-                        pair_score += score_for(a, white, r)
-                        if pgn_file:
-                            pgn_file.write(pgn + "\n\n")
-                    results[f"{a} vs {b}"][k] = pair_score
-                    done += 1
-                    if args.sprt:
-                        pairs = list(results[f"{a} vs {b}"].values())
-                        llr = sprt_llr(pairs, *args.sprt)
-                        sprt_state["llr"] = llr
-                        sprt_state["bounds"] = [lower, upper]
-                        if len(pairs) < args.sprt_min_pairs:
-                            pass
-                        elif llr >= upper:
-                            sprt_state["decision"] = "H1 accepted"
-                            stop.set()
-                        elif llr <= lower:
-                            sprt_state["decision"] = "H0 accepted"
-                            stop.set()
-                    summary = save()
-                    if done % max(1, args.concurrency) == 0 or stop.is_set():
-                        line = " | ".join(
-                            f"{key}: {s.get('pairs', 0)}p {s.get('elo', 0):+.1f} [{s.get('elo_95', [0, 0])[0]:+.1f},{s.get('elo_95', [0, 0])[1]:+.1f}]"
-                            for key, s in summary.items() if s)
-                        if args.sprt:
-                            line += f" LLR {sprt_state['llr']:.2f} {sprt_state['decision'] or ''}"
-                        print(f"[{time.time() - started:7.0f}s] {line}", flush=True)
-                if stop.is_set():
-                    for f in futures:
-                        f.cancel()
+        sched = run_jobs(jobs, run_pair, on_result, args.concurrency, stop)
+        if sched["errors"]:
+            print(f"warning: {sched['failed']} pair(s) failed: {sched['errors'][:3]}", flush=True)
     finally:
         pool.close()
         if pgn_file:
             pgn_file.close()
-    summary = save()
-    print(json.dumps({"summary": summary, "sprt": sprt_state if args.sprt else None}, indent=1))
+    summary = save(final=True, sched=sched)
+    print(json.dumps({"summary": summary, "sprt": sprt_state if args.sprt else None,
+                      "terminations": terminations}, indent=1))
 
 
 if __name__ == "__main__":

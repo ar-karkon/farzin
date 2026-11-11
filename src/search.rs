@@ -38,6 +38,16 @@ pub struct Params {
     pub asp_delta: i32,
     pub qs_futility: i32,
     pub hist_prune: i32,
+    /// Experiment switches (0 = previous behaviour); see `negamax`.
+    pub x_nmp_all: i32,
+    pub x_deeper: i32,
+    pub x_tm: i32,
+    pub x_cont_corr: i32,
+    pub x_cutoff: i32,
+    pub x_checkext: i32,
+    pub x_optimism: i32,
+    /// Soft time target scale in percent.
+    pub tm_pct: i32,
 }
 
 impl Default for Params {
@@ -62,6 +72,14 @@ impl Default for Params {
             asp_delta: 14,
             qs_futility: 140,
             hist_prune: 3500,
+            x_nmp_all: 0,
+            x_deeper: 0,
+            x_tm: 0,
+            x_cont_corr: 0,
+            x_cutoff: 0,
+            x_checkext: 0,
+            x_optimism: 0,
+            tm_pct: 100,
         }
     }
 }
@@ -76,6 +94,8 @@ pub struct Histories {
     pub killers: [[Move; 2]; MAX_PLY + 4],
     pub pawn_corr: Box<[[i32; CORR_SIZE]; 2]>,
     pub non_pawn_corr: Box<[[[i32; CORR_SIZE]; 2]; 2]>,
+    /// Correction keyed by the previous two moves (`piece*64+to` pairs).
+    pub cont_corr: Box<[[i32; 768]; 768]>,
 }
 
 fn zeroed_box<T: Copy>(value: T) -> Box<T> {
@@ -98,6 +118,10 @@ impl Histories {
                 .try_into()
                 .unwrap(),
             non_pawn_corr: vec![[[0i32; CORR_SIZE]; 2]; 2]
+                .into_boxed_slice()
+                .try_into()
+                .unwrap(),
+            cont_corr: vec![[0i32; 768]; 768]
                 .into_boxed_slice()
                 .try_into()
                 .unwrap(),
@@ -152,6 +176,7 @@ struct StackEntry {
     excluded: Move,
     tt_pv: bool,
     double_ext: i32,
+    cutoff_cnt: i32,
 }
 
 impl Default for StackEntry {
@@ -163,6 +188,7 @@ impl Default for StackEntry {
             excluded: Move::NONE,
             tt_pv: false,
             double_ext: 0,
+            cutoff_cnt: 0,
         }
     }
 }
@@ -215,6 +241,43 @@ pub struct Thread {
     pub net: Option<Arc<EvalNet>>,
     acc: EvalAccs,
     pub silent: bool,
+    /// Distillation sampler: records a fraction of the positions evaluated
+    /// inside the search tree (see `datagen tree_rate=`).
+    pub sampler: Option<Box<Sampler>>,
+    /// Root-side optimism (centipawns), indexed by side to move.
+    optimism: [i32; 2],
+}
+
+/// Records roughly one in `rate` static evaluations made by the search,
+/// labelled with the (undamped) network value, white-relative.
+pub struct Sampler {
+    pub rate: u64,
+    /// Skip positions where the side to move has a winning capture
+    /// (SEE > 0) or is in check, i.e. keep "quiet" positions only.
+    pub quiet_only: bool,
+    pub rng: u64,
+    pub out: Vec<[u8; crate::datagen::RECORD_SIZE]>,
+}
+
+/// Not in check and no capture/promotion with positive SEE.
+pub fn is_quiet(board: &Board) -> bool {
+    if board.in_check() {
+        return false;
+    }
+    let mut list = MoveList::new();
+    crate::movegen::generate_noisy(board, &mut list);
+    let noisy = list.iter().any(|m| board.is_legal(m) && board.see_ge(m, 1));
+    !noisy
+}
+
+impl Sampler {
+    #[inline]
+    fn hit(&mut self) -> bool {
+        self.rng ^= self.rng << 13;
+        self.rng ^= self.rng >> 7;
+        self.rng ^= self.rng << 17;
+        self.rng.is_multiple_of(self.rate)
+    }
 }
 
 pub fn format_score(score: i32) -> String {
@@ -266,6 +329,8 @@ impl Thread {
             net: None,
             acc: EvalAccs::default(),
             silent: false,
+            sampler: None,
+            optimism: [0; 2],
         }
     }
 
@@ -279,6 +344,17 @@ impl Thread {
         match &self.net {
             Some(net) => {
                 let v = self.acc.evaluate(net, board, ply);
+                if let Some(s) = &mut self.sampler {
+                    if s.hit() && (!s.quiet_only || is_quiet(board)) {
+                        let w = if board.stm == WHITE { v } else { -v };
+                        s.out.push(crate::datagen::pack(
+                            board,
+                            w.clamp(-20000, 20000) as i16,
+                            1,
+                        ));
+                    }
+                }
+                let v = v + self.optimism[board.stm];
                 // Damp toward zero as the 50-move counter grows.
                 v * (200 - i32::from(board.halfmove)) / 200
             }
@@ -287,17 +363,31 @@ impl Thread {
     }
 
     #[inline]
-    fn corrected(&self, board: &Board, raw: i32) -> i32 {
+    fn cont_corr_key(&self, ply: usize) -> Option<(usize, usize)> {
+        if self.params.x_cont_corr == 0 || ply < 2 {
+            return None;
+        }
+        match (self.stack[ply - 1].cont, self.stack[ply - 2].cont) {
+            (Some(a), Some(b)) => Some((b, a)),
+            _ => None,
+        }
+    }
+
+    #[inline]
+    fn corrected(&self, board: &Board, raw: i32, ply: usize) -> i32 {
         let h = &self.histories;
         let stm = board.stm;
         let p = h.pawn_corr[stm][(board.pawn_hash as usize) % CORR_SIZE];
         let w = h.non_pawn_corr[stm][WHITE][(board.non_pawn_hash[WHITE] as usize) % CORR_SIZE];
         let b = h.non_pawn_corr[stm][BLACK][(board.non_pawn_hash[BLACK] as usize) % CORR_SIZE];
-        let corr = (2 * p + w + b) / (2 * CORR_GRAIN);
+        let c = self
+            .cont_corr_key(ply)
+            .map_or(0, |(a, b)| h.cont_corr[a][b]);
+        let corr = (2 * p + w + b + c) / (2 * CORR_GRAIN);
         (raw + corr).clamp(-MATE_BOUND + 1, MATE_BOUND - 1)
     }
 
-    fn update_correction(&mut self, board: &Board, depth: i32, diff: i32) {
+    fn update_correction(&mut self, board: &Board, depth: i32, diff: i32, ply: usize) {
         let stm = board.stm;
         let scaled = (diff * CORR_GRAIN).clamp(-CORR_MAX, CORR_MAX);
         let w = (depth + 1).min(16);
@@ -308,6 +398,9 @@ impl Thread {
         upd(&mut h.pawn_corr[stm][(board.pawn_hash as usize) % CORR_SIZE]);
         upd(&mut h.non_pawn_corr[stm][WHITE][(board.non_pawn_hash[WHITE] as usize) % CORR_SIZE]);
         upd(&mut h.non_pawn_corr[stm][BLACK][(board.non_pawn_hash[BLACK] as usize) % CORR_SIZE]);
+        if let Some((a, b)) = self.cont_corr_key(ply) {
+            upd(&mut self.histories.cont_corr[a][b]);
+        }
     }
 
     fn ctx(&self, ply: usize) -> OrderingContext {
@@ -453,7 +546,7 @@ impl Thread {
                 Some(t) if t.eval != NO_SCORE => t.eval,
                 _ => self.evaluate(board, ply),
             };
-            let mut eval = self.corrected(board, raw_eval);
+            let mut eval = self.corrected(board, raw_eval, ply);
             if let Some(t) = tt {
                 if tt_score != NO_SCORE
                     && (t.bound == BOUND_EXACT
@@ -659,7 +752,7 @@ impl Thread {
                 Some(t) if t.eval != NO_SCORE => t.eval,
                 _ => self.evaluate(board, ply),
             };
-            let corrected = self.corrected(board, raw_eval);
+            let corrected = self.corrected(board, raw_eval, ply);
             self.stack[ply].static_eval = corrected;
             eval = corrected;
             if tt_score != NO_SCORE
@@ -694,6 +787,7 @@ impl Thread {
         self.histories.killers[ply + 1] = [Move::NONE; 2];
         self.stack[ply + 1].excluded = Move::NONE;
         self.stack[ply + 2].double_ext = self.stack[ply].double_ext;
+        self.stack[ply + 2].cutoff_cnt = 0;
         let p = self.params;
 
         if !pv_node && !in_check && excluded.is_none() {
@@ -712,7 +806,7 @@ impl Thread {
                 }
             }
             // Null move pruning.
-            if cut_node
+            if (cut_node || p.x_nmp_all != 0)
                 && depth >= 3
                 && eval >= beta
                 && static_eval >= beta - 15 * depth + 150
@@ -900,8 +994,14 @@ impl Thread {
             shared.tt.prefetch(child.hash);
             self.push_move(board, &child, mv, ply);
             let gives_check = child.in_check();
-            if ext == 0 && gives_check && depth <= 6 {
-                // Cheap check extension at shallow depth only.
+            if ext == 0
+                && p.x_checkext != 0
+                && gives_check
+                && depth > 9
+                && static_eval != NO_SCORE
+                && static_eval.abs() > 45
+            {
+                ext = 1;
             }
             let new_depth = depth - 1 + ext;
             let mut score = 0;
@@ -915,6 +1015,9 @@ impl Thread {
                 r += i32::from(tt_noisy);
                 r += i32::from(!improving);
                 r -= hist / p.hist_div;
+                if p.x_cutoff != 0 && self.stack[ply + 1].cutoff_cnt > 3 {
+                    r += 1;
+                }
                 if mv == self.histories.killers[ply][0]
                     || mv == self.histories.killers[ply][1]
                     || mv == counter
@@ -924,15 +1027,25 @@ impl Thread {
                 let d = (new_depth - r).clamp(1, new_depth.max(1));
                 score = -self.negamax(shared, &child, -alpha - 1, -alpha, d, ply + 1, true);
                 if score > alpha && d < new_depth {
-                    score = -self.negamax(
-                        shared,
-                        &child,
-                        -alpha - 1,
-                        -alpha,
-                        new_depth,
-                        ply + 1,
-                        !cut_node,
-                    );
+                    let mut full = new_depth;
+                    if p.x_deeper != 0 {
+                        if score > best_score + 40 + 2 * new_depth {
+                            full += 1;
+                        } else if score < best_score + 8 {
+                            full -= 1;
+                        }
+                    }
+                    if full > d {
+                        score = -self.negamax(
+                            shared,
+                            &child,
+                            -alpha - 1,
+                            -alpha,
+                            full,
+                            ply + 1,
+                            !cut_node,
+                        );
+                    }
                 }
             } else if !pv_node || move_count > 1 {
                 score = -self.negamax(
@@ -966,6 +1079,7 @@ impl Thread {
                         self.root_best = mv;
                     }
                     if score >= beta {
+                        self.stack[ply].cutoff_cnt += 1 + i32::from(tt_move.is_none());
                         break;
                     }
                     alpha = score;
@@ -1018,7 +1132,7 @@ impl Thread {
                 && !(bound == BOUND_LOWER && best_score <= static_eval)
                 && !(bound == BOUND_UPPER && best_score >= static_eval)
             {
-                self.update_correction(board, depth, best_score - static_eval);
+                self.update_correction(board, depth, best_score - static_eval, ply);
             }
             shared.tt.store(
                 board.hash,
@@ -1161,9 +1275,17 @@ impl Thread {
         let mut score = 0;
         let mut stability = 0;
         let mut prev_best = Move::NONE;
+        let mut scores: Vec<i32> = Vec::new();
         for depth in 1..=max_depth {
             self.root_depth = depth;
             self.seldepth = 0;
+            if self.params.x_optimism != 0 && depth >= 4 {
+                let o = self.params.x_optimism * score / (score.abs() + 90);
+                self.optimism[root.stm] = o;
+                self.optimism[root.stm ^ 1] = -o;
+            } else {
+                self.optimism = [0; 2];
+            }
             let mut delta = self.params.asp_delta + score * score / 16_000;
             let (mut alpha, mut beta) = if depth >= 4 {
                 ((score - delta).max(-INF), (score + delta).min(INF))
@@ -1222,6 +1344,7 @@ impl Thread {
                 continue;
             }
             // Soft limits between iterations.
+            scores.push(score);
             if result.best == prev_best {
                 stability = (stability + 1).min(6);
             } else {
@@ -1239,7 +1362,14 @@ impl Thread {
                 let fraction = best_nodes as f64 / total as f64;
                 let node_scale = (1.5 - fraction) * 1.35;
                 let stab_scale = [2.2, 1.6, 1.3, 1.1, 1.0, 0.9, 0.8][stability];
-                let target = soft as f64 * node_scale * stab_scale;
+                let mut target =
+                    soft as f64 * node_scale * stab_scale * f64::from(self.params.tm_pct) / 100.0;
+                if self.params.x_tm != 0 && scores.len() >= 4 {
+                    // Spend more when the score is falling, less when rising.
+                    let prev = scores[scores.len() - 4];
+                    let fall = f64::from((prev - score).clamp(-100, 200));
+                    target *= (1.0 + fall / 250.0).clamp(0.8, 1.6);
+                }
                 let elapsed = self.start.elapsed().as_millis() as f64;
                 if elapsed >= target {
                     break;

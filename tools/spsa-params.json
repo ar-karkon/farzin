@@ -1,0 +1,16 @@
+{
+ "rfp_margin":     [75, 30, 150, 8],
+ "nmp_div":        [200, 80, 400, 20],
+ "razor_margin":   [250, 100, 500, 25],
+ "futility_base":  [90, 30, 200, 10],
+ "futility_mult":  [110, 50, 200, 10],
+ "see_quiet":      [30, 5, 80, 4],
+ "see_noisy":      [95, 30, 200, 10],
+ "lmr_quiet_base": [80, 20, 150, 8],
+ "lmr_quiet_div":  [225, 150, 350, 15],
+ "hist_div":       [8192, 3000, 16000, 800],
+ "probcut_margin": [200, 100, 350, 20],
+ "asp_delta":      [14, 6, 30, 2],
+ "qs_futility":    [140, 50, 300, 15],
+ "hist_prune":     [3500, 1000, 8000, 400]
+}

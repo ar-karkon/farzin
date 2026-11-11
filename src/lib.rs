@@ -4,6 +4,7 @@ pub mod board;
 pub mod datagen;
 pub mod eval;
 pub mod evalnet;
+pub mod fzn2;
 pub mod hka;
 pub mod movegen;
 pub mod movepick;
