@@ -57,10 +57,15 @@ jobs:
       - name: Install mingw-w64
         timeout-minutes: 20
         run: |
-          opts="-o Acquire::Retries=5 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30"
+          # The runner image prefers azure.archive.ubuntu.com, which has been
+          # unreachable at times; use the main Ubuntu archive directly.
+          sudo sed -i '/azure\.archive\.ubuntu\.com/d' /etc/apt/apt-mirrors.txt 2>/dev/null || true
+          sudo sed -i 's|http://azure\.archive\.ubuntu\.com|http://archive.ubuntu.com|g' \
+            /etc/apt/sources.list /etc/apt/sources.list.d/*.sources /etc/apt/sources.list.d/*.list 2>/dev/null || true
+          opts="-o Acquire::Retries=3 -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15"
           for i in 1 2 3 4; do
             sudo apt-get $opts update && sudo apt-get $opts install -y mingw-w64 && exit 0
-            echo "apt attempt $i failed; retrying in $((i * 30)) s"; sleep $((i * 30))
+            echo "apt attempt $i failed; retrying in $((i * 20)) s"; sleep $((i * 20))
           done
           exit 1
       - run: tools/build_release.sh dist
