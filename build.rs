@@ -171,7 +171,7 @@ fn pext(src: u64, mut mask: u64) -> u64 {
     let mut out = 0;
     let mut bit = 1u64;
     while mask != 0 {
-        let low = mask & mask.wrapping_neg();
+        let low = 1u64 << mask.trailing_zeros();
         if src & low != 0 {
             out |= bit;
         }

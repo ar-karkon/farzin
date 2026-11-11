@@ -438,7 +438,7 @@ def hardware_info():
         pass
     try:
         info["loadavg_start"] = os.getloadavg()
-    except OSError:
+    except (OSError, AttributeError):  # not available on Windows
         pass
     return info
 
