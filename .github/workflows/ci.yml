@@ -55,6 +55,9 @@ jobs:
       - name: Install the x86-64 MinGW toolchain
         timeout-minutes: 10
         run: |
+          # The image's Azure mirror can fail DNS resolution. Keep Ubuntu's
+          # signed repositories, using the canonical HTTPS archive directly.
+          printf '%s\n' 'https://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt > /dev/null
           sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 update
           sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 install -y --no-install-recommends gcc-mingw-w64-x86-64
       - run: tools/build_release.sh dist
