@@ -1,5 +1,21 @@
 # فرزین | Farzin
 
+**English summary.** Farzin is a UCI chess engine written in Rust. The
+competition release **Farzin 0.5 (OwnNet)** embeds only Farzin's own FZN2
+network `nets/fzn2-a1.nnue`. Release notes, hardware requirements, network
+provenance and reproducible build steps are in
+[docs/RELEASE-0.5.md](docs/RELEASE-0.5.md). The test report is in
+[docs/v8-report.md](docs/v8-report.md).
+
+```bash
+tools/build_release.sh dist        # Windows/Linux x86-64-v3 release binaries + SHA256SUMS
+python3 tools/release_check.py -- dist/farzin-0.5.0-linux-x64-avx2-bmi2
+```
+
+A plain `cargo build --release` gives a portable build of the **Research
+edition** (CC0 Stockfish-project net). For a fast local build use
+`RUSTFLAGS="-C target-cpu=native"`.
+
 فرزین یک موتور شطرنج UCI به زبان Rust است. از نسخهٔ ۰.۲ هستهٔ موتور کاملاً بازنویسی شده و دیگر به کتابخانهٔ `chess` وابسته نیست (آن کتابخانه فقط برای کد آزمایشی قدیمی Caissa در `src/caissa.rs` باقی مانده است).
 
 گزارش مرحلهٔ ۷ / نسخهٔ ۰٫۴ (شبکهٔ مستقل FZN2، تقطیر از درخت جست‌وجو، آزمون‌های قابل‌اعتماد): [docs/v7-report.md](docs/v7-report.md). گزارش مرحلهٔ ۶ (استنتاج مستقل HalfKAv2_hm، هم‌طراحی جست‌وجو، تقطیر): [docs/v6-report.md](docs/v6-report.md). گزارش مرحلهٔ ۵: [docs/v5-report.md](docs/v5-report.md).
@@ -27,7 +43,7 @@ cargo build --release
 cargo test --release
 ```
 
-ساخت با `-C target-cpu=native` انجام می‌شود (`.cargo/config.toml`). شبکهٔ `nets/default.nnue` هنگام ساخت داخل باینری قرار می‌گیرد. این شبکه وزن CC0 منتشرشده توسط پروژهٔ استاک‌فیش است (منشأ و هش در `nets/README.md` و `THIRD_PARTY_NOTICES.md`)؛ استنتاج آن (`src/hka.rs`) مستقل نوشته شده است. شبکهٔ خودآموز قبلی در `nets/g2.nnue` است.
+ساخت پیش‌فرض دیگر `target-cpu=native` ندارد و قابل‌حمل است؛ برای ساخت سریع محلی `RUSTFLAGS="-C target-cpu=native"` و برای نسخهٔ انتشار `tools/build_release.sh` (x86-64-v3) را به کار ببرید. نسخهٔ مسابقه (`--features ownnet`) فقط `nets/fzn2-a1.nnue` را دارد. شبکهٔ `nets/default.nnue` هنگام ساخت داخل باینری قرار می‌گیرد. این شبکه وزن CC0 منتشرشده توسط پروژهٔ استاک‌فیش است (منشأ و هش در `nets/README.md` و `THIRD_PARTY_NOTICES.md`)؛ استنتاج آن (`src/hka.rs`) مستقل نوشته شده است. شبکهٔ خودآموز قبلی در `nets/g2.nnue` است.
 
 ### گزینه‌های UCI
 

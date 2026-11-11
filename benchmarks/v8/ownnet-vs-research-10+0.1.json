@@ -1,0 +1,280 @@
+{
+ "engines": {
+  "ownnet05": {
+   "cmd": "/tmp/claude-0/eng/farzin05-ownnet",
+   "options": {},
+   "nodes": null,
+   "sha256": "20842fef854b62d6e1fcd04d081e0ef032df6d5c9b1b59eca971c213e71b5fa6"
+  },
+  "research05": {
+   "cmd": "/tmp/claude-0/eng/farzin05-research",
+   "options": {},
+   "nodes": null,
+   "sha256": "b891c179499158444ebcd6c3c5b33e1f8508dab6cd2dea1b9bfc2bd8da4599b0"
+  }
+ },
+ "tc": "10+0.1",
+ "nodes": null,
+ "movetime": null,
+ "book": "farzin-openings.epd",
+ "book_sha256": "29d02b4cf9e26a9ed5f5cc45a6f48a6fc94f4dbaf03617d5d180242711433d48",
+ "seed": 805,
+ "concurrency": 4,
+ "threads": 1,
+ "hash": 16,
+ "adjudication": "conservative",
+ "hardware": {
+  "platform": "Linux-6.18.44-fc-v378-x86_64-with-glibc2.39",
+  "python": "3.13.18",
+  "cpus": 4,
+  "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+  "loadavg_start": [
+   1.03515625,
+   0.98095703125,
+   0.7451171875
+  ]
+ },
+ "elapsed_s": 239.0,
+ "summary": {
+  "ownnet05 vs research05": {
+   "pairs": 16,
+   "pentanomial": [
+    6,
+    8,
+    2,
+    0,
+    0
+   ],
+   "score": 0.1875,
+   "elo": -254.72883903486974,
+   "elo_95": [
+    -369.545694230881,
+    -174.08490209346002
+   ],
+   "los": 2.0261570199409107e-14,
+   "nelo": -464.280330356704,
+   "nelo_95": [
+    -584.6606190454936,
+    -343.90004166791437
+   ]
+  }
+ },
+ "sprt": null,
+ "terminations": {
+  "threefold_repetition": 4,
+  "adjudication": 25,
+  "insufficient_material": 2,
+  "fifty_moves": 1
+ },
+ "natural_fraction": 0.219,
+ "engine_stats": {
+  "ownnet05": {
+   "avg_depth": 17.72,
+   "avg_ms_per_move": 217.8,
+   "nps": 963945,
+   "min_clock_s": 0.463,
+   "max_move_share": 0.343
+  },
+  "research05": {
+   "avg_depth": 17.59,
+   "avg_ms_per_move": 200.9,
+   "nps": 807193,
+   "min_clock_s": 0.896,
+   "max_move_share": 0.293
+  }
+ },
+ "games": [
+  [
+   "ownnet05",
+   "research05",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "research05",
+   "ownnet05",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05",
+   "research05",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "research05",
+   "ownnet05",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05",
+   "research05",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "research05",
+   "ownnet05",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05",
+   "research05",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "research05",
+   "ownnet05",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05",
+   "research05",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "research05",
+   "ownnet05",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05",
+   "research05",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "research05",
+   "ownnet05",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05",
+   "research05",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "research05",
+   "ownnet05",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05",
+   "research05",
+   "1/2-1/2",
+   "insufficient_material"
+  ],
+  [
+   "research05",
+   "ownnet05",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05",
+   "research05",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "research05",
+   "ownnet05",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05",
+   "research05",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "research05",
+   "ownnet05",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05",
+   "research05",
+   "1/2-1/2",
+   "fifty_moves"
+  ],
+  [
+   "research05",
+   "ownnet05",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05",
+   "research05",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "research05",
+   "ownnet05",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05",
+   "research05",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "research05",
+   "ownnet05",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "ownnet05",
+   "research05",
+   "0-1",
+   "adjudication"
+  ],
+  [
+   "research05",
+   "ownnet05",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05",
+   "research05",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "research05",
+   "ownnet05",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "ownnet05",
+   "research05",
+   "1/2-1/2",
+   "insufficient_material"
+  ],
+  [
+   "research05",
+   "ownnet05",
+   "1-0",
+   "adjudication"
+  ]
+ ]
+}
