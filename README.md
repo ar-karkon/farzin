@@ -1,15 +1,16 @@
 # فرزین | Farzin
 
 **English summary.** Farzin is a UCI chess engine written in Rust. The
-competition release **Farzin 0.5 (OwnNet)** embeds only Farzin's own FZN2
-network `nets/fzn2-a1.nnue`. Release notes, hardware requirements, network
+competition release **Farzin 0.5.1 (OwnNet)** embeds only Farzin's own FZN2
+network `nets/fzn2-b1.nnue`. Release notes, hardware requirements, network
 provenance and reproducible build steps are in
-[docs/RELEASE-0.5.md](docs/RELEASE-0.5.md). The test report is in
-[docs/v8-report.md](docs/v8-report.md).
+[docs/RELEASE-0.5.md](docs/RELEASE-0.5.md). The release test report is in
+[docs/release-0.5.1-report.md](docs/release-0.5.1-report.md) (0.5.0:
+[docs/v8-report.md](docs/v8-report.md)).
 
 ```bash
 tools/build_release.sh dist        # Windows/Linux x86-64-v3 release binaries + SHA256SUMS
-python3 tools/release_check.py -- dist/farzin-0.5.0-linux-x64-avx2-bmi2
+python3 tools/release_check.py -- dist/farzin-0.5.1-linux-x64-avx2-bmi2
 ```
 
 A plain `cargo build --release` gives a portable build of the **Research
@@ -48,7 +49,7 @@ cargo build --release
 cargo test --release
 ```
 
-ساخت پیش‌فرض دیگر `target-cpu=native` ندارد و قابل‌حمل است؛ برای ساخت سریع محلی `RUSTFLAGS="-C target-cpu=native"` و برای نسخهٔ انتشار `tools/build_release.sh` (x86-64-v3) را به کار ببرید. نسخهٔ مسابقه (`--features ownnet`) فقط `nets/fzn2-a1.nnue` را دارد. شبکهٔ `nets/default.nnue` هنگام ساخت داخل باینری قرار می‌گیرد. این شبکه وزن CC0 منتشرشده توسط پروژهٔ استاک‌فیش است (منشأ و هش در `nets/README.md` و `THIRD_PARTY_NOTICES.md`)؛ استنتاج آن (`src/hka.rs`) مستقل نوشته شده است. شبکهٔ خودآموز قبلی در `nets/g2.nnue` است.
+ساخت پیش‌فرض دیگر `target-cpu=native` ندارد و قابل‌حمل است؛ برای ساخت سریع محلی `RUSTFLAGS="-C target-cpu=native"` و برای نسخهٔ انتشار `tools/build_release.sh` (x86-64-v3) را به کار ببرید. نسخهٔ مسابقه (`--features ownnet`) از ۰٫۵٫۱ فقط `nets/fzn2-b1.nnue` را دارد (۰٫۵٫۰: `nets/fzn2-a1.nnue`). شبکهٔ `nets/default.nnue` هنگام ساخت داخل باینری قرار می‌گیرد. این شبکه وزن CC0 منتشرشده توسط پروژهٔ استاک‌فیش است (منشأ و هش در `nets/README.md` و `THIRD_PARTY_NOTICES.md`)؛ استنتاج آن (`src/hka.rs`) مستقل نوشته شده است. شبکهٔ خودآموز قبلی در `nets/g2.nnue` است.
 
 ### گزینه‌های UCI
 

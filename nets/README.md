@@ -1,7 +1,8 @@
 # Farzin networks
 
 **Editions.** The competition edition (`cargo build --release --features
-ownnet`, or `tools/build_release.sh`) embeds **only** `fzn2-a1.nnue`.
+ownnet`, or `tools/build_release.sh`) embeds **only** `fzn2-b1.nnue`
+(since 0.5.1; 0.5.0 embedded `fzn2-a1.nnue`).
 `build.rs` checks its FZN2 header and SHA-256 and refuses to build with
 anything else. The research edition (plain `cargo build --release`) embeds
 `default.nnue` (third-party CC0 weights, see below) and names itself
@@ -33,7 +34,12 @@ Two kinds of network are kept here:
   mover = Farzin 0.5 search + `default.nnue`, 2500 soft nodes), labelled with
   `default.nnue`'s static eval. Held-out MSE (new seed): 0.002533 vs 0.002853
   for a1. sha256 `3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0`.
-  vs fzn2-a1: +63.1 Elo [+36.5, +90.5] at 5+0.05 (SPRT [0,10] H1, 89 pairs).
+  vs fzn2-a1: +63.1 Elo [+36.5, +90.5] at 5+0.05 (SPRT [0,10] H1, 89 pairs;
+  measured with an intermediate research search, `farzin-s3`). Re-measured
+  as the shipped 0.5.1 binary vs the 0.5.0 binary at 10+0.1, 40/20 and
+  60+0.6: see `docs/release-0.5.1-report.md`. Contains 0 indexed chunks of
+  `default.nnue`; about 12% of its 32-byte blocks are unchanged from a1.
+  **Embedded in the OwnNet edition since 0.5.1.**
   Effective training data: 105M (a1) + 100M positions, all from Farzin's own
   play with CC0 labels; no third-party restrictions.
 * `fzn2-a1.nnue` — **Farzin's own FZN2 net** (Farzin 0.4, Track B):
