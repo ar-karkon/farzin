@@ -15,7 +15,17 @@ jobs:
       - uses: dtolnay/rust-toolchain@1.97.0
         with:
           targets: x86_64-pc-windows-gnu
-      - run: sudo apt-get update && sudo apt-get install -y mingw-w64
+      # The runners' Ubuntu mirror is occasionally unreachable: retry with
+      # short network timeouts instead of hanging for the job's lifetime.
+      - name: Install mingw-w64
+        timeout-minutes: 20
+        run: |
+          opts="-o Acquire::Retries=5 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30"
+          for i in 1 2 3 4; do
+            sudo apt-get $opts update && sudo apt-get $opts install -y mingw-w64 && exit 0
+            echo "apt attempt $i failed; retrying in $((i * 30)) s"; sleep $((i * 30))
+          done
+          exit 1
       - run: tools/build_release.sh dist
       - run: pip install chess==1.10.0
       - run: python3 tools/release_check.py --expect-sha256 f7bb0b7ef9857c3a4f24b39f5152e381e978d76d0c24817b0bebbefb1b6e220c dist/farzin-*-linux-x64-avx2-bmi2
