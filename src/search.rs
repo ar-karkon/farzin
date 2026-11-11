@@ -270,6 +270,34 @@ pub struct Shared {
     pub tt: TranspositionTable,
     pub stop: AtomicBool,
     pub nodes: AtomicU64,
+    /// Set while a `go ponder` search waits for `ponderhit`: clock limits
+    /// are ignored and the result is held back until `ponderhit` or `stop`.
+    pub ponder: AtomicBool,
+    /// Milliseconds between the start of the search and `ponderhit`; clock
+    /// limits are measured from that moment.
+    pub time_offset_ms: AtomicU64,
+}
+
+impl Shared {
+    pub fn new(hash_mb: usize) -> Shared {
+        Shared {
+            tt: TranspositionTable::new(hash_mb),
+            stop: AtomicBool::new(false),
+            nodes: AtomicU64::new(0),
+            ponder: AtomicBool::new(false),
+            time_offset_ms: AtomicU64::new(0),
+        }
+    }
+
+    /// Clock time used by this search in ms, or `None` while pondering.
+    #[inline]
+    pub fn clock_ms(&self, start: Instant) -> Option<u64> {
+        if self.ponder.load(Ordering::Acquire) {
+            return None;
+        }
+        let offset = self.time_offset_ms.load(Ordering::Relaxed);
+        Some((start.elapsed().as_millis() as u64).saturating_sub(offset))
+    }
 }
 
 #[derive(Clone, Debug, Default)]
@@ -513,7 +541,7 @@ impl Thread {
                 self.stopped = true;
             } else if self.id == 0 {
                 if let Some(hard) = self.limits.hard_ms {
-                    if self.start.elapsed().as_millis() as u64 >= hard {
+                    if shared.clock_ms(self.start).is_some_and(|ms| ms >= hard) {
                         self.stopped = true;
                     }
                 }
@@ -588,11 +616,11 @@ impl Thread {
         ply: usize,
     ) -> i32 {
         self.nodes += 1;
+        self.pv_len[ply] = ply;
         if self.check_stop(shared) {
             return 0;
         }
         let pv_node = beta - alpha > 1;
-        self.pv_len[ply] = ply;
         self.seldepth = self.seldepth.max(ply);
         if board.halfmove >= 100 || board.insufficient_material() || self.is_repetition(board) {
             return self.draw_score();
@@ -752,10 +780,10 @@ impl Thread {
             return self.qsearch(shared, board, alpha, beta, ply);
         }
         self.nodes += 1;
+        self.pv_len[ply] = ply;
         if self.check_stop(shared) {
             return 0;
         }
-        self.pv_len[ply] = ply;
         self.seldepth = self.seldepth.max(ply);
         let in_check = board.in_check();
         if !root {
@@ -1482,6 +1510,9 @@ impl Thread {
             return result;
         }
         self.root_best = Move::NONE;
+        // The PV buffer still holds the previous search's line; a search
+        // stopped inside depth 1 must not report that (possibly illegal) move.
+        self.pv_len[0] = 0;
         let max_depth = limits
             .depth
             .unwrap_or(MAX_PLY as i32 - 4)
@@ -1536,7 +1567,7 @@ impl Thread {
             if self.stopped && depth > 1 {
                 break;
             }
-            if self.pv_len[0] > 0 {
+            if self.pv_len[0] > 0 && legal.contains(&self.pv[0][0]) {
                 result.best = self.pv[0][0];
                 result.ponder = if self.pv_len[0] > 1 {
                     self.pv[0][1]
@@ -1584,9 +1615,10 @@ impl Thread {
                     let fall = f64::from((prev - score).clamp(-100, 200));
                     target *= (1.0 + fall / 250.0).clamp(0.8, 1.6);
                 }
-                let elapsed = self.start.elapsed().as_millis() as f64;
-                if elapsed >= target {
-                    break;
+                if let Some(elapsed) = shared.clock_ms(self.start) {
+                    if elapsed as f64 >= target {
+                        break;
+                    }
                 }
             }
         }
@@ -1626,6 +1658,10 @@ pub fn search(
             })
             .collect();
         let result = main.iterate(shared, root, history, limits, start);
+        // UCI: a pondering search must not answer before ponderhit or stop.
+        while shared.ponder.load(Ordering::Acquire) && !shared.stop.load(Ordering::Relaxed) {
+            std::thread::sleep(std::time::Duration::from_millis(1));
+        }
         shared.stop.store(true, Ordering::Relaxed);
         let mut all = vec![result];
         all.extend(handles.into_iter().filter_map(|h| h.join().ok()));

@@ -15,5 +15,7 @@ pub mod types;
 pub mod uci;
 
 /// Experimental Caissa-format network reader kept for reference experiments.
+#[cfg(feature = "legacy")]
 pub mod caissa;
+#[cfg(feature = "legacy")]
 pub mod nnue;

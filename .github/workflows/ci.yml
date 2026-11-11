@@ -10,9 +10,29 @@ jobs:
           components: rustfmt, clippy
       - run: cargo fmt --check
       - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo clippy --all-targets --features ownnet -- -D warnings
+      - run: cargo clippy --all-targets --features legacy -- -D warnings
       - run: cargo test --locked
+      - run: cargo test --locked --features ownnet
+      - run: cargo test --locked --features legacy --lib
       - run: cargo build --release --locked
+      - run: pip install chess==1.10.0
       - run: python3 -m unittest discover -s tests -p 'test_*.py'
+  # The release instruction set (AVX2 / BMI2 / PEXT kernels) must pass the
+  # same tests as the portable build.
+  x86-64-v3:
+    runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: -C target-cpu=x86-64-v3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - run: grep -qw bmi2 /proc/cpuinfo && grep -qw avx2 /proc/cpuinfo
+      - run: cargo clippy --all-targets --features ownnet -- -D warnings
+      - run: cargo test --locked --features ownnet
+      - run: cargo test --locked
   experimental-stack:
     runs-on: ubuntu-latest
     steps:
@@ -23,3 +43,72 @@ jobs:
       - run: cargo clippy --all-targets --features nnue-stack -- -D warnings
       - run: cargo test --locked --features nnue-stack
       - run: cargo build --release --locked --features nnue-stack
+  # Reproducible competition binaries (pinned toolchain; compare SHA256SUMS
+  # with docs/RELEASE-0.5.md).
+  release-build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.97.0
+        with:
+          targets: x86_64-pc-windows-gnu
+      - run: sudo apt-get update && sudo apt-get install -y mingw-w64
+      - run: tools/build_release.sh dist
+      - run: pip install chess==1.10.0
+      - run: python3 tools/release_check.py --quick --expect-sha256 f7bb0b7ef9857c3a4f24b39f5152e381e978d76d0c24817b0bebbefb1b6e220c dist/farzin-*-linux-x64-avx2-bmi2
+      - uses: actions/upload-artifact@v4
+        with:
+          name: farzin-release-candidate
+          path: dist/
+  # Regression tests on real Windows: unit/integration tests (MSVC) and the
+  # release executable built above, run natively.
+  windows:
+    needs: release-build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test --locked --features ownnet
+        env:
+          RUSTFLAGS: -C target-cpu=x86-64-v3
+      - uses: actions/download-artifact@v4
+        with:
+          name: farzin-release-candidate
+          path: dist
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install chess==1.10.0
+      - shell: bash
+        timeout-minutes: 25
+        run: |
+          exe=$(ls dist/farzin-*-windows-x64-avx2-bmi2.exe)
+          (cd dist && sha256sum -c SHA256SUMS --ignore-missing)
+          "$exe" --version
+          python tools/release_check.py --expect-sha256 f7bb0b7ef9857c3a4f24b39f5152e381e978d76d0c24817b0bebbefb1b6e220c --json release-check-windows.json "$exe"
+          python tools/arena.py --engine name=a,cmd=$exe --engine name=b,cmd=$exe \
+            --tc 40/8 --pairs 4 --concurrency 2 --book tools/books/farzin-openings.epd \
+            --time-margin 0 --out selfplay-windows.json
+          python tools/arena.py --engine name=a,cmd=$exe --engine name=b,cmd=$exe \
+            --tc 3+0.05 --pairs 4 --concurrency 2 --threads 2 --book tools/books/farzin-openings.epd \
+            --time-margin 0 --out selfplay-windows-blitz.json
+          python - <<'PY'
+          import json, sys
+          bad = 0
+          for f in ("selfplay-windows.json", "selfplay-windows-blitz.json"):
+              d = json.load(open(f))
+              print(f, d["terminations"], d["engine_stats"])
+              bad += sum(v for k, v in d["terminations"].items()
+                         if k == "time forfeit" or k.startswith(("crash", "illegal")))
+          sys.exit(1 if bad else 0)
+          PY
+          # every engine process must have exited after quit
+          sleep 2
+          if tasklist | grep -i "farzin-"; then echo "engine process left running"; exit 1; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-test-results
+          path: |
+            release-check-windows.json
+            selfplay-windows*.json

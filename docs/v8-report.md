@@ -1,143 +1,127 @@
-# گزارش مرحلهٔ ۸ (فرزین ۰٫۵): جهش جست‌وجو، تقطیر تجمعی، اعتبارسنجی بدون نشت
+# Farzin 0.5 (OwnNet) — release test report
 
-همهٔ آزمون‌ها روی یک ماشین ابری ۴ هسته‌ای (Xeon، AVX-512 VNNI، ۱۵ گیگابایت حافظه، بدون GPU) اجرا شدند و هیچ هزینه‌ای صرف نشد. مسابقه‌ها با `tools/arena.py`، گشایش‌های جفتی `tools/books/farzin-openings.epd` (۲۸۵۷ گشایش، ۸ ply)، هر موتور یک نخ، Hash 16، هم‌زمانی ۴، و داوری محافظه‌کارانه (`--adjudicate conservative`) اجرا شدند، مگر خلافش ذکر شده باشد. بازه‌ها ۹۵٪ و پنتانومیال‌اند. استاک‌فیش ۱۵٫۱ و ۱۷٫۱ از سورس رسمی با `ARCH=x86-64-vnni512` (هم‌تراز با `target-cpu=native` فرزین) ساخته شدند و فقط محلی به‌عنوان حریف استفاده شدند. نتایج خام: `benchmarks/v8/`. هر عدد با «اندازه‌گیری» یا «برآورد» علامت خورده است.
+All local measurements ran on one 4-core cloud VM (Intel Xeon 2.1 GHz, AVX-512
+capable, 15 GB RAM). The release binaries do not use AVX-512: they target
+x86-64-v3. Matches used `tools/arena.py` with paired openings from
+`tools/books/farzin-openings.epd`, conservative adjudication, `--time-margin
+0` (any clock overrun counts as a forfeit), 1 thread and 16 MB hash unless
+stated otherwise. Intervals are 95% pentanomial. Raw JSON/PGN are in
+`benchmarks/v8/`. **Everything below is a local measurement. None of it is a
+CCRL rating.**
 
-## خلاصه
+## 1. What changed for the release
 
-| | نتیجه | نوع |
-|---|---|---|
-| **جست‌وجوی ۰٫۵ در برابر ۰٫۴**، 5+0.05 | **+۱۹٫۴ [+۷٫۳, +۳۱٫۶]**، SPRT [0,10] H1 پس از ۲۴۲ جفت | اندازه‌گیری |
-| همان، 10+0.1 | **+۱۲٫۷ [+۰٫۳, +۲۵٫۳]**، ۱۵۰ جفت | اندازه‌گیری |
-| همان، ۲۵ هزار گره در هر حرکت | +۷۳٫۷ [+۴۴٫۰, +۱۰۴٫۵]، ۱۱۰ جفت | اندازه‌گیری |
-| فرزین ۰٫۵ در برابر استاک‌فیش ۱۵٫۱، 10+0.1 | **−۷۴٫۱ [−۹۷٫۰, −۵۱٫۷]**، ۱۰۰ جفت (۰٫۴: −۸۳٫۲) | اندازه‌گیری |
-| در برابر استاک‌فیش ۱۷٫۱، 10+0.1 | **−۹۰٫۶ [−۱۱۳٫۱, −۶۸٫۸]**، ۱۰۰ جفت (۰٫۴: −۱۱۵٫۲) | اندازه‌گیری |
-| در برابر استاک‌فیش ۱۵٫۱، ۱۰۰ هزار گره | **−۴۶٫۶ [−۷۸٫۶, −۱۵٫۴]**، ۶۰ جفت (۰٫۴: −۸۵٫۷) | اندازه‌گیری |
-| **شبکهٔ مستقل `fzn2-b1`** در برابر fzn2-a1، 5+0.05 | **+۶۳٫۱ [+۳۶٫۵, +۹۰٫۵]**، SPRT H1 پس از ۸۹ جفت | اندازه‌گیری |
-| fzn2-b1 در برابر معلم CC0 (Track A)، 5+0.05 | **−۱۸۴٫۰ [−۲۱۸٫۰, −۱۵۲٫۹]**، ۱۰۰ جفت (a1: −۲۳۰٫۲) | اندازه‌گیری |
-
-پیام اصلی: (۱) شکاف درخت جست‌وجو با استاک‌فیش ۱۵٫۱ در گره برابر تقریباً **نصف شد** (−۸۶ → −۴۷)، ولی بخشی از این بهره در زمان واقعی با افت ۱۰ تا ۱۶٪ nps خورده می‌شود. (۲) شبکهٔ مستقل با **ادامهٔ آموزش از شبکهٔ قبلی** و فقط ۱۰۰M دادهٔ تازه +۶۳ Elo گرفت و فاصله تا معلم را از ۲۳۰ به ۱۸۴ رساند. (۳) یک خطای اندازه‌گیری در trainer (نشت validation) پیدا و اصلاح شد که بهبود دقت را تقریباً سه برابر بیش‌برآورد می‌کرد. (۴) مقایسه‌ها با هم‌زمانی ۴ روی ۴ هسته و فقط ۶۰ تا ۱۵۰ جفت انجام شده‌اند؛ بازه‌ها هنوز ±۲۰ تا ±۳۰ Elo پهنا دارند و اعداد استاک‌فیش با ۰٫۴ در یک اجرای مستقل مقایسه می‌شوند (نه هم‌زمان).
-
-## ۱. تغییرات جست‌وجو (Track A)
-
-ده ویژگی که در موتورهای برتر اثبات شده‌اند پیاده شدند، هر کدام پشت یک سوئیچ `tune_x_*` (پیش‌فرض روشن) تا بتوان با همان باینری ablation کرد:
-
-| سوئیچ | ویژگی |
+| area | change |
 |---|---|
-| `x_pawnhist` | **history ساختار پیاده**: `pawn[pawn_hash % 512][piece][to]` در مرتب‌سازی، LMR و هرس |
-| `x_threats` | **مرتب‌سازی آگاه از تهدید**: پاداش فرار مهرهٔ تهدیدشده (وزیر از رخ، رخ از سبک، سبک از پیاده)، جریمهٔ رفتن به خانهٔ تهدیدشده، پاداش حرکت کیش‌دهنده؛ `Board::threats` |
-| `x_evalhist` | به‌روزرسانی history حرکت آرام قبلی حریف از روی تغییر ارزیابی ایستا |
-| `x_prior` | **پاداش fail-low**: وقتی گره بدون بهترین حرکت شکست می‌خورد، حرکت آرام قبلی حریف (main + continuation) پاداش می‌گیرد |
-| `x_malus` | جریمهٔ جداگانه و بزرگ‌تر از پاداش (۲۶۰d−۱۲۰ تا ۲۴۰۰ در برابر ۱۷۰d−۱۰۰ تا ۲۰۰۰) |
-| `x_frac` | **LMR کسری** با واحد ۱/۱۰۲۴ ply و جملهٔ history پیوسته به جای گرد کردن چندباره |
-| `x_postlmr` | به‌روزرسانی continuation history پس از re-search کامل یک حرکت کاهش‌یافته |
-| `x_minorcorr` | **correction history مهره‌های سبک** (hash افزایشی اسب/فیل/شاه، `Board::minor_hash`) |
-| `x_hindsight` | تنظیم عمق با نگاه به گذشته: اگر والد این گره را ≥۳ کاهش داده و حریف بدتر نشده، +۱ عمق؛ اگر هر دو ارزیابی خوش‌بینانه‌اند، −۱ |
-| `x_smallpc` | ProbCut کوچک: کران پایین TT به عمق کافی و ≥ β+۴۰۰ |
+| network | Cargo feature `ownnet` embeds only `nets/fzn2-a1.nnue`. `build.rs` checks the FZN2 magic and SHA-256 and fails otherwise. |
+| identity | The OwnNet edition reports `id name Farzin 0.5.0`; the research build reports `Farzin 0.5.0 Research`. `--version` prints the edition, CPU features, slider method and network hash. |
+| build | `target-cpu=native` removed. `tools/build_release.sh` builds x86-64-v3 (AVX2+BMI2/PEXT), x86-64-v3 without BMI2, and x86-64-v2 Windows binaries (static CRT, mingw-w64), plus Linux, with path remapping, no timestamps and stripped symbols. Fat LTO and `codegen-units=1` give about +8% nps (best of 6: 1.43–1.45M vs 1.29–1.34M nps). |
+| CPU | PEXT slider lookups when built with BMI2 (magic fallback otherwise). They are equivalence-tested against the magic tables. On this VM the speed difference is within noise. A start-up check exits with a clear message if the CPU lacks a compiled-in feature. |
+| UCI | `Ponder` option, `go ponder` / `ponderhit` (clock limits are counted from ponderhit, and no answer is sent before ponderhit or stop). Tuning options hidden in the OwnNet edition. `Move Overhead` default raised from 20 to 50 ms. |
+| **bug fix** | A search stopped inside iteration 1 (`go nodes 1`, or a near-zero clock) could return the **previous search's** PV move, which can be illegal in the new position. Found by `tools/release_check.py` random-game testing. Fixed by resetting the PV before the stop check, and by validating the best move and the ponder move against the legal-move list. A regression test was added. |
+| tooling | `tools/release_check.py` (UCI conformance and stress), `tools/check_no_foreign_weights.py`, 40/N repeating clocks and clock-safety stats in `arena.py`, CI on Linux, x86-64-v3 and native Windows, and a tag-triggered draft-release workflow. |
 
-اندازه‌گیری‌ها (s1 = همهٔ ده ویژگی، base = فرزین ۰٫۴ بدون تغییر، امضای bench ۱٬۱۷۹٬۰۱۸ → ۸۴۴٬۷۴۴):
+The search algorithm is unchanged. `farzin 0.4` with `EvalFile=fzn2-a1.nnue`
+and the 0.5 OwnNet build give the same `bench` signature (1325774 nodes at
+depth 12). The 0.5 research build matches 0.4 (1179018).
 
-| شرایط | نتیجه | نوع |
-|---|---|---|
-| ۲۵ هزار گره در هر حرکت، ۱۱۰ جفت | **+۷۳٫۷ [+۴۴٫۰, +۱۰۴٫۵]** | اندازه‌گیری |
-| 5+0.05، SPRT [0,10] | **+۱۹٫۴ [+۷٫۳, +۳۱٫۶]، H1 پس از ۲۴۲ جفت** | اندازه‌گیری |
-| 10+0.1، ۱۵۰ جفت | **+۱۲٫۷ [+۰٫۳, +۲۵٫۳]** (عمق میانگین ۲۰٫۱ در برابر ۱۹٫۴ با nps ۰٫۹۶ در برابر ۱٫۰۲ میلیون؛ ۵۲٪ پایان طبیعی) | اندازه‌گیری |
+## 2. Release binaries
 
-برداشت‌ها:
-- فاصلهٔ بزرگ بین گره ثابت (+۷۴) و زمان ثابت (+۱۹) دو علت دارد: (۱) nps حدود ۱۶٪ کمتر (میانگین ۵ اجرای متناوب bench: ۹۱۸ هزار در برابر ۱٫۱۰ میلیون؛ نقشهٔ تهدید و جدول pawn history هزینه دارند، و درخت انتخابی‌تر هم سهم گره‌های ارزان qsearch را تغییر می‌دهد)؛ (۲) بهرهٔ هرس بیشتر در عمق کم ظاهر می‌شود. **درس روش‌شناختی: آزمون گره‌ثابت برای تغییرات هرس، بهره را چند برابر نشان می‌دهد؛ تصمیم باید با آزمون زمانی گرفته شود.**
-- نویز nps روی این VM حدود ±۱۰٪ بین اجراهاست، پس نسبت دادن هزینهٔ nps به هر ویژگی با bench ممکن نشد (bench اکنون گزینه‌های `tune_*` را رعایت می‌کند تا روی ماشین آرام‌تر قابل اندازه‌گیری باشد).
+Built with rustc 1.97.0 and mingw-w64 13 (Ubuntu 24.04):
 
-### Lazy SMP: رأی‌گیری بهترین نخ (`x_vote`)
-به جای نتیجهٔ نخ اصلی، هر نخ با وزن `(score − min_score + 14) × depth` به حرکت خودش رأی می‌دهد؛ مات اثبات‌شده برنده است. (آزمون Elo چندنخی انجام نشد؛ بخش ۸.)
-
-### سوئیچ‌های دستهٔ ۲ (پیش‌فرض خاموش، اندازه‌گیری نشده)
-`x_futhist` (جملهٔ history در futility آرام)، `x_tripleext` (گسترش سه‌گانهٔ singular)، `x_rfpworse` (بدتر شدن حریف در حاشیهٔ RFP). کد آماده است ولی بودجهٔ CPU صرف آزمون‌های قوی‌تر شد؛ عمداً روشن نشدند.
-
-## ۲. NNUE مستقل (Track B): تقطیر تجمعی
-
-### ۲.۱ شروع گرم و رشد شبکه (`farzin-train2 init=`)
-- trainer یک شبکهٔ FZN2 کمی‌شده را de-quantize می‌کند و از آن ادامه می‌دهد؛ **هیچ محاسبهٔ قبلی دور ریخته نمی‌شود**، روی هر ماشینی و در هر نوبتی.
-- شبکه می‌تواند **رشد کند**: هر king bucket جدید از bucket قدیمی‌ای که همان خانه‌های شاه را پوشش می‌داد مقداردهی می‌شود (۱۶m پالایشِ دقیق ۴m است) و نورون‌های اضافه با وزن خروجی صفر شروع می‌کنند. شبکهٔ رشدیافته پیش از اولین گام **دقیقاً** همان تابع را حساب می‌کند: تست `tests/warm_start.rs` برابری بیت‌به‌بیت ارزیابی را برای ۴m→۴m، ۴m→۱۶m و ۷۶۸→۱۰۲۴ در CI بررسی می‌کند.
-- `epochs=0` فقط تبدیل/رشد را می‌نویسد. `tools/distill3.sh` چرخهٔ «دادهٔ تازه با seed جدید → ادامهٔ آموزش → SPRT در برابر شبکهٔ قبلی» را resumable اجرا می‌کند.
-
-### ۲.۲ داده
-`datagen tree_rate=48` با جست‌وجوی جدید (s1) به‌عنوان حرکت‌دهنده و `default.nnue` به‌عنوان معلم: **۱۰۰٫۱ میلیون موقعیت در ۵۱ دقیقه روی ۴ هسته (۳۲٫۷ هزار موقعیت/ثانیه، حدود ۴۲۰۰ موقعیت در هر بازی)**. جست‌وجوی انتخابی‌تر در هر بازی نمونهٔ بیشتری تولید کرد (۰٫۴: حدود ۲۹۰۰).
-
-### ۲.۳ اشکال مهم: نشت در اعتبارسنجی
-trainer قبلی ۲۰۰ هزار موقعیت تصادفی از همان فایل را validation می‌گرفت. چون نمونه‌برداری از درخت هزاران موقعیت بسیار همبسته در هر بازی تولید می‌کند، موقعیت‌های تقریباً تکراری در هر دو مجموعه می‌افتند:
-
-| شبکه | val درونی (تصادفی، نشت‌دار) | **MSE روی دادهٔ کاملاً جدا (seed دیگر، ۴۰۰ هزار)** | در برابر fzn2-a1، 5+0.05 |
-|---|---|---|---|
-| fzn2-a1 (مرجع) | — | ۰٫۰۰۲۸۵۳ | — |
-| ۴m×۷۶۸ ادامه (`fzn2-b1`) | ۰٫۰۰۲۱۲۴ | **۰٫۰۰۲۵۳۳** (−۱۱٪) | **+۶۳٫۱ [+۳۶٫۵, +۹۰٫۵]، SPRT H1 پس از ۸۹ جفت** |
-| ۱۶m×۷۶۸ رشدیافته | ۰٫۰۰۱۹۸۶ | ۰٫۰۰۲۴۹۰ (−۱۳٪) | +۱۰٫۲ [−۱۱٫۸, +۳۲٫۲]، ۱۵۴ جفت |
-
-- val نشت‌دار بهبود را ۳۲٪ نشان می‌داد؛ بهبود واقعی ۱۱ تا ۱۳٪ است. شبکهٔ ۱۶m (train loss ۰٫۰۰۱۸۴) موقعیت‌ها را **حفظ کرد** و با وجود MSE کمی بهتر روی دادهٔ جدا، در بازی تقریباً هیچ بهره‌ای نداد؛ ۴m با همان داده +۶۳ Elo گرفت.
-- اصلاح: `valdata=FILE` (ترجیحی) یا در نبودش **دنبالهٔ پیوستهٔ** فایل به‌عنوان validation (فقط یک بازی در مرز). این همان نوع خطای اندازه‌گیری است که اعتماد به آزمایش‌ها را از بین می‌برد.
-- برداشت: با این مقدار داده، **ظرفیت بیشتر (king bucket بیشتر) زودرس است**؛ گلوگاه تنوع داده است نه ظرفیت. دادهٔ درخت تعداد «بازی‌های مستقل» کمی دارد (۲۳٫۶ هزار بازی برای ۱۰۰M موقعیت).
-
-### ۲.۴ فاصله تا معلم
-fzn2-b1 در برابر شبکهٔ معلم با همان جست‌وجو، 5+0.05، ۱۰۰ جفت: **−۱۸۴٫۰ [−۲۱۸٫۰, −۱۵۲٫۹]** (اندازه‌گیری؛ fzn2-a1 در ۰٫۴: −۲۳۰٫۲). nps دانش‌آموز ۱۴٪ بیشتر است (۱٫۱۰ در برابر ۰٫۹۷ میلیون). با این فاصله، **Track A همچنان پیش‌فرض می‌ماند**؛ شبکهٔ مستقل هنوز شرایط ترویج را ندارد. در این آزمون فقط ۳۰٪ بازی‌ها طبیعی پایان یافتند (اختلاف قدرت زیاد → تسلیم توافقی).
-
-## ۳. منابع داده و محاسبه
-
-- برچسب‌ها: ارزیابی ایستای `nn-ad9b42354671` (CC0، استاک‌فیش). موقعیت‌ها: فقط بازی‌های خود فرزین. `database.lichess.org`، `huggingface.co` و `tests.stockfishchess.org` از این محیط همچنان در دسترس نبودند (اتصال برقرار نشد)؛ از GitHub فقط سورس استاک‌فیش و شبکه‌های CC0 آن دریافت شد.
-- محاسبهٔ این مرحله (اندازه‌گیری، تقریبی): ۵۱ دقیقه×۴ هسته تولید داده؛ دو آموزش موازی هر کدام ۲ نخ، حدود ۴۷ و ۵۰ دقیقه؛ بقیه مسابقه (حدود ۴ ساعت×۴ هسته).
-
-## ۴. مسابقه با موتورهای مرجع (Track A، فرزین ۰٫۵ با شبکهٔ پیش‌فرض)
-
-| حریف | شرایط | نتیجه | عمق میانگین (فرزین / حریف) | ms در هر حرکت | nps (میلیون) |
-|---|---|---|---|---|---|
-| استاک‌فیش ۱۵٫۱ (همان شبکهٔ CC0) | 10+0.1، ۱۰۰ جفت | **−۷۴٫۱ [−۹۷٫۰, −۵۱٫۷]** | ۱۹٫۹ / ۲۰٫۶ | ۲۱۷ / ۲۴۸ | ۰٫۹۱ / ۱٫۰۲ |
-| استاک‌فیش ۱۷٫۱ | 10+0.1، ۱۰۰ جفت | **−۹۰٫۶ [−۱۱۳٫۱, −۶۸٫۸]** | ۲۰٫۳ / ۲۱٫۵ | ۲۲۰ / ۲۳۹ | ۰٫۹۱ / ۰٫۷۰ |
-| استاک‌فیش ۱۵٫۱ | ۱۰۰ هزار گره، ۶۰ جفت | **−۴۶٫۶ [−۷۸٫۶, −۱۵٫۴]** | ۱۸٫۴ / ۱۸٫۹ | — | — |
-
-همه اندازه‌گیری‌اند؛ ۵۷ تا ۵۹٪ بازی‌ها طبیعی پایان یافتند. مقایسه با ۰٫۴ (گزارش ۷، همان پروتکل): SF15.1 −۸۳٫۲ → −۷۴٫۱، SF17.1 −۱۱۵٫۲ → −۹۰٫۶، گره ثابت −۸۵٫۷ → −۴۶٫۶. بازه‌ها هم‌پوشانی دارند؛ مقایسهٔ مستقیم دقیق‌تر همان +۱۲٫۷ در برابر ۰٫۴ است.
-
-برداشت‌ها:
-- **در گره برابر، شکاف تقریباً نصف شد** (کیفیت درخت)؛ در زمان برابر کمتر بهبود یافت چون nps فرزین اکنون ۱۰٪ کمتر از استاک‌فیش ۱۵٫۱ با همان شبکه است.
-- فرزین هنوز **۱۲ تا ۱۳٪ زمان کمتری در هر حرکت** مصرف می‌کند (۲۱۷ در برابر ۲۴۸ ms) — فرصت ارزان برای مدیریت زمان.
-- آزمون 30+0.3 در این مرحله تکرار نشد (۰٫۴: −۶۴٫۴ در برابر SF15.1، ۳۰ جفت).
-
-## ۵. آزمایش‌های ناموفق یا بی‌نتیجه
-
-| آزمایش | نتیجه |
-|---|---|
-| رشد ۴m→۱۶m king bucket با ۱۰۰M دادهٔ درخت | +۱۰٫۲ [−۱۱٫۸, +۳۲٫۲]؛ بیش‌برازش، ترویج نشد |
-| نسبت دادن هزینهٔ nps به هر ویژگی با bench | نویز VM (±۱۰٪) بیشتر از اثر؛ بی‌نتیجه |
-| دستهٔ ۲ جست‌وجو | آزمون نشد (بودجه) |
-
-## ۶. گلوگاه‌های باقی‌مانده
-
-1. **کیفیت درخت هنوز با استاک‌فیش فاصله دارد** (بخش ۴). فاصلهٔ گره‌ثابت مستقیماً کیفیت جست‌وجو را می‌سنجد.
-2. **nps**: ویژگی‌های جدید حدود ۱۶٪ از nps کم کردند؛ بهینه‌سازی نقشهٔ تهدید (محاسبهٔ افزایشی یا اشتراک با تولید حرکت) بهرهٔ زمانی را به بهرهٔ گره‌ثابت نزدیک‌تر می‌کند.
-3. **تنوع دادهٔ Track B**: موقعیت‌های درخت همبسته‌اند؛ ظرفیت بیشتر فقط با بازی‌های مستقل بیشتر سودمند است.
-4. ۴ هسته برای تشخیص تغییرات ±۵ Elo کافی نیست (~۲۰۰۰ جفت لازم است).
-
-## ۷. فرصت‌های بعدی (برآورد، به ترتیب Elo به ازای هزینه)
-
-1. **دور بعدی تقطیر تجمعی** با `tools/distill3.sh nets/fzn2-b1.nnue 100000000 4m 768` و `tree_rate` بزرگ‌تر (مثلاً ۱۹۲) تا با همان هزینهٔ برچسب، بازی‌های مستقل بیشتری پوشش داده شود؛ سپس دوباره رشد به ۱۶m یا ۱۰۲۴ پس از ~۵۰۰M موقعیت.
-2. **کاهش هزینهٔ nps** ویژگی‌های جدید و سپس ablation زمانی تک‌تک آن‌ها.
-3. **SPSA با بودجهٔ واقعی** روی پارامترهای جدید (bonus/malus، ضرایب threat، LMR کسری) — مقادیر فعلی از استاک‌فیش/حدس آمده‌اند و برای فرزین تنظیم نشده‌اند.
-4. آزمون دستهٔ ۲ و `tm_pct`.
-5. آزمون Elo چندنخی رأی‌گیری Lazy SMP روی ماشین با هستهٔ بیشتر.
-
-## ۸. بازتولید
-
-```sh
-cargo build --release
-# جست‌وجو: هر ویژگی را می‌توان خاموش کرد، مثلاً opt.tune_x_threats=0
-python3 tools/arena.py --engine name=new,cmd=target/release/farzin \
-    --engine name=old,cmd=/path/farzin-0.4 --tc 5+0.05 --pairs 400 --sprt 0 10 --adjudicate conservative
-# Track B: یک دور تقطیر تجمعی
-./target/release/farzin datagen threads=4 games=23600 soft_nodes=2500 hard_nodes=20000 \
-    tree_rate=48 random_move_pm=50 random_plies=8 seed=2027 out=tree2.data
-./target/release/farzin datagen threads=4 games=240 soft_nodes=2500 hard_nodes=20000 \
-    tree_rate=48 random_move_pm=50 random_plies=8 seed=99991 out=holdout.data
-./target/release/farzin-train2 data=tree2.data valdata=holdout.data init=nets/fzn2-a1.nnue \
-    kb=4m hidden=768 epochs=3 lr=0.0005 threads=4 out=fzn2-b1.nnue
+```
+1fd1651a7aa74c7604d7258a7699738ad0dd5b80067134b3b871cbbbbb3e3845  farzin-0.5.0-windows-x64-avx2-bmi2.exe
+024540ca36ea2039d6cda9ebcd743036a6a123a0a8fdcefedffb680fe078c470  farzin-0.5.0-windows-x64-avx2.exe
+578bd795e4f9ea5c38cf7d2edbc3afa52b83ccf817cfbdecb5ddeb3c3f2958a9  farzin-0.5.0-windows-x64-popcnt.exe
+c0e2cf7c7096b329e15b0ef37256e291e37fcb60703af68b4739379885baf055  farzin-0.5.0-linux-x64-avx2-bmi2
 ```
 
-## ۹. مجوز و منشأ
+* **Reproducible:** a second build from a different directory, and the CI job
+  `release-build` on a fresh GitHub Ubuntu 24.04 runner, produced
+  **bit-identical** files (same four hashes).
+* The Windows executables import only `KERNEL32`, `ntdll`, `msvcrt` and
+  `api-ms-win-core-synch-l1-2-0`, so no runtime installation is needed.
+* All three Windows variants give the same `bench` node count. Only their
+  speed differs.
+* **No Stockfish weights:** each binary was scanned at every byte offset for
+  the 1,390,584 indexed high-entropy 32-byte chunks of `nets/default.nnue`.
+  **0 found.** The positive control found 147,936 of 147,936 chunks of
+  `fzn2-a1.nnue`. The binaries are 6.3 MB. The Stockfish net alone is 47 MB.
 
-- `nets/default.nnue` همچنان وزن CC0 استاک‌فیش است (Track A). `nets/fzn2-b1.nnue` فقط از بازی‌های خود فرزین و برچسب‌های CC0 ساخته شده است (منشأ و هش در `nets/README.md`).
-- هیچ کد استاک‌فیش (GPL) وارد مخزن نشد. ایده‌های الگوریتمی (pawn history، threat ordering، hindsight و …) از ادبیات عمومی برنامه‌نویسی شطرنج‌اند و کد از نو نوشته شده است.
+## 3. Protocol, correctness and stability (`tools/release_check.py`)
+
+10 checks: handshake and options; setting every option; perft on 6 standard
+positions (16,046,250 leaf nodes, all exact); special positions (castling,
+en passant, under/promotion, stalemate → `0000`, mate in 1); 30 random games
+with mixed node limits (2,493 engine moves, all legal); PV replay legality
+(72 lines); depth/nodes/movetime/infinite+stop/isready during search;
+ponder/ponderhit/stop; extreme clocks (15 ms to 2 s, including `movestogo 1`
+and `movestogo 40`); 4 threads + 256 MB hash for 20 s, 40 start/stop cycles,
+Threads change, and quit during search.
+
+| where | binary | result |
+|---|---|---|
+| native **Windows** (GitHub `windows-latest`) | `windows-x64-avx2-bmi2.exe` | **10/10 pass**. 4 threads: depth 23, 3.36M nps, hashfull 963. Quit 0.01 s |
+| Linux (CI and local) | `linux-x64-avx2-bmi2` | 10/10 pass |
+| Wine 9.0 (local) | `windows-x64-avx2-bmi2.exe` | 9/10 on the first run after a container restart (the handshake timed out at 10 s while the Wine prefix initialised); 10/10 on re-run, `uciok` in 0.06 s |
+
+`cargo test --features ownnet` also passes natively on Windows (MSVC,
+x86-64-v3).
+
+## 4. Games
+
+| match | TC | games | result for OwnNet (Elo, 95%) | forfeits / crashes / illegal |
+|---|---|---|---|---|
+| OwnNet vs Research edition | 10+0.1 | 200 | **−249.1** [−289.8, −213.5] | 0 / 0 / 0 |
+| OwnNet (**Windows exe under Wine**) vs Research | **40/20 repeating** (scaled 40/15) | 48 | **−154.1** [−203.7, −109.9] | 0 / 0 / 0 |
+| OwnNet Windows self-play, native Windows CI | 40/8 repeating | 8 | — | 0 / 0 / 0 |
+| OwnNet (Windows exe under Wine) vs Research | 12+0.1 (CCRL-blitz-like 2'+1" ratio) | 48 | −221.1 [−280.2, −171.6] | 0 / 0 / 0 |
+| **SMP**: OwnNet 2 threads vs 1 thread, 256 MB hash | 10+0.1 | 80 | **+93.4** [+57.7, +131.1] (2.26M vs 1.13M nps, +1 ply) | 0 / 0 / 0 |
+| Regression: OwnNet 0.5 vs Farzin 0.4 + same net | 10+0.1 | 120 | +23.2 [−10.4, +57.2] (LTO speed; search identical) | 0 / 0 / 0 |
+
+Total: **504 local games + 8 on native Windows, with 0 time forfeits, 0 crashes and 0 illegal moves**, all with `--time-margin 0`.
+
+Clock safety (from `engine_stats`): at 40/20 the lowest clock that remained
+was 0.085 s (Research: 0.123 s). This happens on the last moves before a time
+control, where the time manager spends up to 70% of the remaining clock
+because the clock refills right after. It is by design and leaves the
+`Move Overhead` margin intact, but it is aggressive. A smoother 40/N
+allocation is a candidate follow-up that should be tested for Elo.
+
+## 5. Strength estimate (conservative; not a CCRL rating)
+
+Measured chain on this machine (1 thread):
+
+| link | result | source |
+|---|---|---|
+| OwnNet vs Research (same search) | −249 at 10+0.1; −154 at 40/20 | this report |
+| Research (= 0.4 Track A) vs Stockfish 15.1 | −83 at 10+0.1 (100 pairs); −64 at 30+0.3 (30 pairs) | v7 report |
+| OwnNet net (FZN2) **directly** vs Stockfish 15.1 | −215 [−275, −165] at 10+0.1 (40 pairs) | v7 report, `benchmarks/v7/fzn2-sf15-10s.json.gz` |
+
+Stockfish 15.1 (1 CPU) is listed around **3540 on CCRL 40/15**. That figure
+comes from a CCRL list quoted on TalkChess; I could not check it on the CCRL
+site from this environment. Subtracting −215 (direct) or −249 − 83 = −332
+(chain) gives **≈ 3200–3320** on that scale.
+
+Conservative statement: **expect CCRL 40/15 around 3150–3300.** Lean toward
+the lower half until real CCRL games exist. Reasons:
+* Gaps measured at 10+0.1 between engines of different strength usually
+  shrink at longer controls (here −249 → −154 at 40/20). That would push the
+  number up.
+* The anchor comes from a single opponent, the sample sizes are small, the
+  hardware is different, and engine-pool effects are unknown. All of these
+  argue for a wide margin.
+* The Stockfish anchor itself is unverified (see above).
+
+Reference engines from outside the repository could not be built here (the
+environment's permission policy blocked compiling external engine sources), so
+no new third-party gauntlet was run for this report.
+
+## 6. Known limitations and follow-ups
+
+1. The FZN2 net is about 150–250 Elo weaker than the CC0 teacher. The next
+   gains are more data and a second hidden layer (see v7 §9).
+2. 40/N time allocation near the control (see §4).
+3. UCI_Chess960 and MultiPV are not supported. CCRL standard lists do not
+   need them.
+4. `go searchmoves` is ignored.

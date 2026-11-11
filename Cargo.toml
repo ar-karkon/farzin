@@ -7,12 +7,34 @@ description = "A small UCI chess engine written in Rust"
 [features]
 # Experimental search integration; library accumulator tests always run.
 nnue-stack = []
+# Competition (CCRL) edition: embeds only Farzin's own FZN2 network
+# `nets/fzn2-a1.nnue` (checked by SHA-256 at build time).
+ownnet = []
+# Legacy Caissa-format experiments (`src/caissa.rs`, `src/nnue.rs`) that
+# depend on the `chess` crate; not part of the engine.
+legacy = ["dep:chess"]
 
 [dependencies]
-chess = "3.2.0"
+chess = { version = "3.2.0", optional = true }
 
 # Debug builds keep overflow checks and debug assertions but are optimised:
 # an unoptimised engine with the embedded 22528x1024 network is too slow for
 # the UCI integration tests.
 [profile.dev]
 opt-level = 3
+
+# Release binaries: whole-program optimisation. `panic = "abort"` keeps a
+# (never expected) internal error from leaving a GUI waiting on a hung
+# process; the process exits instead.
+[profile.release]
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+
+[[example]]
+name = "caissa_bench"
+required-features = ["legacy"]
+
+[[example]]
+name = "caissa_probe"
+required-features = ["legacy"]
