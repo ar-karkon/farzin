@@ -52,7 +52,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@1.97.0
         with:
           targets: x86_64-pc-windows-gnu
-      - run: sudo apt-get update && sudo apt-get install -y mingw-w64
+      - run: tools/ci_apt_install.sh mingw-w64
       - run: tools/build_release.sh dist
       - run: pip install chess==1.10.0
       - run: python3 tools/release_check.py --quick --expect-sha256 f7bb0b7ef9857c3a4f24b39f5152e381e978d76d0c24817b0bebbefb1b6e220c dist/farzin-*-linux-x64-avx2-bmi2
