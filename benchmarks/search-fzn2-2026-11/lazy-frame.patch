@@ -1,0 +1,299 @@
+diff --git a/src/fzn2.rs b/src/fzn2.rs
+index cc426fd..4e1a635 100644
+--- a/src/fzn2.rs
++++ b/src/fzn2.rs
+@@ -6,7 +6,7 @@
+ //! horizontally when that king stands on files e-h, so one set of weights
+ //! covers both wings. With `KB = 1` and no mirroring this is exactly FZN1.
+ //!
+-//! Inference keeps one accumulator per ply (eager incremental updates) and a
++//! Inference keeps one accumulator per ply (lazy incremental updates) and a
+ //! refresh cache ("Finny table") per (perspective, bucket, mirror): a king
+ //! move that changes bucket or mirror rebuilds only the difference between
+ //! the cached and the current position.
+@@ -395,10 +395,30 @@ struct CacheEntry {
+     bbs: [Bitboard; 12],
+ }
+ 
++/// Piece-square changes from the parent, shared by both perspectives.
++/// A king bucket/mirror transition requires a cache refresh instead.
++#[derive(Clone, Copy, Default)]
++struct Dirty {
++    adds: [(u8, u8); 2],
++    subs: [(u8, u8); 2],
++    na: u8,
++    ns: u8,
++    refresh: [bool; 2],
++}
++
++// The 48-byte vector descriptors and 14 bytes of state fit in one cache line.
++// Push touches this metadata only; hidden-layer buffers stay cold until needed.
++#[repr(align(64))]
++struct Acc {
++    values: [Vec<i16>; 2],
++    dirty: Dirty,
++    computed: [bool; 2],
++}
++
+ /// Per-ply accumulator stack and king-bucket refresh cache.
+ pub struct Accumulators {
+     /// `stack[ply][perspective]`
+-    stack: Vec<[Vec<i16>; 2]>,
++    stack: Vec<Acc>,
+     /// `cache[perspective][bucket * 2 + mirrored]`
+     cache: [Vec<CacheEntry>; 2],
+     hidden: usize,
+@@ -439,7 +459,11 @@ impl Accumulators {
+             self.hidden = net.hidden;
+             self.king_buckets = net.king_buckets;
+             self.stack = (0..crate::search::MAX_PLY + 8)
+-                .map(|_| [vec![0; net.hidden], vec![0; net.hidden]])
++                .map(|_| Acc {
++                    values: [vec![0; net.hidden], vec![0; net.hidden]],
++                    dirty: Dirty::default(),
++                    computed: [false; 2],
++                })
+                 .collect();
+         }
+         // Cache contents depend on the weights, so always rebuild it on a
+@@ -456,9 +480,13 @@ impl Accumulators {
+ 
+     pub fn refresh(&mut self, net: &Network, board: &Board, ply: usize) {
+         self.ensure(net);
++        for entry in &mut self.stack {
++            entry.computed = [false; 2];
++        }
+         for p in [WHITE, BLACK] {
+             self.refresh_side(net, board, ply, p);
+         }
++        self.stack[ply].computed = [true; 2];
+     }
+ 
+     /// Rebuild perspective `p` at `ply` from the refresh cache.
+@@ -480,10 +508,11 @@ impl Accumulators {
+             }
+         }
+         entry.bbs = now;
+-        self.stack[ply][p].copy_from_slice(&entry.acc);
++        self.stack[ply].values[p].copy_from_slice(&entry.acc);
+     }
+ 
+-    /// Accumulator for `child` (= `parent` after `mv`) at `ply`.
++    /// Record `child` without touching the hidden layer. TT cutoffs, draws
++    /// and unevaluated check nodes need no accumulator computation.
+     pub fn push(&mut self, net: &Network, parent: &Board, child: &Board, mv: Move, ply: usize) {
+         let us = parent.stm;
+         let from = mv.from();
+@@ -494,52 +523,80 @@ impl Accumulators {
+         } else {
+             code
+         };
+-        for p in [WHITE, BLACK] {
+-            if code == us * 6 + KING && p == us {
+-                let old = net.key(p, parent);
+-                let new = net.key(p, child);
+-                if old != new {
+-                    self.refresh_side(net, child, ply, p);
+-                    continue;
+-                }
+-            }
+-            let (b, m) = net.key(p, child);
+-            let f = |c: usize, s: Square| net.row(feature(p, b, m, c, s));
+-            let add1 = f(placed, to);
+-            let sub1 = f(code, from);
+-            let (prev, rest) = self.stack.split_at_mut(ply);
+-            let src = &prev[ply - 1][p];
+-            let dst = &mut rest[0][p];
+-            if mv.is_castle() {
+-                let (rf, rt) = if mv.flag() == KING_CASTLE {
+-                    (to + 1, to - 1)
+-                } else {
+-                    (to - 2, to + 1)
+-                };
+-                let rook = us * 6 + ROOK;
+-                apply(dst, src, &[add1, f(rook, rt)], &[sub1, f(rook, rf)]);
+-            } else if mv.is_capture() {
+-                let (cap_sq, cap_code) = if mv.flag() == EN_PASSANT {
+-                    (to ^ 8, (us ^ 1) * 6 + PAWN)
+-                } else {
+-                    (to, parent.mailbox[to] as usize)
+-                };
+-                apply(dst, src, &[add1], &[sub1, f(cap_code, cap_sq)]);
++        let mut d = Dirty {
++            adds: [(placed as u8, to as u8), (0, 0)],
++            subs: [(code as u8, from as u8), (0, 0)],
++            na: 1,
++            ns: 1,
++            ..Dirty::default()
++        };
++        if code == us * 6 + KING {
++            d.refresh[us] = net.key(us, parent) != net.key(us, child);
++        }
++        if mv.is_castle() {
++            let (rf, rt) = if mv.flag() == KING_CASTLE {
++                (to + 1, to - 1)
+             } else {
+-                apply(dst, src, &[add1], &[sub1]);
+-            }
++                (to - 2, to + 1)
++            };
++            let rook = (us * 6 + ROOK) as u8;
++            d.adds[1] = (rook, rt as u8);
++            d.subs[1] = (rook, rf as u8);
++            d.na = 2;
++            d.ns = 2;
++        } else if mv.is_capture() {
++            d.subs[1] = if mv.flag() == EN_PASSANT {
++                (((us ^ 1) * 6 + PAWN) as u8, (to ^ 8) as u8)
++            } else {
++                (parent.mailbox[to], to as u8)
++            };
++            d.ns = 2;
+         }
++        self.stack[ply].dirty = d;
++        self.stack[ply].computed = [false; 2];
+     }
+ 
+     pub fn push_null(&mut self, ply: usize) {
+-        let (prev, rest) = self.stack.split_at_mut(ply);
+-        for p in [WHITE, BLACK] {
+-            rest[0][p].copy_from_slice(&prev[ply - 1][p]);
++        self.stack[ply].dirty = Dirty::default();
++        self.stack[ply].computed = [false; 2];
++    }
++
++    fn materialize(&mut self, net: &Network, board: &Board, ply: usize, p: usize) {
++        let mut ancestor = ply;
++        while !self.stack[ancestor].computed[p] {
++            if self.stack[ancestor].dirty.refresh[p] {
++                // Refresh the requested position directly. Intermediate
++                // positions across a bucket boundary need not be evaluated
++                // or retained as complete Board snapshots.
++                self.refresh_side(net, board, ply, p);
++                self.stack[ply].computed[p] = true;
++                return;
++            }
++            debug_assert!(ancestor > 0, "root accumulator must be refreshed");
++            ancestor -= 1;
++        }
++        let (b, m) = net.key(p, board);
++        for j in ancestor + 1..=ply {
++            let d = self.stack[j].dirty;
++            let row = |(code, sq): (u8, u8)| net.row(feature(p, b, m, code as usize, sq as usize));
++            let adds = d.adds.map(row);
++            let subs = d.subs.map(row);
++            let (prev, rest) = self.stack.split_at_mut(j);
++            apply(
++                &mut rest[0].values[p],
++                &prev[j - 1].values[p],
++                &adds[..d.na as usize],
++                &subs[..d.ns as usize],
++            );
++            rest[0].computed[p] = true;
+         }
+     }
+ 
+-    pub fn evaluate(&self, net: &Network, board: &Board, ply: usize) -> i32 {
+-        let [w, b] = &self.stack[ply];
++    pub fn evaluate(&mut self, net: &Network, board: &Board, ply: usize) -> i32 {
++        for p in [WHITE, BLACK] {
++            self.materialize(net, board, ply, p);
++        }
++        let [w, b] = &self.stack[ply].values;
+         net.output(w, b, board)
+     }
+ }
+@@ -661,4 +718,93 @@ mod tests {
+             }
+         }
+     }
++
++    fn assert_full_accumulator(net: &Network, acc: &mut Accumulators, board: &Board, ply: usize) {
++        assert_eq!(acc.evaluate(net, board, ply), net.evaluate(board));
++        // Check every hidden lane as well: clipping in the output layer
++        // could otherwise conceal an incorrect feature update.
++        for p in [WHITE, BLACK] {
++            let (b, m) = net.key(p, board);
++            let mut expected = net.ft_bias.clone();
++            let mut occ = board.occupied();
++            while occ != 0 {
++                let sq = pop_lsb(&mut occ);
++                add_row(
++                    &mut expected,
++                    net.row(feature(p, b, m, board.mailbox[sq] as usize, sq)),
++                );
++            }
++            assert_eq!(
++                acc.stack[ply].values[p],
++                expected,
++                "ply {ply}, perspective {p}, {}",
++                board.to_fen()
++            );
++        }
++    }
++
++    #[test]
++    fn lazy_updates_across_skipped_nodes_nulls_and_siblings() {
++        for name in ["1", "1m", "4m", "16m", "32m"] {
++            let net = random_net(64, 8, name);
++            let mut acc = Accumulators::new();
++            for fen in [
++                "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1",
++                "4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1",
++                "4k3/P7/8/8/8/8/7p/4K3 w - - 0 1",
++                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
++            ] {
++                let mut board = Board::from_fen(fen).unwrap();
++                acc.refresh(&net, &board, 0);
++                let mut seed = 31usize;
++                for ply in 1..100 {
++                    let moves = legal_moves(&board);
++                    if moves.is_empty() {
++                        break;
++                    }
++                    // Materialize some siblings and leave others pending,
++                    // then overwrite that same stack slot with the real move.
++                    if ply % 7 == 0 || ply == 1 {
++                        for &mv in &moves {
++                            let child = board.make_move(mv);
++                            acc.push(&net, &board, &child, mv, ply);
++                            assert_full_accumulator(&net, &mut acc, &child, ply);
++                        }
++                    }
++                    seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1);
++                    if ply % 5 == 0 && !board.in_check() {
++                        board = board.make_null();
++                        acc.push_null(ply);
++                    } else {
++                        let mv = moves[(seed >> 33) % moves.len()];
++                        let child = board.make_move(mv);
++                        acc.push(&net, &board, &child, mv, ply);
++                        board = child;
++                    }
++                    // Includes chains of uncomputed ordinary/null moves and
++                    // king bucket/mirror changes without Board snapshots.
++                    if ply % 9 == 0 || ply == 99 {
++                        assert_full_accumulator(&net, &mut acc, &board, ply);
++                    }
++                }
++            }
++        }
++    }
++
++    #[test]
++    fn refresh_invalidates_pending_updates_with_same_shape_new_weights() {
++        let net = random_net(32, 8, "4m");
++        let mut other = random_net(32, 8, "4m");
++        other.ft_bias.iter_mut().for_each(|v| *v += 7);
++        other.ft_weights.iter_mut().for_each(|v| *v /= 2);
++        let root = Board::startpos();
++        let mv = root.parse_move("e2e4").unwrap();
++        let child = root.make_move(mv);
++        let mut acc = Accumulators::new();
++        acc.refresh(&net, &root, 0);
++        acc.push(&net, &root, &child, mv, 1);
++        acc.refresh(&other, &root, 0);
++        acc.push(&other, &root, &child, mv, 1);
++        assert_full_accumulator(&other, &mut acc, &child, 1);
++    }
+ }

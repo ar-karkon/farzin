@@ -1,0 +1,24 @@
+   Compiling farzin v0.4.0 (/workspace/farzin)
+    Finished `release` profile [optimized] target(s) in 0.81s
+     Running tests/uci.rs (target/release/deps/uci-5d522a8837cf7771)
+
+running 1 test
+test quiet_mate_at_fifty_move_boundary_in_depth_one_search ... FAILED
+
+failures:
+
+---- quiet_mate_at_fifty_move_boundary_in_depth_one_search stdout ----
+
+thread 'quiet_mate_at_fifty_move_boundary_in_depth_one_search' (62070) panicked at tests/uci.rs:124:5:
+assertion `left == right` failed
+  left: "g2g3"
+ right: "d1d8"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    quiet_mate_at_fifty_move_boundary_in_depth_one_search
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `--test uci`

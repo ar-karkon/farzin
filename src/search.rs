@@ -539,7 +539,15 @@ impl Thread {
         }
         let pv_node = beta - alpha > 1;
         self.seldepth = self.seldepth.max(ply);
-        if board.halfmove >= 100 || board.insufficient_material() || self.is_repetition(board) {
+        if board.halfmove >= 100 {
+            // As in the main search, checkmate ends the game before a
+            // fifty-move draw can be claimed, including at a qsearch leaf.
+            if board.in_check() && legal_moves(board).is_empty() {
+                return -MATE + ply as i32;
+            }
+            return self.draw_score();
+        }
+        if board.insufficient_material() || self.is_repetition(board) {
             return self.draw_score();
         }
         let in_check = board.in_check();

@@ -1,0 +1,7 @@
+{
+  "pairs": 80,
+  "tc": "5+0.05",
+  "seed": 13,
+  "book": "benchmarks/search-fzn2-2026-11/holdout-80.fen",
+  "reason": "Compute allocation revised after measuring wall time per pair; initial 200-pair run stopped and excluded. Final opening set excludes all screen seed1/100, fixed seed2/150 and initial timed seed11/200 selections. No positive strength claim will use the calibration sample."
+}

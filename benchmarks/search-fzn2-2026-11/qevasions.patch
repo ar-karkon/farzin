@@ -1,0 +1,14 @@
+diff --git a/src/search.rs b/src/search.rs
+index 98a2515..ddeae0f 100644
+--- a/src/search.rs
++++ b/src/search.rs
+@@ -603,9 +603,6 @@ impl Thread {
+                     if !board.see_ge(mv, -20) {
+                         continue;
+                     }
+-                } else if moves > 2 && !mv.is_noisy() {
+-                    // In check: once a safe evasion exists, skip late quiets.
+-                    continue;
+                 }
+             }
+             let child = board.make_move(mv);

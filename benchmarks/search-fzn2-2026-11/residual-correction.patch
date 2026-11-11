@@ -1,0 +1,43 @@
+diff --git a/src/search.rs b/src/search.rs
+index 98a2515..77746b3 100644
+--- a/src/search.rs
++++ b/src/search.rs
+@@ -392,7 +392,10 @@ impl Thread {
+         let scaled = (diff * CORR_GRAIN).clamp(-CORR_MAX, CORR_MAX);
+         let w = (depth + 1).min(16);
+         let upd = |e: &mut i32| {
+-            *e = ((*e * (256 - w) + scaled * w) / 256).clamp(-CORR_MAX, CORR_MAX);
++            // Learn the remaining prediction error. Once corrected eval
++            // agrees with search, a zero residual preserves the learned bias.
++            let bonus = scaled * w / 256;
++            *e = (*e + bonus - *e * bonus.abs() / CORR_MAX).clamp(-CORR_MAX, CORR_MAX);
+         };
+         let h = &mut self.histories;
+         upd(&mut h.pawn_corr[stm][(board.pawn_hash as usize) % CORR_SIZE]);
+@@ -1421,3 +1424,26 @@ fn _assert_send() {
+     is_send::<Thread>();
+     let _ = MoveList::new();
+ }
++
++#[cfg(test)]
++mod correction_tests {
++    use super::*;
++
++    #[test]
++    fn correction_learns_a_constant_bias_without_forgetting_at_zero_residual() {
++        let board = Board::startpos();
++        for target in [-48, 48] {
++            let mut thread = Thread::new(0);
++            for _ in 0..1024 {
++                let corrected = thread.corrected(&board, 0, 0);
++                thread.update_correction(&board, 8, target - corrected, 0);
++            }
++            let corrected = thread.corrected(&board, 0, 0);
++            assert!((corrected - target).abs() <= 1, "{corrected} vs {target}");
++            for _ in 0..128 {
++                thread.update_correction(&board, 8, 0, 0);
++            }
++            assert_eq!(thread.corrected(&board, 0, 0), corrected);
++        }
++    }
++}
