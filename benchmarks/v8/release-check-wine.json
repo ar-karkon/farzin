@@ -1,0 +1,69 @@
+{
+ "cmd": [
+  "wine",
+  "dist/farzin-0.5.0-windows-x64-avx2-bmi2.exe"
+ ],
+ "ok": false,
+ "checks": [
+  {
+   "check": "uci handshake",
+   "ok": false,
+   "detail": "TimeoutError: no 'uciok' within 10s; last: []",
+   "s": 10.26
+  },
+  {
+   "check": "options: set every advertised option",
+   "ok": true,
+   "detail": "ok",
+   "s": 4.28
+  },
+  {
+   "check": "perft (move generation)",
+   "ok": true,
+   "detail": "6 positions, 16046250 leaf nodes match",
+   "s": 0.28
+  },
+  {
+   "check": "special positions and terminal answers",
+   "ok": true,
+   "detail": "9 positions",
+   "s": 0.13
+  },
+  {
+   "check": "legality: random games, every bestmove legal",
+   "ok": true,
+   "detail": "30 games, 2493 engine moves",
+   "s": 10.0
+  },
+  {
+   "check": "pv legality",
+   "ok": true,
+   "detail": "72 pv lines replayed",
+   "s": 0.33
+  },
+  {
+   "check": "go limits: depth, nodes, movetime, infinite/stop, isready while searching",
+   "ok": true,
+   "detail": "movetime 1000 -> 0.953s, readyok during search after 0 ms",
+   "s": 1.53
+  },
+  {
+   "check": "ponder / ponderhit / stop",
+   "ok": true,
+   "detail": "answered 236 ms after ponderhit",
+   "s": 2.14
+  },
+  {
+   "check": "clock: extreme time situations never overstep",
+   "ok": true,
+   "detail": "100ms:55; 100ms:8; 30ms:4; 30ms:3; 1000ms/mtg1:434; 1000ms/mtg1:454; 500ms:84; 500ms:315; 2000ms/mtg40:19; 2000ms/mtg40:28; 15ms:2; 15ms:3",
+   "s": 1.41
+  },
+  {
+   "check": "threads + hash stress, quit during search",
+   "ok": true,
+   "detail": "4 threads 20s: depth 25, 3836237 nps, hashfull 998; 40 start/stop cycles; quit in 0.02s",
+   "s": 21.67
+  }
+ ]
+}

@@ -1,0 +1,68 @@
+{
+ "cmd": [
+  "dist/farzin-0.5.0-linux-x64-avx2-bmi2"
+ ],
+ "ok": true,
+ "checks": [
+  {
+   "check": "uci handshake",
+   "ok": true,
+   "detail": "Farzin 0.5.0; 6 options; uciok after 0.19s",
+   "s": 0.4
+  },
+  {
+   "check": "options: set every advertised option",
+   "ok": true,
+   "detail": "ok",
+   "s": 0.94
+  },
+  {
+   "check": "perft (move generation)",
+   "ok": true,
+   "detail": "6 positions, 16046250 leaf nodes match",
+   "s": 0.23
+  },
+  {
+   "check": "special positions and terminal answers",
+   "ok": true,
+   "detail": "9 positions",
+   "s": 0.06
+  },
+  {
+   "check": "legality: random games, every bestmove legal",
+   "ok": true,
+   "detail": "30 games, 2493 engine moves",
+   "s": 5.01
+  },
+  {
+   "check": "pv legality",
+   "ok": true,
+   "detail": "72 pv lines replayed",
+   "s": 0.31
+  },
+  {
+   "check": "go limits: depth, nodes, movetime, infinite/stop, isready while searching",
+   "ok": true,
+   "detail": "movetime 1000 -> 0.956s, readyok during search after 0 ms",
+   "s": 1.49
+  },
+  {
+   "check": "ponder / ponderhit / stop",
+   "ok": true,
+   "detail": "answered 236 ms after ponderhit",
+   "s": 2.14
+  },
+  {
+   "check": "clock: extreme time situations never overstep",
+   "ok": true,
+   "detail": "100ms:23; 100ms:5; 30ms:2; 30ms:2; 1000ms/mtg1:666; 1000ms/mtg1:667; 500ms:75; 500ms:229; 2000ms/mtg40:25; 2000ms/mtg40:53; 15ms:2; 15ms:2",
+   "s": 1.76
+  },
+  {
+   "check": "threads + hash stress, quit during search",
+   "ok": true,
+   "detail": "4 threads 20s: depth 25, 4457620 nps, hashfull 985; 40 start/stop cycles; quit in 0.02s",
+   "s": 21.72
+  }
+ ]
+}
