@@ -228,7 +228,7 @@ fn pext_tables() -> String {
 /// Embedded network.
 ///
 /// * `ownnet` feature (the CCRL / competition edition): Farzin's own FZN2
-///   network `nets/fzn2-a1.nnue`. Any other network format is refused at
+///   network `nets/fzn2-b1.nnue`. Any other network format is refused at
 ///   build time, so this edition can never carry third-party weights.
 /// * default (research edition): `$FARZIN_EVALFILE`, else
 ///   `nets/default.nnue`, else none (classical evaluation).
@@ -236,7 +236,7 @@ fn embed_network(out_dir: &str) {
     println!("cargo:rerun-if-env-changed=FARZIN_EVALFILE");
     let ownnet = env::var_os("CARGO_FEATURE_OWNNET").is_some();
     let source = if ownnet {
-        "nets/fzn2-a1.nnue".to_string()
+        "nets/fzn2-b1.nnue".to_string()
     } else {
         env::var("FARZIN_EVALFILE").unwrap_or_else(|_| "nets/default.nnue".to_string())
     };
@@ -273,8 +273,8 @@ fn embed_network(out_dir: &str) {
     .unwrap();
 }
 
-/// SHA-256 of the released own network `nets/fzn2-a1.nnue`.
-const OWNNET_SHA256: &str = "f7bb0b7ef9857c3a4f24b39f5152e381e978d76d0c24817b0bebbefb1b6e220c";
+/// SHA-256 of the released own network `nets/fzn2-b1.nnue`.
+const OWNNET_SHA256: &str = "3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0";
 
 /// Minimal SHA-256 (FIPS 180-4) so the build has no extra dependencies.
 #[allow(clippy::needless_range_loop)]
