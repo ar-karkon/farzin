@@ -96,12 +96,19 @@ jobs:
           python tools/arena.py --engine name=a,cmd=$exe --engine name=b,cmd=$exe \
             --tc 3+0.05 --pairs 4 --concurrency 2 --threads 2 --book tools/books/farzin-openings.epd \
             --time-margin 0 --out selfplay-windows-blitz.json
+          # New net vs the previous OwnNet net (fzn2-a1) on native Windows.
+          # The same exe with EvalFile=fzn2-a1 searches exactly like the
+          # 0.5.0 release (identical bench signature, 943892 nodes).
+          python tools/arena.py --engine name=b1,cmd=$exe \
+            --engine name=a1,cmd=$exe,opt.EvalFile=nets/fzn2-a1.nnue \
+            --tc 10+0.1 --pairs 12 --concurrency 2 --hash 64 --book tools/books/farzin-openings.epd \
+            --time-margin 0 --out b1-vs-a1-windows.json
           python - <<'PY'
           import json, sys
           bad = 0
-          for f in ("selfplay-windows.json", "selfplay-windows-blitz.json"):
+          for f in ("selfplay-windows.json", "selfplay-windows-blitz.json", "b1-vs-a1-windows.json"):
               d = json.load(open(f))
-              print(f, d["terminations"], d["engine_stats"])
+              print(f, d["terminations"], d["engine_stats"], d.get("summary"))
               bad += sum(v for k, v in d["terminations"].items()
                          if k == "time forfeit" or k.startswith(("crash", "illegal")))
           sys.exit(1 if bad else 0)
@@ -116,3 +123,4 @@ jobs:
           path: |
             release-check-windows.json
             selfplay-windows*.json
+            b1-vs-a1-windows.json
