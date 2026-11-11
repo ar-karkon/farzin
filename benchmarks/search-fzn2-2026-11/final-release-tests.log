@@ -1,0 +1,75 @@
+   Compiling farzin v0.4.0 (/workspace/farzin)
+    Finished `release` profile [optimized] target(s) in 5.95s
+     Running unittests src/lib.rs (target/release/deps/farzin-14cd4d0e80dd3f19)
+
+running 21 tests
+test caissa::tests::avx2_hidden_layers_match_scalar_with_extremes_sparsity_and_overflow ... ok
+test caissa::tests::initial_features_are_in_range_and_unique ... ok
+test caissa::tests::incremental_features_match_refresh_for_special_moves ... ok
+test caissa::tests::lazy_stack_special_moves_and_all_promotions_restore_exact_raw_outputs ... ok
+test caissa::tests::selected_backend_matches_all_raw_buckets_on_legal_paths ... ok
+test caissa::tests::sparse_hidden_layer_matches_simple_reference ... ok
+test caissa::tests::validates_header_and_empty_network_output ... ok
+test eval::tests::evaluation_is_color_symmetric ... ok
+test fzn2::tests::incremental_updates_match_full_evaluation ... ok
+test fzn2::tests::layouts_are_in_range ... ok
+test fzn2::tests::mirror_symmetry ... ok
+test fzn2::tests::simd_matches_scalar ... ok
+test hka::tests::feature_tables_match_reference_layout ... ok
+test hka::tests::incremental_updates_and_cache_match_refresh ... ok
+test hka::tests::lazy_chains_with_skipped_evals_and_null_moves ... ok
+test hka::tests::rejects_malformed_files ... ok
+test net::tests::incremental_updates_match_refresh_and_serialization_round_trips ... ok
+test nnue::tests::incremental_matches_refresh_across_a_deterministic_game ... ok
+test nnue::tests::incremental_matches_refresh_and_undo_for_special_moves ... ok
+test nnue::tests::invalid_update_is_transactional ... ok
+test caissa::tests::lazy_stack_random_paths_skipped_evaluations_and_sibling_reuse ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+
+     Running unittests src/main.rs (target/release/deps/farzin-3df5876b40ccfff7)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/farzin-train.rs (target/release/deps/farzin_train-464d06174cf5d82a)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/farzin-train2.rs (target/release/deps/farzin_train2-2a09093f6ddec556)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/perft.rs (target/release/deps/perft-622583d552772c53)
+
+running 2 tests
+test fen_round_trip_and_hash_consistency ... ok
+test perft_reference_positions ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/uci.rs (target/release/deps/uci-5d522a8837cf7771)
+
+running 8 tests
+test finds_mate_and_reports_terminal_positions ... ok
+test handshake_and_node_limited_search ... ok
+test non_mating_fifty_move_boundary_still_returns_a_draw ... ok
+test clock_limited_search_finishes_promptly ... ok
+test principal_variation_replays_legally ... ok
+test quiet_mate_at_fifty_move_boundary_in_depth_one_search ... ok
+test threads_and_hash_options_work ... ok
+test stop_ends_infinite_search_with_one_bestmove ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+
+   Doc-tests farzin
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
