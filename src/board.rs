@@ -85,6 +85,8 @@ pub struct Board {
     pub pawn_hash: u64,
     /// Hash of non-pawn pieces per color (for correction history).
     pub non_pawn_hash: [u64; 2],
+    /// Hash of knights, bishops and kings of both colors (correction history).
+    pub minor_hash: u64,
     pub checkers: Bitboard,
     pub pinned: Bitboard,
 }
@@ -107,6 +109,7 @@ impl Board {
             hash: 0,
             pawn_hash: 0,
             non_pawn_hash: [0; 2],
+            minor_hash: 0,
             checkers: 0,
             pinned: 0,
         }
@@ -285,6 +288,9 @@ impl Board {
             self.pawn_hash ^= key;
         } else {
             self.non_pawn_hash[color] ^= key;
+            if matches!(piece, KNIGHT | BISHOP | KING) {
+                self.minor_hash ^= key;
+            }
         }
     }
 
@@ -299,7 +305,37 @@ impl Board {
             self.pawn_hash ^= key;
         } else {
             self.non_pawn_hash[color] ^= key;
+            if matches!(piece, KNIGHT | BISHOP | KING) {
+                self.minor_hash ^= key;
+            }
         }
+    }
+
+    /// Squares attacked by `color`'s pawns, by its pawns or minors, and by
+    /// its pawns, minors or rooks (for threat-aware move ordering).
+    pub fn threats(&self, color: usize) -> (Bitboard, Bitboard, Bitboard) {
+        let occ = self.occupied();
+        let pawns = self.piece_bb(color, PAWN);
+        let by_pawn = if color == WHITE {
+            ((pawns & !FILE_A) << 7) | ((pawns & !FILE_H) << 9)
+        } else {
+            ((pawns & !FILE_A) >> 9) | ((pawns & !FILE_H) >> 7)
+        };
+        let mut by_minor = by_pawn;
+        let mut bb = self.piece_bb(color, KNIGHT);
+        while bb != 0 {
+            by_minor |= crate::attacks::KNIGHT_ATTACKS[pop_lsb(&mut bb)];
+        }
+        let mut bb = self.piece_bb(color, BISHOP);
+        while bb != 0 {
+            by_minor |= crate::attacks::bishop_attacks(pop_lsb(&mut bb), occ);
+        }
+        let mut by_rook = by_minor;
+        let mut bb = self.piece_bb(color, ROOK);
+        while bb != 0 {
+            by_rook |= crate::attacks::rook_attacks(pop_lsb(&mut bb), occ);
+        }
+        (by_pawn, by_minor, by_rook)
     }
 
     #[inline(always)]
