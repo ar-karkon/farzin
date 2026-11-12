@@ -1,0 +1,35 @@
+[
+  {
+    "file": "farzin-0.5.2-windows-x64-avx2-bmi2.exe",
+    "pext_instructions": 39,
+    "ymm_operands": 5542,
+    "dlls": [
+      "api-ms-win-core-synch-l1-2-0.dll",
+      "KERNEL32.dll",
+      "msvcrt.dll",
+      "ntdll.dll"
+    ]
+  },
+  {
+    "file": "farzin-0.5.2-windows-x64-avx2.exe",
+    "pext_instructions": 0,
+    "ymm_operands": 5542,
+    "dlls": [
+      "api-ms-win-core-synch-l1-2-0.dll",
+      "KERNEL32.dll",
+      "msvcrt.dll",
+      "ntdll.dll"
+    ]
+  },
+  {
+    "file": "farzin-0.5.2-windows-x64-popcnt.exe",
+    "pext_instructions": 0,
+    "ymm_operands": 0,
+    "dlls": [
+      "api-ms-win-core-synch-l1-2-0.dll",
+      "KERNEL32.dll",
+      "msvcrt.dll",
+      "ntdll.dll"
+    ]
+  }
+]

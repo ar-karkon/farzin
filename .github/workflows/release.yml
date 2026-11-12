@@ -50,7 +50,7 @@ jobs:
       - run: pip install chess==1.10.0
       - run: python3 tools/release_check.py --expect-name "Farzin 0.5.2" --expect-sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0 dist/farzin-*-linux-x64-avx2-bmi2
       - run: |
-          cp docs/RELEASE-0.5.md dist/README.md
+          cp docs/README-RELEASE.md dist/README.md
           cp nets/README.md dist/NETWORK-PROVENANCE.md
           cp LICENSE dist/LICENSE
           cp THIRD_PARTY_NOTICES.md dist/THIRD_PARTY_NOTICES.md

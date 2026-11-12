@@ -1,0 +1,44 @@
+[
+  {
+    "cpu": "core2duo",
+    "returncode": 1,
+    "stdout": "info string Farzin: this build requires a CPU with x86-64-v3: AVX2, BMI1/BMI2, FMA, LZCNT, MOVBE, POPCNT. This processor lacks some of them; use another Farzin build (see README: Hardware requirements).\n",
+    "stderr": "Farzin: this build requires a CPU with x86-64-v3: AVX2, BMI1/BMI2, FMA, LZCNT, MOVBE, POPCNT. This processor lacks some of them; use another Farzin build (see README: Hardware requirements).\n",
+    "ok": true
+  },
+  {
+    "cpu": "Nehalem",
+    "returncode": 1,
+    "stdout": "info string Farzin: this build requires a CPU with x86-64-v3: AVX2, BMI1/BMI2, FMA, LZCNT, MOVBE, POPCNT. This processor lacks some of them; use another Farzin build (see README: Hardware requirements).\n",
+    "stderr": "Farzin: this build requires a CPU with x86-64-v3: AVX2, BMI1/BMI2, FMA, LZCNT, MOVBE, POPCNT. This processor lacks some of them; use another Farzin build (see README: Hardware requirements).\n",
+    "ok": true
+  },
+  {
+    "cpu": "SandyBridge",
+    "returncode": 1,
+    "stdout": "info string Farzin: this build requires a CPU with x86-64-v3: AVX2, BMI1/BMI2, FMA, LZCNT, MOVBE, POPCNT. This processor lacks some of them; use another Farzin build (see README: Hardware requirements).\n",
+    "stderr": "Farzin: this build requires a CPU with x86-64-v3: AVX2, BMI1/BMI2, FMA, LZCNT, MOVBE, POPCNT. This processor lacks some of them; use another Farzin build (see README: Hardware requirements).\n",
+    "ok": true
+  },
+  {
+    "cpu": "Haswell,-bmi2",
+    "returncode": 1,
+    "stdout": "info string Farzin: this build requires a CPU with x86-64-v3: AVX2, BMI1/BMI2, FMA, LZCNT, MOVBE, POPCNT. This processor lacks some of them; use another Farzin build (see README: Hardware requirements).\n",
+    "stderr": "qemu-x86_64: warning: TCG doesn't support requested feature: CPUID.07H:EBX.hle [bit 4]\nqemu-x86_64: warning: TCG doesn't support requested feature: CPUID.07H:EBX.rtm [bit 11]\nFarzin: this build requires a CPU with x86-64-v3: AVX2, BMI1/BMI2, FMA, LZCNT, MOVBE, POPCNT. This processor lacks some of them; use another Farzin build (see README: Hardware requirements).\n",
+    "ok": true
+  },
+  {
+    "cpu": "Haswell",
+    "returncode": 0,
+    "stdout": "Farzin 0.5.2 edition OwnNet target x86_64 features [popcnt,avx2,bmi2] sliders pext net fzn2-b1.nnue FZN2 4x768x768 buckets 8 mirrored sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0\n",
+    "stderr": "qemu-x86_64: warning: TCG doesn't support requested feature: CPUID.07H:EBX.hle [bit 4]\nqemu-x86_64: warning: TCG doesn't support requested feature: CPUID.07H:EBX.rtm [bit 11]\n",
+    "ok": true
+  },
+  {
+    "cpu": "EPYC-Rome",
+    "returncode": 0,
+    "stdout": "Farzin 0.5.2 edition OwnNet target x86_64 features [popcnt,avx2,bmi2] sliders pext net fzn2-b1.nnue FZN2 4x768x768 buckets 8 mirrored sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0\n",
+    "stderr": "qemu-x86_64: warning: TCG doesn't support requested feature: CPUID.80000001H:ECX.misalignsse [bit 7]\nqemu-x86_64: warning: TCG doesn't support requested feature: CPUID.80000001H:ECX.topoext [bit 22]\nqemu-x86_64: warning: TCG doesn't support requested feature: CPUID.80000001H:ECX.perfctr-core [bit 23]\nqemu-x86_64: warning: TCG doesn't support requested feature: CPUID.80000008H:EBX.clzero [bit 0]\nqemu-x86_64: warning: TCG doesn't support requested feature: CPUID.0DH:EAX.xsavec [bit 1]\nqemu-x86_64: warning: TCG doesn't support requested feature: CPUID.0DH:EAX.xsaves [bit 3]\n",
+    "ok": true
+  }
+]

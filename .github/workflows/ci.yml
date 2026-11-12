@@ -58,6 +58,8 @@ jobs:
         timeout-minutes: 40
         run: tools/ci_install_mingw.sh
       - run: tools/build_release.sh dist
+      - name: Match documented release checksums
+        run: diff dist/SHA256SUMS benchmarks/release-0.5.2/SHA256SUMS
       - run: pip install chess==1.10.0
       - run: python3 tools/release_check.py --quick --expect-name "Farzin 0.5.2" --expect-sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0 dist/farzin-*-linux-x64-avx2-bmi2
       - name: Repeat builds from a different source directory

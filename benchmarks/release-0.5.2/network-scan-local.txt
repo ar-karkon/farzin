@@ -1,0 +1,3 @@
+target/linux-release/x86_64-unknown-linux-gnu/release/farzin: 0 chunk(s) of nets/default.nnue (47001499 bytes, 1390584 indexed chunks); control nets/fzn2-b1.nnue: 148017 of 148017 chunks found
+nets/fzn2-b1.nnue: 0 chunk(s) of nets/default.nnue (47001499 bytes, 1390584 indexed chunks); control nets/fzn2-b1.nnue: 148017 of 148017 chunks found
+OK: no foreign network data

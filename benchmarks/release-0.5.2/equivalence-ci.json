@@ -1,0 +1,485 @@
+{
+  "baseline": {
+    "version": "Farzin 0.5.1 edition OwnNet target x86_64 features [popcnt,avx2,bmi2] sliders pext net fzn2-b1.nnue FZN2 4x768x768 buckets 8 mirrored sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0",
+    "bench": [
+      992681,
+      992681,
+      992681
+    ],
+    "positions": [
+      {
+        "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        "depth": 12,
+        "score": "+52",
+        "nodes": 31333,
+        "pv": [
+          "e2e4",
+          "c7c5",
+          "g1f3",
+          "b8c6",
+          "f1e2",
+          "e7e6",
+          "d2d4",
+          "c5d4",
+          "f3d4",
+          "g8f6",
+          "d4c6",
+          "b7c6",
+          "e4e5",
+          "f6d5"
+        ]
+      },
+      {
+        "fen": "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
+        "depth": 12,
+        "score": "-171",
+        "nodes": 21915,
+        "pv": [
+          "e2a6",
+          "b4c3",
+          "d2c3",
+          "e6d5",
+          "e5g4",
+          "f6g4",
+          "c3g7",
+          "h8h4",
+          "g2h3",
+          "d5e4"
+        ]
+      },
+      {
+        "fen": "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1",
+        "depth": 12,
+        "score": "+307",
+        "nodes": 11548,
+        "pv": [
+          "b4f4",
+          "h4g3",
+          "f4c4",
+          "h5h7",
+          "a5a6",
+          "h7e7",
+          "e2e4",
+          "g3g2",
+          "a6b7",
+          "e7e5",
+          "b7c7",
+          "e5b5",
+          "c7d6",
+          "g2f3",
+          "e4e5",
+          "b5b6",
+          "c4c6"
+        ]
+      },
+      {
+        "fen": "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1",
+        "depth": 12,
+        "score": "-415",
+        "nodes": 16883,
+        "pv": [
+          "c4c5",
+          "b6c5",
+          "b4c5",
+          "a3c5",
+          "g1h1",
+          "g7h6",
+          "a1b1",
+          "e8g8",
+          "d2d3",
+          "d7d6",
+          "b1b2",
+          "a8a7",
+          "b2d2"
+        ]
+      },
+      {
+        "fen": "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8",
+        "depth": 12,
+        "score": "+803",
+        "nodes": 10254,
+        "pv": [
+          "d7c8r",
+          "d8c8",
+          "e1f2",
+          "c8f5",
+          "f2e1",
+          "f5e4",
+          "d1d4",
+          "e7h4",
+          "e1d1",
+          "e4g2",
+          "d4c5",
+          "f8e8",
+          "c5e3",
+          "e8d8"
+        ]
+      },
+      {
+        "fen": "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10",
+        "depth": 12,
+        "score": "+251",
+        "nodes": 39892,
+        "pv": [
+          "c3d5",
+          "e7d8",
+          "c2c3",
+          "g8h8",
+          "d5f6",
+          "g7f6",
+          "g5h6",
+          "f8e8",
+          "h2h3",
+          "g4e6",
+          "b2b4",
+          "c5a7",
+          "f3h4",
+          "e8g8"
+        ]
+      },
+      {
+        "fen": "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1",
+        "depth": 12,
+        "score": "+2315",
+        "nodes": 11632,
+        "pv": [
+          "a1a8",
+          "e8d7",
+          "h1h8",
+          "d7e6",
+          "e1d2",
+          "e6d6",
+          "d2c3",
+          "d6d5",
+          "c3b4",
+          "d5e4",
+          "b4b5",
+          "e4d3",
+          "a8g8"
+        ]
+      },
+      {
+        "fen": "rnbqkbnr/ppp1p1pp/8/3pPp2/8/8/PPPP1PPP/RNBQKBNR w KQkq f6 0 3",
+        "depth": 12,
+        "score": "+132",
+        "nodes": 24170,
+        "pv": [
+          "d2d4",
+          "c7c5",
+          "g1f3",
+          "e7e6",
+          "f1e2",
+          "b8c6",
+          "c2c3",
+          "d8b6",
+          "e1g1",
+          "c8d7",
+          "g1h1",
+          "c5c4",
+          "f1e1",
+          "e8c8"
+        ]
+      },
+      {
+        "fen": "8/P7/8/8/8/8/k6p/4K3 w - - 0 1",
+        "depth": 12,
+        "score": "+1274",
+        "nodes": 18562,
+        "pv": [
+          "a7a8q",
+          "a2b3",
+          "a8b8",
+          "b3c2",
+          "b8h2",
+          "c2c3",
+          "h2h7",
+          "c3d4",
+          "h7h5",
+          "d4e3",
+          "h5f5",
+          "e3d4",
+          "e1d2",
+          "d4c4",
+          "f5c8",
+          "c4d5"
+        ]
+      },
+      {
+        "fen": "8/1P6/8/8/8/8/p5k1/4K3 b - - 0 1",
+        "depth": 12,
+        "score": "+1149",
+        "nodes": 19268,
+        "pv": [
+          "a2a1q",
+          "e1e2",
+          "a1b2",
+          "e2e3",
+          "g2g3",
+          "e3e4",
+          "b2b7",
+          "e4e5",
+          "b7h1",
+          "e5f5",
+          "h1b1",
+          "f5f6",
+          "b1h7",
+          "f6g5",
+          "g3f3",
+          "g5f6",
+          "h7h1"
+        ]
+      },
+      {
+        "fen": "4k3/8/8/8/8/8/4q3/4K3 w - - 0 1",
+        "depth": 12,
+        "score": "-1",
+        "nodes": 24,
+        "pv": [
+          "e1e2"
+        ]
+      }
+    ]
+  },
+  "candidate": {
+    "version": "Farzin 0.5.2 edition OwnNet target x86_64 features [popcnt,avx2,bmi2] sliders pext net fzn2-b1.nnue FZN2 4x768x768 buckets 8 mirrored sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0",
+    "bench": [
+      992681,
+      992681,
+      992681
+    ],
+    "positions": [
+      {
+        "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        "depth": 12,
+        "score": "+52",
+        "nodes": 31333,
+        "pv": [
+          "e2e4",
+          "c7c5",
+          "g1f3",
+          "b8c6",
+          "f1e2",
+          "e7e6",
+          "d2d4",
+          "c5d4",
+          "f3d4",
+          "g8f6",
+          "d4c6",
+          "b7c6",
+          "e4e5",
+          "f6d5"
+        ]
+      },
+      {
+        "fen": "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
+        "depth": 12,
+        "score": "-171",
+        "nodes": 21915,
+        "pv": [
+          "e2a6",
+          "b4c3",
+          "d2c3",
+          "e6d5",
+          "e5g4",
+          "f6g4",
+          "c3g7",
+          "h8h4",
+          "g2h3",
+          "d5e4"
+        ]
+      },
+      {
+        "fen": "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1",
+        "depth": 12,
+        "score": "+307",
+        "nodes": 11548,
+        "pv": [
+          "b4f4",
+          "h4g3",
+          "f4c4",
+          "h5h7",
+          "a5a6",
+          "h7e7",
+          "e2e4",
+          "g3g2",
+          "a6b7",
+          "e7e5",
+          "b7c7",
+          "e5b5",
+          "c7d6",
+          "g2f3",
+          "e4e5",
+          "b5b6",
+          "c4c6"
+        ]
+      },
+      {
+        "fen": "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1",
+        "depth": 12,
+        "score": "-415",
+        "nodes": 16883,
+        "pv": [
+          "c4c5",
+          "b6c5",
+          "b4c5",
+          "a3c5",
+          "g1h1",
+          "g7h6",
+          "a1b1",
+          "e8g8",
+          "d2d3",
+          "d7d6",
+          "b1b2",
+          "a8a7",
+          "b2d2"
+        ]
+      },
+      {
+        "fen": "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8",
+        "depth": 12,
+        "score": "+803",
+        "nodes": 10254,
+        "pv": [
+          "d7c8r",
+          "d8c8",
+          "e1f2",
+          "c8f5",
+          "f2e1",
+          "f5e4",
+          "d1d4",
+          "e7h4",
+          "e1d1",
+          "e4g2",
+          "d4c5",
+          "f8e8",
+          "c5e3",
+          "e8d8"
+        ]
+      },
+      {
+        "fen": "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10",
+        "depth": 12,
+        "score": "+251",
+        "nodes": 39892,
+        "pv": [
+          "c3d5",
+          "e7d8",
+          "c2c3",
+          "g8h8",
+          "d5f6",
+          "g7f6",
+          "g5h6",
+          "f8e8",
+          "h2h3",
+          "g4e6",
+          "b2b4",
+          "c5a7",
+          "f3h4",
+          "e8g8"
+        ]
+      },
+      {
+        "fen": "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1",
+        "depth": 12,
+        "score": "+2315",
+        "nodes": 11632,
+        "pv": [
+          "a1a8",
+          "e8d7",
+          "h1h8",
+          "d7e6",
+          "e1d2",
+          "e6d6",
+          "d2c3",
+          "d6d5",
+          "c3b4",
+          "d5e4",
+          "b4b5",
+          "e4d3",
+          "a8g8"
+        ]
+      },
+      {
+        "fen": "rnbqkbnr/ppp1p1pp/8/3pPp2/8/8/PPPP1PPP/RNBQKBNR w KQkq f6 0 3",
+        "depth": 12,
+        "score": "+132",
+        "nodes": 24170,
+        "pv": [
+          "d2d4",
+          "c7c5",
+          "g1f3",
+          "e7e6",
+          "f1e2",
+          "b8c6",
+          "c2c3",
+          "d8b6",
+          "e1g1",
+          "c8d7",
+          "g1h1",
+          "c5c4",
+          "f1e1",
+          "e8c8"
+        ]
+      },
+      {
+        "fen": "8/P7/8/8/8/8/k6p/4K3 w - - 0 1",
+        "depth": 12,
+        "score": "+1274",
+        "nodes": 18562,
+        "pv": [
+          "a7a8q",
+          "a2b3",
+          "a8b8",
+          "b3c2",
+          "b8h2",
+          "c2c3",
+          "h2h7",
+          "c3d4",
+          "h7h5",
+          "d4e3",
+          "h5f5",
+          "e3d4",
+          "e1d2",
+          "d4c4",
+          "f5c8",
+          "c4d5"
+        ]
+      },
+      {
+        "fen": "8/1P6/8/8/8/8/p5k1/4K3 b - - 0 1",
+        "depth": 12,
+        "score": "+1149",
+        "nodes": 19268,
+        "pv": [
+          "a2a1q",
+          "e1e2",
+          "a1b2",
+          "e2e3",
+          "g2g3",
+          "e3e4",
+          "b2b7",
+          "e4e5",
+          "b7h1",
+          "e5f5",
+          "h1b1",
+          "f5f6",
+          "b1h7",
+          "f6g5",
+          "g3f3",
+          "g5f6",
+          "h7h1"
+        ]
+      },
+      {
+        "fen": "4k3/8/8/8/8/8/4q3/4K3 w - - 0 1",
+        "depth": 12,
+        "score": "-1",
+        "nodes": 24,
+        "pv": [
+          "e1e2"
+        ]
+      }
+    ]
+  },
+  "equivalent": true
+}
