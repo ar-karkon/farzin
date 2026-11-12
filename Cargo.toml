@@ -3,6 +3,7 @@ name = "farzin"
 version = "0.5.1"
 edition = "2021"
 description = "A small UCI chess engine written in Rust"
+license = "GPL-3.0-only"
 
 [features]
 # Experimental search integration; library accumulator tests always run.
