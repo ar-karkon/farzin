@@ -1,0 +1,9 @@
+{
+  "utc": "2026-11-12T13:20:21.868812+00:00",
+  "observed_stockfish_games": 4,
+  "observed_results": "four checkmate losses",
+  "next_opponent": "Berserk 9",
+  "pairs": 2,
+  "reason": "Independent engine family and lower anchor; fixed diagnostic, adaptive selection, no confirmatory pooling",
+  "build_after_stockfish": true
+}

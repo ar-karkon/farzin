@@ -1,0 +1,261 @@
+{
+ "engines": {
+  "Farzin-0.5.2": {
+   "cmd": "/workspace/inputs/farzin",
+   "options": {},
+   "nodes": null,
+   "sha256": "324b236a5a097350d7bf3047f994ef1e3d69907f913aec753e1cb61d69158d1c"
+  },
+  "Berserk-9": {
+   "cmd": "/workspace/inputs/berserk/src/berserk-phase2",
+   "options": {},
+   "nodes": null,
+   "sha256": "fecadfd01e12eaea489f88045ffbea3efe9b43841b161a065f670d941bbaaf7b"
+  }
+ },
+ "tc": "120+1",
+ "nodes": null,
+ "movetime": null,
+ "book": "openings.epd",
+ "book_sha256": "bfaba6cfaf9d71a9d689a28aecd0aca1d2122603b50c6e2c1ef21fd7aee65cd6",
+ "book_plies": 8,
+ "seed": 20261112,
+ "concurrency": 2,
+ "threads": 1,
+ "hash": 128,
+ "adjudication": "none",
+ "hardware": {
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "python": "3.12.14",
+  "cpus": 3,
+  "cpu": "AMD EPYC 9V74 80-Core Processor",
+  "loadavg_start": [
+   1.0390625,
+   1.5263671875,
+   1.4443359375
+  ]
+ },
+ "elapsed_s": 975.6,
+ "summary": {
+  "Farzin-0.5.2 vs Berserk-9": {
+   "pairs": 2,
+   "pentanomial": [
+    0,
+    1,
+    1,
+    0,
+    0
+   ],
+   "score": 0.375,
+   "elo": -88.73949984654253,
+   "elo_95": [
+    -238.92061966936868,
+    33.62599223191952
+   ],
+   "los": 0.07864960352514261,
+   "nelo": -245.67405854855014,
+   "nelo_95": [
+    -586.1609323606995,
+    94.8128152635992
+   ]
+  }
+ },
+ "sprt": null,
+ "terminations": {
+  "threefold_repetition": 2,
+  "checkmate": 1,
+  "fifty_moves": 1
+ },
+ "natural_fraction": 1.0,
+ "engine_stats": {
+  "Farzin-0.5.2": {
+   "avg_depth": 35.32,
+   "avg_ms_per_move": 1918.0,
+   "nps": 1510224,
+   "min_clock_s": 12.321,
+   "max_move_share": 0.256
+  },
+  "Berserk-9": {
+   "avg_depth": 25.57,
+   "avg_ms_per_move": 2053.6,
+   "nps": 2859122,
+   "min_clock_s": 0.877,
+   "max_move_share": 0.751
+  }
+ },
+ "games": [
+  [
+   "Farzin-0.5.2",
+   "Berserk-9",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "Berserk-9",
+   "Farzin-0.5.2",
+   "1-0",
+   "checkmate"
+  ],
+  [
+   "Farzin-0.5.2",
+   "Berserk-9",
+   "1/2-1/2",
+   "fifty_moves"
+  ],
+  [
+   "Berserk-9",
+   "Farzin-0.5.2",
+   "1/2-1/2",
+   "threefold_repetition"
+  ]
+ ],
+ "game_details": [
+  {
+   "white": "Farzin-0.5.2",
+   "black": "Berserk-9",
+   "result": "1/2-1/2",
+   "reason": "threefold_repetition",
+   "pair_id": 1,
+   "fen": "rn1qkbnr/1bp1pppp/p2p4/1p6/3PP3/3B1N2/PPP2PPP/RNBQK2R w KQkq - 0 1",
+   "stats": {
+    "plies": 80,
+    "time": {
+     "Farzin-0.5.2": 109.62446006399955,
+     "Berserk-9": 115.65410475500062
+    },
+    "moves": {
+     "Farzin-0.5.2": 40,
+     "Berserk-9": 40
+    },
+    "depth": {
+     "Farzin-0.5.2": 1111,
+     "Berserk-9": 1025
+    },
+    "nodes": {
+     "Farzin-0.5.2": 162260102,
+     "Berserk-9": 325487418
+    },
+    "min_clock": {
+     "Farzin-0.5.2": 49.37553993600045,
+     "Berserk-9": 43.34589524499938
+    },
+    "max_share": {
+     "Farzin-0.5.2": 0.08763217606548881,
+     "Berserk-9": 0.11947912908389738
+    }
+   }
+  },
+  {
+   "white": "Berserk-9",
+   "black": "Farzin-0.5.2",
+   "result": "1-0",
+   "reason": "checkmate",
+   "pair_id": 1,
+   "fen": "rn1qkbnr/1bp1pppp/p2p4/1p6/3PP3/3B1N2/PPP2PPP/RNBQK2R w KQkq - 0 1",
+   "stats": {
+    "plies": 171,
+    "time": {
+     "Berserk-9": 195.79771595399916,
+     "Farzin-0.5.2": 186.95117402500114
+    },
+    "moves": {
+     "Berserk-9": 86,
+     "Farzin-0.5.2": 85
+    },
+    "depth": {
+     "Berserk-9": 2416,
+     "Farzin-0.5.2": 2635
+    },
+    "nodes": {
+     "Berserk-9": 537784934,
+     "Farzin-0.5.2": 259953966
+    },
+    "min_clock": {
+     "Berserk-9": 2.6175591270011864,
+     "Farzin-0.5.2": 12.321297490999086
+    },
+    "max_share": {
+     "Berserk-9": 0.706909536035875,
+     "Farzin-0.5.2": 0.25577376026480375
+    }
+   }
+  },
+  {
+   "white": "Farzin-0.5.2",
+   "black": "Berserk-9",
+   "result": "1/2-1/2",
+   "reason": "fifty_moves",
+   "pair_id": 0,
+   "fen": "rnbqkb1r/p2p1ppp/1p2pn2/2p5/2P5/2N2NP1/PP1PPP1P/R1BQKB1R w KQkq - 0 1",
+   "stats": {
+    "plies": 300,
+    "time": {
+     "Farzin-0.5.2": 250.92168943000001,
+     "Berserk-9": 268.1234384559998
+    },
+    "moves": {
+     "Farzin-0.5.2": 150,
+     "Berserk-9": 150
+    },
+    "depth": {
+     "Farzin-0.5.2": 5892,
+     "Berserk-9": 3741
+    },
+    "nodes": {
+     "Farzin-0.5.2": 381093739,
+     "Berserk-9": 782059094
+    },
+    "min_clock": {
+     "Farzin-0.5.2": 14.408327350999116,
+     "Berserk-9": 0.8765615440001966
+    },
+    "max_share": {
+     "Farzin-0.5.2": 0.2298572324256601,
+     "Berserk-9": 0.7506816210163391
+    }
+   }
+  },
+  {
+   "white": "Berserk-9",
+   "black": "Farzin-0.5.2",
+   "result": "1/2-1/2",
+   "reason": "threefold_repetition",
+   "pair_id": 0,
+   "fen": "rnbqkb1r/p2p1ppp/1p2pn2/2p5/2P5/2N2NP1/PP1PPP1P/R1BQKB1R w KQkq - 0 1",
+   "stats": {
+    "plies": 246,
+    "time": {
+     "Berserk-9": 239.829478553002,
+     "Farzin-0.5.2": 215.882746683998
+    },
+    "moves": {
+     "Berserk-9": 123,
+     "Farzin-0.5.2": 123
+    },
+    "depth": {
+     "Berserk-9": 3022,
+     "Farzin-0.5.2": 4421
+    },
+    "nodes": {
+     "Berserk-9": 697446432,
+     "Farzin-0.5.2": 349567432
+    },
+    "min_clock": {
+     "Berserk-9": 1.3878524879992256,
+     "Farzin-0.5.2": 26.07159209700194
+    },
+    "max_share": {
+     "Berserk-9": 0.7501117345239059,
+     "Farzin-0.5.2": 0.1092053398765677
+    }
+   }
+  }
+ ],
+ "scheduler": {
+  "completed": 2,
+  "cancelled": 0,
+  "failed": 0,
+  "skipped": 0
+ },
+ "scheduler_errors": []
+}

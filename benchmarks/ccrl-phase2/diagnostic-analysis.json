@@ -1,0 +1,67 @@
+{
+  "games": 4,
+  "pairs": 2,
+  "unique_openings": 2,
+  "wdl": {
+    "Berserk-9": {
+      "draws": 3,
+      "losses": 1
+    }
+  },
+  "terminations": {
+    "threefold_repetition": 2,
+    "checkmate": 1,
+    "fifty_moves": 1
+  },
+  "color_scores": {
+    "white": {
+      "points": 1.0,
+      "games": 2,
+      "score": 0.5
+    },
+    "black": {
+      "points": 0.5,
+      "games": 2,
+      "score": 0.25
+    }
+  },
+  "estimate": {
+    "rating": 3542.2605001534575,
+    "ci95": [
+      3431.9239511695314,
+      3640.0473015462903
+    ],
+    "ci_status": "provisional conditional bootstrap interval",
+    "bootstrap": 4000,
+    "seed": 20261112,
+    "pairs": {
+      "Berserk-9": 2
+    },
+    "method": "shared-opening block percentile bootstrap; independent Gaussian anchor uncertainty"
+  },
+  "per_opponent": {
+    "Berserk-9": 3542.2605001534575
+  },
+  "leave_one_pair_out": {
+    "Berserk-9": [
+      3631.0,
+      3440.1514981121354
+    ]
+  },
+  "warning": "Feasibility pilot: percentile bootstrap with very few pairs is unstable; model interval excludes hardware/configuration/time-control systematics.",
+  "conservative_pair_bounds": {
+    "Berserk-9": {
+      "score95": [
+        0,
+        1
+      ],
+      "anchored95": [
+        "-infinity",
+        "+infinity"
+      ],
+      "method": "Two-sided Hoeffding bound on independent opening-pair score fractions; fixed anchor, no hardware or anchor uncertainty"
+    }
+  },
+  "pgn_replayed": true,
+  "dataset_sha256": "cb219bd400afd08f6079cf7e0bde21f6c6271860b07f4b1200dc8dcd9c4a9b57"
+}

@@ -1,0 +1,35 @@
+<UciProtocol (pid=1901)>: Unexpected engine output: 'info string set Hash to value 128 (134217728 bytes)'
+<UciProtocol (pid=1904)>: Unexpected engine output: 'info string set Hash to value 128 (134217728 bytes)'
+[    976s] Farzin-0.5.2 vs Berserk-9: 2p -88.7 [-238.9,+33.6]
+{
+ "summary": {
+  "Farzin-0.5.2 vs Berserk-9": {
+   "pairs": 2,
+   "pentanomial": [
+    0,
+    1,
+    1,
+    0,
+    0
+   ],
+   "score": 0.375,
+   "elo": -88.73949984654253,
+   "elo_95": [
+    -238.92061966936868,
+    33.62599223191952
+   ],
+   "los": 0.07864960352514261,
+   "nelo": -245.67405854855014,
+   "nelo_95": [
+    -586.1609323606995,
+    94.8128152635992
+   ]
+  }
+ },
+ "sprt": null,
+ "terminations": {
+  "threefold_repetition": 2,
+  "checkmate": 1,
+  "fifty_moves": 1
+ }
+}
