@@ -23,7 +23,8 @@ def snapshot(path, name):
     positions = []
     with chess.engine.SimpleEngine.popen_uci(path) as engine:
         engine.configure({"Hash": 16, "Threads": 1})
-        for fen, _ in PERFT + SPECIAL[:5]:
+        for position in PERFT + SPECIAL[:5]:
+            fen = position[0]
             board = chess.Board(fen)
             info = engine.analyse(board, chess.engine.Limit(depth=12), game=object())
             positions.append({"fen": fen, "depth": info["depth"],
