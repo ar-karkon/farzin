@@ -21,7 +21,18 @@
         "row": "Stockfish 16 64-bit 3760 +9 \u22129 64.3% \u221290.0 69.6% 4641",
         "url": "https://computerchess.org.uk/ccrl/404/rating_list_all.html"
       },
-      "asset_url": "https://github.com/official-stockfish/Stockfish/releases/download/sf_16/stockfish-ubuntu-x86-64-avx2.tar"
+      "asset_url": "https://github.com/official-stockfish/Stockfish/releases/download/sf_16/stockfish-ubuntu-x86-64-avx2.tar",
+      "network": "nn-5af11540bbfe.nnue (official embedded release default)",
+      "architecture": "Ubuntu x86-64 AVX2",
+      "asset_sha256": "9a461f249ccf64689706782b12e0d00e47cb9474b67ea77f2ba1a66b1e793b17",
+      "settings": {
+        "Threads": 1,
+        "Hash": 128,
+        "Ponder": false,
+        "Skill_Level": 20,
+        "UCI_LimitStrength": false,
+        "SyzygyPath": "<empty>"
+      }
     }
   },
   "book": {

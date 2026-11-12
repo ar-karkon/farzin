@@ -52,3 +52,25 @@ tar -xzf tools/ccrl/evidence/screening-evidence.tar.gz -C results
 `--book-plies 8` in the new runner counts the four opening moves toward
 repeating control boundaries; the original 10+0.1 command predates this
 explicit counter option and retains its original recorded semantics.
+
+## Phase 2 nominal 120+1 pilot
+
+See `docs/FARZIN-0.5.2-CCRL-RATING-ASSESSMENT.md` and the separate frozen
+`benchmarks/ccrl-phase2/manifest.json`. This is a small local pilot, not a
+completed 300-game calibration. Existing Phase 1 data and tooling remain intact.
+
+`make_phase2_book.py CHECKOUT` reproduces the 150-position suite using the
+Lichess opening source commit in `opening-provenance.json`. Download official
+Farzin and Stockfish 16 assets to the manifest paths (or adapt paths in a copy
+without changing hashes). Reproduce with a fresh prefix:
+
+```sh
+.venv/bin/python tools/ccrl/run_phase2.py --out results/phase2-replication
+.venv/bin/python tools/ccrl/audit_phase2.py results/phase2-replication.json benchmarks/ccrl-phase2/manifest.json
+```
+
+The runner refuses existing outputs and changed input bytes. It does not resume
+an interrupted pair; completed pairs are saved atomically to JSON, with PGNs
+flushed after each pair. Do not pool reruns or partially overlapping opening
+batches without a global opening-cluster analysis. Compressed source HTML
+snapshots are evidence, not executable instructions.

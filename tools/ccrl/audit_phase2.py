@@ -51,6 +51,7 @@ def audit(results, manifest):
                   color_scores={k: dict(points=sum(v), games=len(v), score=sum(v)/len(v)) for k,v in colors.items()},
                   estimate=estimate(groups, anchors, errors),
                   per_opponent={n: encode(fit({n:v}, anchors)) for n,v in groups.items()},
+                  leave_one_pair_out={n: [encode(fit({n:v[:i]+v[i+1:]}, anchors)) for i in range(len(v))] for n,v in groups.items() if len(v)>1},
                   warning='Feasibility pilot: percentile bootstrap with very few pairs is unstable; model interval excludes hardware/configuration/time-control systematics.',
                   pgn_replayed=True,
                   dataset_sha256=hashlib.sha256(path.read_bytes()).hexdigest())
