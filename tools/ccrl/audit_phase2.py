@@ -19,6 +19,13 @@ def audit(results, manifest):
     assert d['threads'] == 1 and d['concurrency'] <= 2
     anchors = {n: x['blitz']['rating'] for n, x in m['opponents'].items()}
     errors = {n: x['blitz']['error'] for n, x in m['opponents'].items()}
+    assert d['book_sha256'] == m['book']['sha256']
+    assert d['engines'][target]['sha256'] == m['farzin']['sha256']
+    for name in d['engines']:
+        if name != target:
+            assert d['engines'][name]['sha256'] == m['opponents'][name]['sha256']
+    assert len(d['games']) == 2 * m['protocol']['pairs'], 'planned batch incomplete'
+    assert not d.get('scheduler_errors'), 'scheduler errors require investigation'
     groups = load(path, target, anchors)
     summary = collections.defaultdict(collections.Counter)
     colors = collections.defaultdict(list)

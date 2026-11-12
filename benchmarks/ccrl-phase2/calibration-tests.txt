@@ -1,0 +1,31 @@
+test_first_control_has_36_search_moves_after_four_book_moves (test_arena_control.BookClockTest.test_first_control_has_36_search_moves_after_four_book_moves) ... ok
+test_bad_pair (test_estimate.EstimatorTests.test_bad_pair) ... /workspace/farzin/tools/ccrl/estimate.py:44: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpxcqt4nye/games.json' mode='r' encoding='UTF-8'>
+  d = json.load(open(path))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/farzin/tools/ccrl/estimate.py:44: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp2en4y51y/games.json' mode='r' encoding='UTF-8'>
+  d = json.load(open(path))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_balanced (test_estimate.EstimatorTests.test_balanced) ... ok
+test_boundary (test_estimate.EstimatorTests.test_boundary) ... ok
+test_degenerate_bootstrap_is_flagged (test_estimate.EstimatorTests.test_degenerate_bootstrap_is_flagged) ... ok
+test_empty (test_estimate.EstimatorTests.test_empty) ... ok
+test_missing_anchor (test_estimate.EstimatorTests.test_missing_anchor) ... /workspace/farzin/tools/ccrl/estimate.py:44: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp_tf0r8vw/games.json' mode='r' encoding='UTF-8'>
+  d = json.load(open(path))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_repeated_openings_not_independent (test_estimate.EstimatorTests.test_repeated_openings_not_independent) ... /workspace/farzin/tools/ccrl/estimate.py:44: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp4ty_m263/games.json' mode='r' encoding='UTF-8'>
+  d = json.load(open(path))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_shared_opening_alignment (test_estimate.EstimatorTests.test_shared_opening_alignment) ... /workspace/farzin/tools/ccrl/estimate.py:44: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp1ol4czw8/games.json' mode='r' encoding='UTF-8'>
+  d = json.load(open(path))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_stable_extremes (test_estimate.EstimatorTests.test_stable_extremes) ... ok
+test_translation (test_estimate.EstimatorTests.test_translation) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.120s
+
+OK
