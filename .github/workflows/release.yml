@@ -2,16 +2,39 @@ name: Release candidate
 # Pushing a tag v* (owner action) builds the competition binaries with the
 # pinned toolchain, re-runs the release checks on Linux and Windows and
 # creates a DRAFT GitHub release. Nothing is published automatically.
+#
+# Alternatively, run it manually on main ("Run workflow", workflow_dispatch)
+# with the tag to create (e.g. v0.5.1). The tag is created on the commit that
+# was built; the release is a draft unless "publish" is ticked. A manual run
+# also requires the built SHA256SUMS to match the committed
+# benchmarks/release-<version>/SHA256SUMS, so only the documented, tested
+# binaries can be published.
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to create, e.g. v0.5.1 (must match Cargo.toml)"
+        required: true
+      publish:
+        description: "Publish the release (otherwise a draft is created)"
+        type: boolean
+        default: false
 permissions:
   contents: write
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
 jobs:
   build:
+    if: github.event_name == 'push' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      - name: Tag matches the crate version
+        run: |
+          v=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)
+          test "$TAG" = "v$v" || { echo "tag $TAG does not match Cargo.toml version $v"; exit 1; }
       - uses: dtolnay/rust-toolchain@1.97.0
         with:
           targets: x86_64-pc-windows-gnu
@@ -21,12 +44,15 @@ jobs:
         timeout-minutes: 40
         run: tools/ci_install_mingw.sh
       - run: tools/build_release.sh dist
+      - name: Binaries match the tested ones (manual runs)
+        if: github.event_name == 'workflow_dispatch'
+        run: diff dist/SHA256SUMS "benchmarks/release-${TAG#v}/SHA256SUMS"
       - run: pip install chess==1.10.0
       - run: python3 tools/release_check.py --expect-sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0 dist/farzin-*-linux-x64-avx2-bmi2
       - run: |
           cp docs/RELEASE-0.5.md dist/README.md
           cp nets/README.md dist/NETWORK-PROVENANCE.md
-          cd dist && zip -9 "farzin-${GITHUB_REF_NAME#v}-windows-x64-avx2-bmi2.zip" \
+          cd dist && zip -9 "farzin-${TAG#v}-windows-x64-avx2-bmi2.zip" \
             farzin-*-windows-x64-avx2-bmi2.exe SHA256SUMS README.md NETWORK-PROVENANCE.md
       - uses: actions/upload-artifact@v4
         with:
@@ -58,9 +84,11 @@ jobs:
           path: dist
       - uses: softprops/action-gh-release@v2
         with:
-          draft: true
-          prerelease: true
-          name: Farzin ${{ github.ref_name }} (OwnNet, Windows x64 AVX2/BMI2)
+          tag_name: ${{ env.TAG }}
+          target_commitish: ${{ github.sha }}
+          draft: ${{ !inputs.publish }}
+          prerelease: ${{ !inputs.publish }}
+          name: Farzin ${{ env.TAG }} (OwnNet, Windows x64 AVX2/BMI2)
           body_path: docs/RELEASE-0.5.md
           files: |
             dist/*.zip
