@@ -1,7 +1,7 @@
 <div align="center">
 
 <a href="https://github.com/ar-karkon/farzin">
-  <img src="assets/readme-hero.svg" width="100%" alt="FARZIN — Iranian heritage, modern computation" />
+  <img src="assets/readme-hero.webp" width="100%" alt="Farzin chess engine — Iranian heritage, chess and modern computation" />
 </a>
 
 <br/>
