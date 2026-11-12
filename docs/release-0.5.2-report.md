@@ -23,9 +23,22 @@ The OwnNet build pins this checksum and does not embed default.nnue.
 
 ## Validation status
 
-Release validation is in progress. This document will be updated with actual
-results and executable hashes before publication. Native Windows results must
-come from the current PR's CI, not historical reports or Linux emulation.
+Local rustc 1.97.0 results:
+
+* Formatting and Clippy with warnings denied: default, ownnet, legacy pass.
+* Default and OwnNet unit/integration tests and legacy library tests pass.
+* Python tooling: 29 tests pass.
+* Full Linux release conformance: 10/10 checks pass, including 16,046,250
+  perft leaf nodes, 30 random games / 2,155 legal moves, 72 legal PV lines,
+  limits, ponder, clocks, four-thread stress and quit during search.
+* Both 0.5.1 and 0.5.2: three depth-12 benchmarks each, all 992681 nodes;
+  all 11 fixed-depth position scores, node counts and PVs agree exactly.
+* Eight local 3+0.05 self-play games: no crashes, illegal moves or time
+  forfeits; four completed pairs, zero scheduler failures.
+
+Raw local evidence is in benchmarks/release-0.5.2/. Native Windows, canonical
+cross-build hashes and repeat-build verification remain pending current CI.
+No historical Windows result is claimed as a result of this release.
 
 The CI release-build job builds all four requested targets with rustc 1.97.0,
 checks for foreign weights with a positive control, repeats all builds from a
