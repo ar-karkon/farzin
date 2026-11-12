@@ -95,3 +95,15 @@ tools/fetch_nets.sh
 ```
 
 ابزارهای قدیمی‌تر (`tools/match.py`، `tools/sprt.py`، `tools/bench.py` و …) برای بازتولید نتایج مراحل قبل نگه داشته شده‌اند.
+
+## License
+
+Farzin's original source code and independently trained FZN2 network weights are
+licensed under the **GNU General Public License version 3 only**
+(`GPL-3.0-only`); see [LICENSE](LICENSE).
+
+Third-party materials retain their own licenses: the Stockfish-project NNUE
+weights in the research edition are **CC0-1.0**, and credited Caissa material
+is distributed under **MIT**. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
+for attribution and provenance. The CCRL OwnNet release embeds only Farzin's
+FZN2 network, not the Stockfish-project weights.
