@@ -1,0 +1,45 @@
+{
+  "base_commit": "3d6114a6181e33f2e5074aacbfa94da944ef22f1",
+  "snapshot": "2026-11-07",
+  "farzin": {
+    "path": "/workspace/inputs/farzin",
+    "sha256": "324b236a5a097350d7bf3047f994ef1e3d69907f913aec753e1cb61d69158d1c",
+    "network_sha256": "3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0",
+    "identity": "Farzin 0.5.2 edition OwnNet target x86_64 features [popcnt,avx2,bmi2] sliders pext net fzn2-b1.nnue FZN2 4x768x768 buckets 8 mirrored sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0"
+  },
+  "opponents": {
+    "Stockfish-16": {
+      "path": "/workspace/inputs/stockfish/stockfish-ubuntu-x86-64-avx2",
+      "sha256": "8f60a016dc767e0d648a8665b8ede3e6e4d28c086ad90517ad26f55b9960bd84",
+      "source": "https://github.com/official-stockfish/Stockfish/releases/tag/sf_16",
+      "asset": "stockfish-ubuntu-x86-64-avx2.tar",
+      "license": "GPL-3.0",
+      "blitz": {
+        "rating": 3760,
+        "error": 9,
+        "cpu": 1,
+        "row": "Stockfish 16 64-bit 3760 +9 \u22129 64.3% \u221290.0 69.6% 4641",
+        "url": "https://computerchess.org.uk/ccrl/404/rating_list_all.html"
+      }
+    }
+  },
+  "book": {
+    "path": "benchmarks/ccrl-phase2/openings.epd",
+    "sha256": "bfaba6cfaf9d71a9d689a28aecd0aca1d2122603b50c6e2c1ef21fd7aee65cd6",
+    "plies": 8,
+    "positions": 150
+  },
+  "protocol": {
+    "tc": "120+1",
+    "hash_mb": 128,
+    "threads": 1,
+    "ponder": false,
+    "tablebases": false,
+    "adjudication": "none",
+    "max_plies": 1000,
+    "seed": 20261112,
+    "pairs": 4,
+    "concurrency": 2,
+    "stopping": "Fixed four pairs, selected before outcomes; feasibility pilot, not precision study"
+  }
+}
