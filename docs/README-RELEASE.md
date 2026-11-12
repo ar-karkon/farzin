@@ -36,6 +36,7 @@ Training labels came from a CC0 Stockfish-project network; no pretrained
 Stockfish weights are included in this edition. Full details are in
 NETWORK-PROVENANCE.md.
 
-Farzin is GPL-3.0-only. See LICENSE and THIRD_PARTY_NOTICES.md. Corresponding
+Farzin is GPL-3.0-only. See LICENSE, THIRD_PARTY_NOTICES.md and
+RUNTIME-LICENSES/ for linked-library notices. Corresponding
 source (including weights and build scripts), alternatives and release notes:
 https://github.com/ar-karkon/farzin/releases/tag/v0.5.2

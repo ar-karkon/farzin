@@ -39,3 +39,18 @@ Farzin's inference for this format (`src/hka.rs`) is an independent Rust
 implementation written from the file layout; it contains no Stockfish
 (GPL-3.0) source code. A locally built, unmodified-except-for-one-debug-print
 Stockfish binary was used only as a test oracle and is not distributed.
+
+## Linked runtime libraries
+
+The self-contained release executables also contain code from the Rust
+standard library and its runtime dependencies, and the Windows executables
+use the MinGW-w64 startup/runtime libraries. These are third-party code,
+not original Farzin code. Their licenses and exceptions continue to apply.
+
+The release ZIP includes `RUNTIME-LICENSES/`: Rust's complete
+`COPYRIGHT-library.html` and referenced license texts copied verbatim from
+the pinned rustc 1.97.0 distribution, plus the installed Ubuntu MinGW-w64
+and GCC runtime copyright/license notices. These notices describe the
+upstream library distribution, including components for other platforms;
+they do not imply that every listed component is linked into Farzin.
+Windows system DLLs are supplied by Windows and are not redistributed.

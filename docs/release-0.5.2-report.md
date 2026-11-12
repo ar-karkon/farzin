@@ -10,7 +10,7 @@ Only version metadata, documentation and release verification/packaging change.
 The complete GNU GPL v3 text in LICENSE matches GNU's published text after
 normalizing whitespace, typographic quotes, the copyright symbol and the
 final why-not-lgpl URL. Cargo.toml declares GPL-3.0-only; README agrees.
-LICENSE and THIRD_PARTY_NOTICES.md are preserved unchanged. Caissa's MIT
+LICENSE and all existing third-party notice text are preserved. Caissa's MIT
 notice and the Stockfish-project network's CC0 attribution remain intact.
 FZN2-b1 is independently trained with Farzin's Rust trainer, warm-starting
 from Farzin's own a1 weights. Targets were generated using the CC0
@@ -56,7 +56,7 @@ Raw evidence is in benchmarks/release-0.5.2/.
   the AVX2 alternative has no PEXT; the POPCNT variant has no PEXT or YMM
   operands. All three import only Windows system DLLs (windows-static.json).
 * The main ZIP was unpacked and checked: exactly the primary executable,
-  full unchanged LICENSE, unchanged THIRD_PARTY_NOTICES.md, concise English
+  full unchanged LICENSE, preserved THIRD_PARTY_NOTICES.md, concise English
   README.md, NETWORK-PROVENANCE.md and SHA256SUMS; executable checksum matches.
 
 Native Windows validation is a mandatory publication gate. Current results
@@ -68,6 +68,11 @@ That job runs all three Windows variants natively (benchmark 992681 and
 conformance), full primary conformance and tournament stability. Publication
 requires every CI job on the final PR head to succeed. Unsupported-CPU
 Windows execution is not emulated by the Linux checks above.
+
+The archive additionally carries RUNTIME-LICENSES: the pinned Rust standard
+library's complete upstream copyright document and license texts, and the
+installed MinGW-w64/GCC runtime notices. This closes a linked-runtime notice
+gap without changing the substance of any existing license or notice.
 
 ## Canonical executable checksums
 
