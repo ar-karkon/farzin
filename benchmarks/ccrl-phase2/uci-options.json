@@ -1,0 +1,180 @@
+{
+  "Farzin": {
+    "id": {
+      "name": "Farzin 0.5.2",
+      "author": "Farzin contributors"
+    },
+    "options": {
+      "Hash": {
+        "type": "spin",
+        "default": 16,
+        "min": 1,
+        "max": 65536
+      },
+      "Threads": {
+        "type": "spin",
+        "default": 1,
+        "min": 1,
+        "max": 256
+      },
+      "Move Overhead": {
+        "type": "spin",
+        "default": 50,
+        "min": 0,
+        "max": 5000
+      },
+      "Clear Hash": {
+        "type": "button",
+        "default": null,
+        "min": null,
+        "max": null
+      },
+      "Ponder": {
+        "type": "check",
+        "default": false,
+        "min": null,
+        "max": null
+      },
+      "EvalFile": {
+        "type": "string",
+        "default": ">",
+        "min": null,
+        "max": null
+      }
+    }
+  },
+  "Stockfish16": {
+    "id": {
+      "name": "Stockfish 16",
+      "author": "the Stockfish developers (see AUTHORS file)"
+    },
+    "options": {
+      "Debug Log File": {
+        "type": "string",
+        "default": "",
+        "min": null,
+        "max": null
+      },
+      "Threads": {
+        "type": "spin",
+        "default": 1,
+        "min": 1,
+        "max": 1024
+      },
+      "Hash": {
+        "type": "spin",
+        "default": 16,
+        "min": 1,
+        "max": 33554432
+      },
+      "Clear Hash": {
+        "type": "button",
+        "default": null,
+        "min": null,
+        "max": null
+      },
+      "Ponder": {
+        "type": "check",
+        "default": false,
+        "min": null,
+        "max": null
+      },
+      "MultiPV": {
+        "type": "spin",
+        "default": 1,
+        "min": 1,
+        "max": 500
+      },
+      "Skill Level": {
+        "type": "spin",
+        "default": 20,
+        "min": 0,
+        "max": 20
+      },
+      "Move Overhead": {
+        "type": "spin",
+        "default": 10,
+        "min": 0,
+        "max": 5000
+      },
+      "Slow Mover": {
+        "type": "spin",
+        "default": 100,
+        "min": 10,
+        "max": 1000
+      },
+      "nodestime": {
+        "type": "spin",
+        "default": 0,
+        "min": 0,
+        "max": 10000
+      },
+      "UCI_Chess960": {
+        "type": "check",
+        "default": false,
+        "min": null,
+        "max": null
+      },
+      "UCI_AnalyseMode": {
+        "type": "check",
+        "default": false,
+        "min": null,
+        "max": null
+      },
+      "UCI_LimitStrength": {
+        "type": "check",
+        "default": false,
+        "min": null,
+        "max": null
+      },
+      "UCI_Elo": {
+        "type": "spin",
+        "default": 1320,
+        "min": 1320,
+        "max": 3190
+      },
+      "UCI_ShowWDL": {
+        "type": "check",
+        "default": false,
+        "min": null,
+        "max": null
+      },
+      "SyzygyPath": {
+        "type": "string",
+        "default": "<empty>",
+        "min": null,
+        "max": null
+      },
+      "SyzygyProbeDepth": {
+        "type": "spin",
+        "default": 1,
+        "min": 1,
+        "max": 100
+      },
+      "Syzygy50MoveRule": {
+        "type": "check",
+        "default": true,
+        "min": null,
+        "max": null
+      },
+      "SyzygyProbeLimit": {
+        "type": "spin",
+        "default": 7,
+        "min": 0,
+        "max": 7
+      },
+      "Use NNUE": {
+        "type": "check",
+        "default": true,
+        "min": null,
+        "max": null
+      },
+      "EvalFile": {
+        "type": "string",
+        "default": "nn-5af11540bbfe.nnue",
+        "min": null,
+        "max": null
+      }
+    }
+  }
+}
