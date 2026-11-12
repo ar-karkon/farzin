@@ -1,0 +1,148 @@
+{
+ "engines": {
+  "a": {
+   "cmd": "target/ownnet/release/farzin",
+   "options": {},
+   "nodes": null,
+   "sha256": "7d4bb784379527dd2cf31e7faeb21c7ed962a9e4c76487f91f8e9c55e2ddf2dd"
+  },
+  "b": {
+   "cmd": "target/ownnet/release/farzin",
+   "options": {},
+   "nodes": null,
+   "sha256": "7d4bb784379527dd2cf31e7faeb21c7ed962a9e4c76487f91f8e9c55e2ddf2dd"
+  }
+ },
+ "tc": "3+0.05",
+ "nodes": null,
+ "movetime": null,
+ "book": "farzin-openings.epd",
+ "book_sha256": "29d02b4cf9e26a9ed5f5cc45a6f48a6fc94f4dbaf03617d5d180242711433d48",
+ "seed": 1,
+ "concurrency": 2,
+ "threads": 1,
+ "hash": 16,
+ "adjudication": {
+  "resign_cp": 1000,
+  "resign_moves": 4,
+  "draw_cp": 8,
+  "draw_moves": 10,
+  "draw_after": 40
+ },
+ "hardware": {
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "python": "3.12.14",
+  "cpus": 3,
+  "cpu": "AMD EPYC 9V74 80-Core Processor",
+  "loadavg_start": [
+   1.0625,
+   0.63916015625,
+   0.25732421875
+  ]
+ },
+ "elapsed_s": 48.4,
+ "summary": {
+  "a vs b": {
+   "pairs": 4,
+   "pentanomial": [
+    0,
+    0,
+    3,
+    1,
+    0
+   ],
+   "score": 0.5625,
+   "elo": 43.65778777002724,
+   "elo_95": [
+    -30.365200995354417,
+    121.91622693210749
+   ],
+   "los": 0.8758934605050381,
+   "nelo": 141.83998383591333,
+   "nelo_95": [
+    -98.92059354166588,
+    382.6005612134924
+   ]
+  }
+ },
+ "sprt": null,
+ "terminations": {
+  "insufficient_material": 2,
+  "threefold_repetition": 3,
+  "adjudication": 3
+ },
+ "natural_fraction": 0.625,
+ "engine_stats": {
+  "a": {
+   "avg_depth": 17.01,
+   "avg_ms_per_move": 82.0,
+   "nps": 1081140,
+   "min_clock_s": 0.269,
+   "max_move_share": 0.371
+  },
+  "b": {
+   "avg_depth": 16.8,
+   "avg_ms_per_move": 85.2,
+   "nps": 1060419,
+   "min_clock_s": 0.198,
+   "max_move_share": 0.434
+  }
+ },
+ "games": [
+  [
+   "a",
+   "b",
+   "1/2-1/2",
+   "insufficient_material"
+  ],
+  [
+   "b",
+   "a",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a",
+   "b",
+   "1/2-1/2",
+   "insufficient_material"
+  ],
+  [
+   "b",
+   "a",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a",
+   "b",
+   "1-0",
+   "adjudication"
+  ],
+  [
+   "b",
+   "a",
+   "1/2-1/2",
+   "threefold_repetition"
+  ],
+  [
+   "a",
+   "b",
+   "1/2-1/2",
+   "adjudication"
+  ],
+  [
+   "b",
+   "a",
+   "1/2-1/2",
+   "adjudication"
+  ]
+ ],
+ "scheduler": {
+  "completed": 4,
+  "cancelled": 0,
+  "failed": 0,
+  "skipped": 0
+ },
+ "scheduler_errors": []
+}

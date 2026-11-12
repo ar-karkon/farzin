@@ -1,0 +1,280 @@
+    Updating crates.io index
+   Compiling farzin v0.5.2 (/workspace/farzin)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 8.90s
+   Compiling farzin v0.5.2 (/workspace/farzin)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 5.95s
+ Downloading crates ...
+  Downloaded memchr v2.8.3
+  Downloaded failure v0.1.8
+  Downloaded adler2 v2.0.1
+  Downloaded chess v3.2.0
+  Downloaded backtrace v0.3.77
+  Downloaded cfg-if v1.0.5
+  Downloaded libc v0.2.191
+  Downloaded addr2line v0.27.1
+  Downloaded gimli v0.34.0
+  Downloaded miniz_oxide v0.9.1
+  Downloaded arrayvec v0.5.2
+  Downloaded proc-macro2 v1.0.107
+  Downloaded failure_derive v0.1.8
+  Downloaded ppv-lite86 v0.2.21
+  Downloaded quote v1.0.47
+  Downloaded nodrop v0.1.14
+  Downloaded rand_chacha v0.2.2
+  Downloaded rand_pcg v0.2.1
+  Downloaded rand v0.7.3
+  Downloaded syn v1.0.109
+  Downloaded object v0.40.0
+  Downloaded synstructure v0.12.6
+  Downloaded rand_core v0.5.1
+  Downloaded unicode-ident v1.0.27
+  Downloaded unicode-xid v0.2.6
+  Downloaded rustc-demangle v0.1.28
+  Downloaded zerocopy v0.8.63
+   Compiling proc-macro2 v1.0.107
+   Compiling libc v0.2.191
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.27
+   Compiling syn v1.0.109
+   Compiling zerocopy v0.8.63
+   Compiling unicode-xid v0.2.6
+   Compiling failure_derive v0.1.8
+   Compiling synstructure v0.12.6
+   Compiling adler2 v2.0.1
+   Compiling rand_core v0.5.1
+   Compiling gimli v0.34.0
+   Compiling memchr v2.8.3
+   Compiling object v0.40.0
+   Compiling addr2line v0.27.1
+   Compiling ppv-lite86 v0.2.21
+   Compiling miniz_oxide v0.9.1
+   Compiling rustc-demangle v0.1.28
+   Compiling cfg-if v1.0.5
+   Compiling rand_chacha v0.2.2
+   Compiling rand_pcg v0.2.1
+   Compiling backtrace v0.3.77
+   Compiling failure v0.1.8
+   Compiling rand v0.7.3
+   Compiling chess v3.2.0
+    Checking nodrop v0.1.14
+    Checking arrayvec v0.5.2
+   Compiling farzin v0.5.2 (/workspace/farzin)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 33.43s
+   Compiling farzin v0.5.2 (/workspace/farzin)
+    Finished `test` profile [optimized + debuginfo] target(s) in 20.79s
+     Running unittests src/lib.rs (target/debug/deps/farzin-88ce47f46e86fb97)
+
+running 11 tests
+test attacks::tests::slider_methods_agree ... ok
+test eval::tests::evaluation_is_color_symmetric ... ok
+test fzn2::tests::layouts_are_in_range ... ok
+test fzn2::tests::mirror_symmetry ... ok
+test fzn2::tests::simd_matches_scalar ... ok
+test hka::tests::feature_tables_match_reference_layout ... ok
+test hka::tests::incremental_updates_and_cache_match_refresh ... ok
+test fzn2::tests::incremental_updates_match_full_evaluation ... ok
+test hka::tests::lazy_chains_with_skipped_evals_and_null_moves ... ok
+test hka::tests::rejects_malformed_files ... ok
+test net::tests::incremental_updates_match_refresh_and_serialization_round_trips ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running unittests src/main.rs (target/debug/deps/farzin-70b8a537ab5cf1f1)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/farzin-train.rs (target/debug/deps/farzin_train-a0fc156132fad0a0)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/farzin-train2.rs (target/debug/deps/farzin_train2-c61762690189ce2a)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/perft.rs (target/debug/deps/perft-c3937373486530ec)
+
+running 2 tests
+test fen_round_trip_and_hash_consistency ... ok
+test perft_reference_positions ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/uci.rs (target/debug/deps/uci-3ddcc66f26b0accf)
+
+running 13 tests
+test finds_mate_and_reports_terminal_positions ... ok
+test clock_limited_search_finishes_promptly ... ok
+test handshake_and_node_limited_search ... ok
+test non_mating_fifty_move_boundary_still_returns_a_draw ... ok
+test one_node_search_after_another_game_returns_legal_move ... ok
+test movestogo_clock_is_respected ... ok
+test principal_variation_replays_legally ... ok
+test quiet_mate_at_fifty_move_boundary_in_depth_one_search ... ok
+test stop_ends_infinite_search_with_one_bestmove ... ok
+test ponder_waits_for_ponderhit_then_obeys_clock ... ok
+test threads_and_hash_options_work ... ok
+test version_reports_embedded_network ... ok
+test stop_ends_ponder_search ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.98s
+
+     Running tests/warm_start.rs (target/debug/deps/warm_start-65e4ce834da43dd6)
+
+running 1 test
+loaded 6 train / 0 val positions in 0.0s; model 4x768x768 -> 1x8 (mirrored)
+warm start from /workspace/farzin/nets/fzn2-a1.nnue: 4x768x768 -> 4x768x768
+wrote /tmp/farzin-warm-2822/grown-4m-768.nnue (no training)
+loaded 6 train / 0 val positions in 0.0s; model 16x768x768 -> 1x8 (mirrored)
+warm start from /workspace/farzin/nets/fzn2-a1.nnue: 4x768x768 -> 16x768x768
+wrote /tmp/farzin-warm-2822/grown-16m-768.nnue (no training)
+loaded 6 train / 0 val positions in 0.0s; model 4x768x1024 -> 1x8 (mirrored)
+warm start from /workspace/farzin/nets/fzn2-a1.nnue: 4x768x768 -> 4x768x1024
+wrote /tmp/farzin-warm-2822/grown-4m-1024.nnue (no training)
+test warm_start_growth_preserves_evaluation ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.22s
+
+   Doc-tests farzin
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Compiling farzin v0.5.2 (/workspace/farzin)
+    Finished `test` profile [optimized + debuginfo] target(s) in 14.94s
+     Running unittests src/lib.rs (target/debug/deps/farzin-52060c8a13b7cae4)
+
+running 11 tests
+test attacks::tests::slider_methods_agree ... ok
+test eval::tests::evaluation_is_color_symmetric ... ok
+test fzn2::tests::layouts_are_in_range ... ok
+test fzn2::tests::mirror_symmetry ... ok
+test fzn2::tests::simd_matches_scalar ... ok
+test hka::tests::feature_tables_match_reference_layout ... ok
+test hka::tests::incremental_updates_and_cache_match_refresh ... ok
+test fzn2::tests::incremental_updates_match_full_evaluation ... ok
+test hka::tests::lazy_chains_with_skipped_evals_and_null_moves ... ok
+test net::tests::incremental_updates_match_refresh_and_serialization_round_trips ... ok
+test hka::tests::rejects_malformed_files ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running unittests src/main.rs (target/debug/deps/farzin-2ad736c2f828509a)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/farzin-train.rs (target/debug/deps/farzin_train-b6193d389c887551)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/farzin-train2.rs (target/debug/deps/farzin_train2-1acf8f537164e4b8)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/perft.rs (target/debug/deps/perft-a4c78fc037a22cc6)
+
+running 2 tests
+test fen_round_trip_and_hash_consistency ... ok
+test perft_reference_positions ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/uci.rs (target/debug/deps/uci-e1bde4c5fc86c989)
+
+running 13 tests
+test finds_mate_and_reports_terminal_positions ... ok
+test clock_limited_search_finishes_promptly ... ok
+test handshake_and_node_limited_search ... ok
+test non_mating_fifty_move_boundary_still_returns_a_draw ... ok
+test one_node_search_after_another_game_returns_legal_move ... ok
+test movestogo_clock_is_respected ... ok
+test principal_variation_replays_legally ... ok
+test quiet_mate_at_fifty_move_boundary_in_depth_one_search ... ok
+test stop_ends_infinite_search_with_one_bestmove ... ok
+test ponder_waits_for_ponderhit_then_obeys_clock ... ok
+test threads_and_hash_options_work ... ok
+test version_reports_embedded_network ... ok
+test stop_ends_ponder_search ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.95s
+
+     Running tests/warm_start.rs (target/debug/deps/warm_start-77cc06f294edd85d)
+
+running 1 test
+loaded 6 train / 0 val positions in 0.0s; model 4x768x768 -> 1x8 (mirrored)
+warm start from /workspace/farzin/nets/fzn2-a1.nnue: 4x768x768 -> 4x768x768
+wrote /tmp/farzin-warm-3776/grown-4m-768.nnue (no training)
+loaded 6 train / 0 val positions in 0.0s; model 16x768x768 -> 1x8 (mirrored)
+warm start from /workspace/farzin/nets/fzn2-a1.nnue: 4x768x768 -> 16x768x768
+wrote /tmp/farzin-warm-3776/grown-16m-768.nnue (no training)
+loaded 6 train / 0 val positions in 0.0s; model 4x768x1024 -> 1x8 (mirrored)
+warm start from /workspace/farzin/nets/fzn2-a1.nnue: 4x768x768 -> 4x768x1024
+wrote /tmp/farzin-warm-3776/grown-4m-1024.nnue (no training)
+test warm_start_growth_preserves_evaluation ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+   Doc-tests farzin
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Compiling adler2 v2.0.1
+   Compiling memchr v2.8.3
+   Compiling gimli v0.34.0
+   Compiling object v0.40.0
+   Compiling addr2line v0.27.1
+   Compiling miniz_oxide v0.9.1
+   Compiling libc v0.2.191
+   Compiling cfg-if v1.0.5
+   Compiling rustc-demangle v0.1.28
+   Compiling backtrace v0.3.77
+   Compiling farzin v0.5.2 (/workspace/farzin)
+   Compiling failure v0.1.8
+   Compiling arrayvec v0.5.2
+   Compiling nodrop v0.1.14
+   Compiling chess v3.2.0
+    Finished `test` profile [optimized + debuginfo] target(s) in 29.28s
+     Running unittests src/lib.rs (target/debug/deps/farzin-37735519f532a433)
+
+running 22 tests
+test attacks::tests::slider_methods_agree ... ok
+test caissa::tests::avx2_hidden_layers_match_scalar_with_extremes_sparsity_and_overflow ... ok
+test caissa::tests::initial_features_are_in_range_and_unique ... ok
+test caissa::tests::incremental_features_match_refresh_for_special_moves ... ok
+test caissa::tests::lazy_stack_special_moves_and_all_promotions_restore_exact_raw_outputs ... ok
+test caissa::tests::selected_backend_matches_all_raw_buckets_on_legal_paths ... ok
+test caissa::tests::sparse_hidden_layer_matches_simple_reference ... ok
+test caissa::tests::validates_header_and_empty_network_output ... ok
+test eval::tests::evaluation_is_color_symmetric ... ok
+test fzn2::tests::incremental_updates_match_full_evaluation ... ok
+test fzn2::tests::layouts_are_in_range ... ok
+test fzn2::tests::mirror_symmetry ... ok
+test fzn2::tests::simd_matches_scalar ... ok
+test hka::tests::feature_tables_match_reference_layout ... ok
+test hka::tests::incremental_updates_and_cache_match_refresh ... ok
+test hka::tests::lazy_chains_with_skipped_evals_and_null_moves ... ok
+test hka::tests::rejects_malformed_files ... ok
+test net::tests::incremental_updates_match_refresh_and_serialization_round_trips ... ok
+test nnue::tests::incremental_matches_refresh_across_a_deterministic_game ... ok
+test nnue::tests::incremental_matches_refresh_and_undo_for_special_moves ... ok
+test nnue::tests::invalid_update_is_transactional ... ok
+test caissa::tests::lazy_stack_random_paths_skipped_evaluations_and_sibling_reuse ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.80s
+
+   Compiling farzin v0.5.2 (/workspace/farzin)
+    Finished `release` profile [optimized] target(s) in 19.34s

@@ -137,7 +137,7 @@ def check(name):
 
 
 @check("uci handshake")
-def t_handshake(cmd, expect_sha):
+def t_handshake(cmd, expect_sha, expect_name=None):
     e = Engine(cmd)
     t = time.time()
     e.send("uci")
@@ -145,6 +145,8 @@ def t_handshake(cmd, expect_sha):
     took = time.time() - t
     names = [l for l in lines if l.startswith("id name ")]
     assert names, "no id name"
+    if expect_name:
+        assert names == [f"id name {expect_name}"], names
     assert any(l.startswith("id author ") for l in lines), "no id author"
     opts = [l for l in lines if l.startswith("option name ")]
     for need in ("Hash", "Threads", "Move Overhead", "Ponder"):
@@ -386,13 +388,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--quick", action="store_true")
     ap.add_argument("--expect-sha256")
+    ap.add_argument("--expect-name")
     ap.add_argument("--json")
     ap.add_argument("--seed", type=int, default=2026)
     ap.add_argument("cmd", nargs="+")
     args = ap.parse_args()
     rng = random.Random(args.seed)
     cmd = args.cmd
-    t_handshake(cmd, args.expect_sha256)
+    t_handshake(cmd, args.expect_sha256, args.expect_name)
     t_options(cmd)
     t_perft(cmd)
     t_special(cmd)

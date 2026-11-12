@@ -59,6 +59,10 @@ Built for chess-engine research, reproducible testing, and UCI-compatible play â
 
 ## Download & play
 
+**Farzin 0.5.2 OwnNet** is the licensing and packaging maintenance release;
+search and FZN2-b1 weights are unchanged from 0.5.1. See the
+[0.5.2 verification report](docs/release-0.5.2-report.md).
+
 **Get the newest tested binaries from the [Releases page](https://github.com/ar-karkon/farzin/releases/latest).**
 
 | Build | Who should choose it? |

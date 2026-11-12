@@ -1,0 +1,5 @@
+dist/farzin-0.5.2-windows-x64-avx2-bmi2.exe: 0 chunk(s) of nets/default.nnue (47001499 bytes, 1390584 indexed chunks); control nets/fzn2-b1.nnue: 148017 of 148017 chunks found
+dist/farzin-0.5.2-windows-x64-avx2.exe: 0 chunk(s) of nets/default.nnue (47001499 bytes, 1390584 indexed chunks); control nets/fzn2-b1.nnue: 148017 of 148017 chunks found
+dist/farzin-0.5.2-windows-x64-popcnt.exe: 0 chunk(s) of nets/default.nnue (47001499 bytes, 1390584 indexed chunks); control nets/fzn2-b1.nnue: 148017 of 148017 chunks found
+dist/farzin-0.5.2-linux-x64-avx2-bmi2: 0 chunk(s) of nets/default.nnue (47001499 bytes, 1390584 indexed chunks); control nets/fzn2-b1.nnue: 148017 of 148017 chunks found
+OK: no foreign network data

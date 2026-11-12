@@ -58,8 +58,23 @@ jobs:
         timeout-minutes: 40
         run: tools/ci_install_mingw.sh
       - run: tools/build_release.sh dist
+      - name: Match documented release checksums
+        run: diff dist/SHA256SUMS benchmarks/release-0.5.2/SHA256SUMS
       - run: pip install chess==1.10.0
-      - run: python3 tools/release_check.py --quick --expect-sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0 dist/farzin-*-linux-x64-avx2-bmi2
+      - run: python3 tools/release_check.py --quick --expect-name "Farzin 0.5.2" --expect-sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0 dist/farzin-*-linux-x64-avx2-bmi2
+      - run: tools/package_release.sh dist
+      - name: Repeat builds from a different source directory
+        run: |
+          mkdir ../farzin-rebuild
+          git archive HEAD | tar -x -C ../farzin-rebuild
+          (cd ../farzin-rebuild && tools/build_release.sh dist)
+          diff dist/SHA256SUMS ../farzin-rebuild/dist/SHA256SUMS
+      - name: Compare against the published 0.5.1 source
+        run: |
+          git fetch origin tag v0.5.1
+          git worktree add --detach ../farzin-0.5.1 v0.5.1
+          (cd ../farzin-0.5.1 && RUSTFLAGS="-C target-cpu=x86-64-v3" cargo build --release --locked --features ownnet --bin farzin)
+          python3 tools/compare_release.py ../farzin-0.5.1/target/release/farzin dist/farzin-0.5.2-linux-x64-avx2-bmi2 --json dist/equivalence-0.5.1.json
       - uses: actions/upload-artifact@v4
         with:
           name: farzin-release-candidate
@@ -88,8 +103,14 @@ jobs:
         run: |
           exe=$(ls dist/farzin-*-windows-x64-avx2-bmi2.exe)
           (cd dist && sha256sum -c SHA256SUMS --ignore-missing)
+          for binary in dist/*.exe; do
+            "$binary" --version
+            "$binary" bench | tee bench.txt
+            grep -q '^992681 nodes ' bench.txt
+            python tools/release_check.py --quick --expect-name "Farzin 0.5.2" --expect-sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0 "$binary"
+          done
           "$exe" --version
-          python tools/release_check.py --expect-sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0 --json release-check-windows.json "$exe"
+          python tools/release_check.py --expect-name "Farzin 0.5.2" --expect-sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0 --json release-check-windows.json "$exe"
           python tools/arena.py --engine name=a,cmd=$exe --engine name=b,cmd=$exe \
             --tc 40/8 --pairs 4 --concurrency 2 --book tools/books/farzin-openings.epd \
             --time-margin 0 --out selfplay-windows.json
