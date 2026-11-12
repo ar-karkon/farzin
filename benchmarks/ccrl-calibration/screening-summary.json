@@ -1,0 +1,41 @@
+{
+  "games": 120,
+  "estimate": {
+    "rating": 3647.9243730869084,
+    "ci95": [
+      3603.2767688391486,
+      3699.0875941239783
+    ],
+    "ci_status": "provisional conditional bootstrap interval",
+    "bootstrap": 4000,
+    "seed": 20261112,
+    "pairs": {
+      "Stockfish-10": 20,
+      "Weiss-2.0": 20,
+      "Ethereal-12.00": 20
+    },
+    "method": "shared-opening block percentile bootstrap; independent Gaussian anchor uncertainty"
+  },
+  "terminations": {
+    "adjudication": 88,
+    "insufficient_material": 3,
+    "checkmate": 6,
+    "threefold_repetition": 18,
+    "fifty_moves": 4,
+    "max plies": 1
+  },
+  "natural_pairs_only": {
+    "rating": 3509.8272335744323,
+    "ci95": null,
+    "ci_status": "not estimable: no observed within-anchor pair-score variation",
+    "bootstrap": 4000,
+    "seed": 20261112,
+    "pairs": {
+      "Stockfish-10": 1,
+      "Ethereal-12.00": 3,
+      "Weiss-2.0": 1
+    },
+    "method": "stratified paired-opening percentile bootstrap; independent Gaussian anchor uncertainty"
+  },
+  "PGN_replay_verified": true
+}

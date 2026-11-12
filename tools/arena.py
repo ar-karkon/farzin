@@ -212,10 +212,16 @@ def move_limit(spec, clocks, tc, args):
 
 def play_game(pool, white, black, fen, tc, args, adjudicator=None):
     board = chess.Board(fen)
+    book_plies = getattr(args, "book_plies", 0)
+    if book_plies:
+        if board.turn != (chess.WHITE if book_plies % 2 == 0 else chess.BLACK):
+            raise ValueError("book plies do not match FEN side to move")
+        board.fullmove_number = book_plies // 2 + 1
+        fen = board.fen()
     base, inc = tc[0], tc[1]
     mtg = tc[2] if len(tc) > 2 else None
     clocks = {chess.WHITE: base, chess.BLACK: base}
-    moves_done = {chess.WHITE: 0, chess.BLACK: 0}
+    moves_done = {chess.WHITE: (book_plies + 1) // 2, chess.BLACK: book_plies // 2}
     names = {chess.WHITE: white, chess.BLACK: black}
     for name in (white, black):
         eng = pool.get(name)
@@ -454,6 +460,7 @@ def main(argv=None):
     ap.add_argument("--concurrency", type=int, default=os.cpu_count())
     ap.add_argument("--threads", type=int, default=1, help="UCI Threads for every engine")
     ap.add_argument("--book", default=os.path.join(os.path.dirname(__file__), "books", "farzin-openings.epd"))
+    ap.add_argument("--book-plies", type=int, default=0, help="Known book plies, for move numbering and repeating-control counters")
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--hash", type=int, default=16)
     ap.add_argument("--gauntlet", action="store_true")
@@ -472,6 +479,8 @@ def main(argv=None):
     ap.add_argument("--out", default=None, help="JSON results file")
     ap.add_argument("--pgn", default=None)
     args = ap.parse_args(argv)
+    if args.book_plies < 0:
+        ap.error("--book-plies must be nonnegative")
     if chess is None:
         raise SystemExit("arena.py needs python-chess: pip install chess")
 
@@ -501,6 +510,7 @@ def main(argv=None):
     pool = EnginePool(by_name, args.hash, args.threads)
     results = {f"{a} vs {b}": {} for a, b in pairings}
     games = []
+    game_details = []
     terminations = {}
     engine_stats = {n: {"moves": 0, "time": 0.0, "depth": 0, "nodes": 0} for n in names}
     stop = threading.Event()
@@ -540,6 +550,7 @@ def main(argv=None):
                         for n, s in by_name.items()},
             "tc": args.tc, "nodes": args.nodes, "movetime": args.movetime,
             "book": os.path.basename(args.book), "book_sha256": sha256(args.book),
+            "book_plies": args.book_plies,
             "seed": args.seed, "concurrency": args.concurrency, "threads": args.threads, "hash": args.hash,
             "adjudication": args.adjudicate if args.adjudicate != "default" else {
                 "resign_cp": args.resign_cp, "resign_moves": args.resign_moves, "draw_cp": args.draw_cp,
@@ -551,6 +562,7 @@ def main(argv=None):
             "natural_fraction": round(natural / n_games, 3) if n_games else None,
             "engine_stats": per_engine,
             "games": [g[:4] for g in games],
+            "game_details": game_details,
         }
         if sched is not None:
             payload["scheduler"] = {k: v for k, v in sched.items() if k != "errors"}
@@ -569,6 +581,8 @@ def main(argv=None):
         pair_score = 0.0
         for white, black, r, reason, pgn, st in out:
             games.append((white, black, r, reason))
+            game_details.append(dict(white=white, black=black, result=r, reason=reason,
+                                     pair_id=k, fen=fen, stats=st))
             terminations[reason] = terminations.get(reason, 0) + 1
             for n in (white, black):
                 es = engine_stats[n]
@@ -583,6 +597,7 @@ def main(argv=None):
             pair_score += score_for(a, white, r)
             if pgn_file:
                 pgn_file.write(pgn + "\n\n")
+                pgn_file.flush()
         results[f"{a} vs {b}"][k] = pair_score
         done[0] += 1
         if args.sprt and sprt_state["decision"] is None:
