@@ -1,110 +1,185 @@
-# فرزین | Farzin
+<div align="center">
 
-**English summary.** Farzin is a UCI chess engine written in Rust. The
-competition release **Farzin 0.5.2 (OwnNet)** embeds only Farzin's own FZN2
-network `nets/fzn2-b1.nnue`. Release notes, hardware requirements, network
-provenance and reproducible build steps are in
-[docs/RELEASE-0.5.md](docs/RELEASE-0.5.md). The release test report is in
-[docs/release-0.5.2-report.md](docs/release-0.5.2-report.md) (0.5.1:
-[docs/release-0.5.1-report.md](docs/release-0.5.1-report.md); 0.5.0:
-[docs/v8-report.md](docs/v8-report.md)).
+<a href="https://github.com/ar-karkon/farzin">
+  <img src="assets/readme-hero.svg" width="100%" alt="FARZIN — Iranian heritage, modern computation" />
+</a>
+
+<br/>
+
+**An open-source UCI chess engine written in Rust, combining independent search engineering with a Farzin-trained neural evaluation network.**
+
+<br/>
+
+[![Latest Release](https://img.shields.io/github/v/release/ar-karkon/farzin?style=flat-square&label=Release&color=087044)](https://github.com/ar-karkon/farzin/releases/latest)
+[![CI](https://github.com/ar-karkon/farzin/actions/workflows/ci.yml/badge.svg)](https://github.com/ar-karkon/farzin/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/License-GPL--3.0--only-07643d?style=flat-square)](LICENSE)
+[![Rust](https://img.shields.io/badge/Language-Rust-bc6f3d?style=flat-square&logo=rust&logoColor=white)](Cargo.toml)
+[![UCI](https://img.shields.io/badge/Protocol-UCI-07643d?style=flat-square)](#quick-start)
+[![OwnNet](https://img.shields.io/badge/NNUE-FZN2_OwnNet-9c2534?style=flat-square)](#neural-evaluation)
+
+<br/>
+
+[**Download**](https://github.com/ar-karkon/farzin/releases/latest) &nbsp;·&nbsp;
+[**Quick start**](#quick-start) &nbsp;·&nbsp;
+[**Technical design**](#under-the-hood) &nbsp;·&nbsp;
+[**Benchmarks**](#measured-progress) &nbsp;·&nbsp;
+[**فارسی**](#معرفی-فارسی)
+
+</div>
+
+---
+
+<table>
+<tr>
+<td width="24%" align="center" valign="middle"><img src="assets/farzin-logo.webp" width="164" alt="Farzin original Persian-inspired logo: digital chess king, traditional architecture, Iranian colors and circuits" /></td>
+<td valign="middle">
+
+### A chess engine with its own identity
+
+**Farzin** (فرزین) is the classical Persian name for the chess piece that became the modern queen. The engine brings that heritage into a modern, performance-oriented Rust codebase.
+
+Built for chess-engine research, reproducible testing, and UCI-compatible play — not a GUI, chess website, or Stockfish wrapper.
+
+**The competition edition ships with Farzin's own FZN2 NNUE weights.**
+
+</td>
+</tr>
+</table>
+
+## Why Farzin?
+
+| | |
+| :--- | :--- |
+| **Independent Rust search** | Alpha-beta / PVS, iterative deepening, aspiration windows, selective pruning, late-move reductions and search-history heuristics. |
+| **OwnNet neural evaluation** | Independently implemented FZN2 architecture: king-bucketed features, SCReLU, material-output buckets and incremental evaluation. |
+| **Competition-ready UCI** | Standard UCI interface, configurable hash and threads, ponder support, and built-in move/time-management safeguards. |
+| **Fast CPU execution** | Bitboards, transposition tables, Lazy SMP, SIMD evaluation and optimized AVX2/BMI2/PEXT release builds. |
+| **Evidence-driven development** | Paired-opening matches, SPRT, fixed-node experiments, benchmark signatures and CI regression tests. |
+| **Open and auditable** | Source code, network provenance, training tools, raw test reports and reproducible release scripts. |
+
+## Download & play
+
+**Farzin 0.5.2 OwnNet** is the licensing and packaging maintenance release;
+search and FZN2-b1 weights are unchanged from 0.5.1. See the
+[0.5.2 verification report](docs/release-0.5.2-report.md).
+
+**Get the newest tested binaries from the [Releases page](https://github.com/ar-karkon/farzin/releases/latest).**
+
+| Build | Who should choose it? |
+| :--- | :--- |
+| **Windows x64 · AVX2 + BMI2 / PEXT** | Recommended competition build for supported CPUs. |
+| Windows x64 · AVX2 | Alternative when BMI2/PEXT performance or availability is a concern. |
+| Windows x64 · POPCNT | Compatibility build for older x64 processors. |
+| Linux x64 · AVX2 + BMI2 | Linux users with supported processors; build from source when needed. |
+
+Add the executable as a **UCI engine** in a compatible chess GUI (for example Cute Chess, Arena or Banksia). The Windows builds are self-contained; no Rust or Python installation is required.
+
+> [!IMPORTANT]
+> **For engine testing / rating lists, use the release labeled OwnNet.** The default Research build is a separate edition using a publicly released Stockfish-project CC0 network for evaluation research. Verify the selected network and CPU features using `farzin --version`.
+
+## Quick start
+
+**Run the official OwnNet build from source:**
 
 ```bash
-tools/build_release.sh dist        # Windows/Linux x86-64-v3 release binaries + SHA256SUMS
-python3 tools/release_check.py -- dist/farzin-0.5.2-linux-x64-avx2-bmi2
+git clone https://github.com/ar-karkon/farzin.git
+cd farzin
+cargo build --release --locked --features ownnet
+./target/release/farzin --version
+./target/release/farzin
 ```
 
-A plain `cargo build --release` gives a portable build of the **Research
-edition** (CC0 Stockfish-project net). For a fast local build use
-`RUSTFLAGS="-C target-cpu=native"`.
+Send UCI commands to the running process:
 
-فرزین یک موتور شطرنج UCI به زبان Rust است. از نسخهٔ ۰.۲ هستهٔ موتور کاملاً بازنویسی شده و دیگر به کتابخانهٔ `chess` وابسته نیست (آن کتابخانه فقط برای کد آزمایشی قدیمی Caissa در `src/caissa.rs` باقی مانده است).
-
-گزارش مرحلهٔ ۸ / نسخهٔ ۰٫۵ (جهش جست‌وجو، تقطیر تجمعی `fzn2-b1`، اعتبارسنجی بدون نشت): [docs/v8-research-report.md](docs/v8-research-report.md). گزارش مرحلهٔ ۷ / نسخهٔ ۰٫۴ (شبکهٔ مستقل FZN2، تقطیر از درخت جست‌وجو، آزمون‌های قابل‌اعتماد): [docs/v7-report.md](docs/v7-report.md). گزارش مرحلهٔ ۶ (استنتاج مستقل HalfKAv2_hm، هم‌طراحی جست‌وجو، تقطیر): [docs/v6-report.md](docs/v6-report.md). گزارش مرحلهٔ ۵: [docs/v5-report.md](docs/v5-report.md).
-
-## وضعیت فعلی (برآورد محلی، نه رتبهٔ رسمی CCRL)
-
-| نسخه | رتبه روی مقیاس `UCI_Elo` استاک‌فیش ۱۷.۱ در 10+0.1 | ۹۵٪ |
-|---|---|---|
-| main قدیمی `65ec72a` | حدود ۱۶۷۷ | [۱۵۹۲, ۱۷۵۲] |
-| هستهٔ جدید + ارزیاب کلاسیک | حدود ۲۹۹۱ | [۲۹۳۴, ۳۰۴۳] |
-| هستهٔ جدید + NNUE نسل ۱ | ارزیاب کلاسیک + ۵۰٫۸ | [+۱۶٫۸, +۸۵٫۹] |
-| هستهٔ جدید + NNUE نسل ۲ (`nets/g2.nnue`) | نسل ۱ + ۱۶۲٫۴ | [+۱۱۸٫۱, +۲۱۲٫۴] |
-| **۰٫۳: شبکهٔ CC0 `nn-ad9b42354671` با استنتاج مستقل (پیش‌فرض)** | g2 + ۷۶۷٫۶ | [+۵۷۷٫۹, ∞) |
-| ۰٫۳ با EvalScale تنظیم‌شده، در برابر استاک‌فیش ۱۵٫۱ کامل (تک‌نخ) | −۴۸٫۱ | [−۷۸٫۵, −۱۸٫۳] |
-| شبکهٔ تقطیرشدهٔ خود فرزین `nets/d1-512.nnue` (۷۶۸→۵۱۲، ۱۱٫۵M) | g2 + ۲۷۵٫۵ | [+۲۱۳٫۷, +۳۵۶٫۵] |
-| **۰٫۴: شبکهٔ مستقل FZN2 `nets/fzn2-a1.nnue` (۴ king bucket ×۷۶۸، ۱۰۵M)** در 5+0.05 | d1-512 + ۱۶۴٫۳ | [+۱۲۳٫۲, +۲۱۰٫۲] |
-| همان، در برابر شبکهٔ CC0 پیش‌فرض در 5+0.05 | −۲۳۰٫۲ | [−۲۶۵٫۲, −۱۹۸٫۸] |
-| **۰٫۵: جست‌وجوی جدید** در برابر ۰٫۴، 5+0.05 / 10+0.1 | +۱۹٫۴ / +۱۲٫۷ | [+۷٫۳, +۳۱٫۶] / [+۰٫۳, +۲۵٫۳] |
-| ۰٫۵ در برابر استاک‌فیش ۱۵٫۱ کامل، 10+0.1 (تک‌نخ) | −۷۴٫۱ | [−۹۷٫۰, −۵۱٫۷] |
-| ۰٫۵ در برابر استاک‌فیش ۱۷٫۱ کامل، 10+0.1 (تک‌نخ) | −۹۰٫۶ | [−۱۱۳٫۱, −۶۸٫۸] |
-| **۰٫۵: شبکهٔ مستقل `nets/fzn2-b1.nnue`** (شروع گرم از a1 + ۱۰۰M) در 5+0.05 | fzn2-a1 + ۶۳٫۱ | [+۳۶٫۵, +۹۰٫۵] |
-| همان، در برابر شبکهٔ CC0 پیش‌فرض در 5+0.05 | −۱۸۴٫۰ | [−۲۱۸٫۰, −۱۵۲٫۹] |
-
-## ساخت و اجرا
-
-```sh
-cargo build --release
-./target/release/farzin            # حالت UCI
-./target/release/farzin bench 12   # امضای گره و سرعت
-cargo test --release
+```text
+uci
+isready
+setoption name Hash value 64
+setoption name Threads value 1
+ucinewgame
+position startpos
+go movetime 1000
+quit
 ```
 
-ساخت پیش‌فرض دیگر `target-cpu=native` ندارد و قابل‌حمل است؛ برای ساخت سریع محلی `RUSTFLAGS="-C target-cpu=native"` و برای نسخهٔ انتشار `tools/build_release.sh` (x86-64-v3) را به کار ببرید. نسخهٔ مسابقه (`--features ownnet`) از ۰٫۵٫۱ فقط `nets/fzn2-b1.nnue` را دارد (۰٫۵٫۰: `nets/fzn2-a1.nnue`). شبکهٔ `nets/default.nnue` هنگام ساخت داخل باینری قرار می‌گیرد. این شبکه وزن CC0 منتشرشده توسط پروژهٔ استاک‌فیش است (منشأ و هش در `nets/README.md` و `THIRD_PARTY_NOTICES.md`)؛ استنتاج آن (`src/hka.rs`) مستقل نوشته شده است. شبکهٔ خودآموز قبلی در `nets/g2.nnue` است.
+On Windows, use the executable from [the latest release](https://github.com/ar-karkon/farzin/releases/latest) instead of compiling. Run `farzin-...exe --version` to check the embedded network and required CPU capabilities.
 
-### گزینه‌های UCI
+## Under the hood
 
-| گزینه | پیش‌فرض | توضیح |
-|---|---|---|
-| `Hash` | 16 | اندازهٔ جدول انتقال (MB) |
-| `Threads` | 1 | Lazy SMP با جدول مشترک |
-| `Move Overhead` | 20 | حاشیهٔ زمانی (ms) |
-| `Clear Hash` | — | پاک کردن جدول و historyها |
-| `EvalFile` | `<default>` | مسیر شبکهٔ FZN1، FZN2 یا HalfKAv2_hm (تشخیص خودکار)؛ `<empty>` = ارزیاب کلاسیک |
-| `EvalScale` | 560 | تبدیل خروجی HalfKAv2_hm به سانتی‌پیاده (×/۱۰۲۴) |
-| `EvalMaterialScale` | false | مقیاس‌دهی وابسته به مواد برای HalfKAv2_hm |
-| `tune_*` | — | پارامترهای جست‌وجو برای SPSA |
-
-فرمان‌های اضافه: `bench [depth]`، `go perft N`، `eval`، `d`.
-
-## زنجیرهٔ ابزار
-
-```sh
-# تولید داده با self-play
-./target/release/farzin datagen threads=4 games=50000 soft_nodes=4000 hard_nodes=12000 out=gen.data
-# آموزش شبکه
-./target/release/farzin-train data=gen.data out=net.nnue hidden=256 epochs=12 wdl=0.0 threads=4
-# مسابقه و SPRT (نیازمند pip install chess)
-python3 tools/arena.py --engine name=new,cmd=./target/release/farzin,opt.EvalFile=net.nnue \
-    --engine name=base,cmd=./target/release/farzin --tc 10+0.1 --pairs 200 --sprt 0 5
-# برآورد رتبه با لنگرهای ثابت
-python3 tools/rating.py results/*.json --anchor sf2800=2800 --anchor sf3000=3000
-# یک نسل کامل NNUE روی سرور
-tools/pipeline.sh 2 20000000 64
-# تقطیر ۰٫۴: نمونه‌برداری از درخت جست‌وجو + آموزش FZN2 با king bucket
-./target/release/farzin datagen threads=4 games=30000 soft_nodes=2500 tree_rate=48 random_move_pm=50 out=tree.data
-./target/release/farzin-train2 data=tree.data out=net.nnue hidden=768 kb=4m epochs=4 threads=4 resume=1
-tools/distill2.sh 100000000 768
-# دقت شبکه‌ها نسبت به برچسب معلم
-cargo run --release --example net_mse -- quiet-val.data nets/fzn2-a1.nnue nets/d1-512.nnue
-# پروتکل قدرت مطلق در چند TC در برابر موتورهای مرجع
-tools/strength.sh target/release/farzin sf15=/path/to/stockfish15 sf17=/path/to/stockfish17
-# تقطیر قدیمی (۰٫۳): برچسب ارزیابی ایستای شبکهٔ معلم، آموزش دانش‌آموز FZN1، غربال و SPRT
-tools/distill.sh nets/default.nnue 20000000 512
-# دریافت شبکه‌های CC0 دیگر با بررسی SHA-256
-tools/fetch_nets.sh
+```mermaid
+flowchart LR
+    U[UCI interface] --> T[Time management]
+    T --> S[Iterative deepening / PVS]
+    S --> M[Move ordering & pruning]
+    S --> TT[Transposition table]
+    S --> E[FZN2 incremental NNUE]
+    M --> B[Bitboard move generation]
+    E --> N[Farzin-trained OwnNet weights]
 ```
 
-ابزارهای قدیمی‌تر (`tools/match.py`، `tools/sprt.py`، `tools/bench.py` و …) برای بازتولید نتایج مراحل قبل نگه داشته شده‌اند.
+<details>
+<summary><b>Search, evaluation and engineering details</b></summary>
 
-## License
+**Search:** alpha-beta / PVS, aspiration windows, late-move reductions, null-move pruning, ProbCut, futility and other selectivity techniques; main, continuation and correction histories; Lazy SMP with a shared transposition table. Individual research changes are tracked and tested rather than accepted on NPS alone.
 
-Farzin's original source code and independently trained FZN2 network weights are
-licensed under the **GNU General Public License version 3 only**
-(`GPL-3.0-only`); see [LICENSE](LICENSE).
+**FZN2:** Farzin's independent king-aware feature representation with bucketed perspectives, quantized SCReLU-based inference, incremental evaluation and SIMD kernels. The competition model is trained by Farzin's own tooling on positions generated from Farzin's search trees.
 
-Third-party materials retain their own licenses: the Stockfish-project NNUE
-weights in the research edition are **CC0-1.0**, and credited Caissa material
-is distributed under **MIT**. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
-for attribution and provenance. The CCRL OwnNet release embeds only Farzin's
-FZN2 network, not the Stockfish-project weights.
+**Training provenance:** OwnNet weights are trained by Farzin, but their training targets were generated using a Stockfish-project network published under CC0. The pretrained Stockfish weights themselves are **not embedded** in the competition binaries. See [network provenance](nets/README.md) and [release documentation](docs/RELEASE-0.5.md).
+
+**Tooling:** [release checks](tools/release_check.py) · [arena](tools/arena.py) · [trainer](src/bin/farzin-train2.rs) · [release builds](tools/build_release.sh)
+
+</details>
+
+## Measured progress
+
+The following are **local head-to-head measurements**, *not an official CCRL or TCEC rating*.
+
+| Comparison | Test conditions | Measured Elo difference |
+| :--- | :--- | ---: |
+| **FZN2-b1** vs FZN2-a1, same search | 10+0.1 · 150 paired openings / 300 games | **+38.4** (95% CI +16.3 to +60.8) |
+| **FZN2-b1** vs FZN2-a1, same search | 60+0.6 · 50 pairs / 100 games | **+52.5** (95% CI +30.1 to +75.3) |
+| Updated search vs prior search, both with FZN2-a1 | 5+0.05 · 273 pairs / 546 games | **+22.3** (95% CI +7.4 to +37.3) |
+
+These tests were conducted on specific CPU hardware and short controls; strength across different opponents and CCRL hardware cannot be inferred directly. Farzin's CCRL rating will only be stated here once an official listing exists.
+
+**Methods and raw results:** [0.5.1 release test report](docs/release-0.5.1-report.md) · [search & training research](docs/v8-research-report.md) · [benchmark data](benchmarks/)
+
+## Development & reproducibility
+
+```bash
+cargo fmt --check
+cargo clippy --all-targets -- -D warnings
+cargo test --locked
+cargo test --locked --features ownnet
+python3 -m unittest discover -s tests -p 'test_*.py'
+```
+
+For portable production packages, use `tools/build_release.sh` with its documented Rust and MinGW toolchains. The CI pipeline also tests Windows UCI behavior, release artifacts and network provenance.
+
+- [Technical reports](docs/)
+- [Benchmark datasets and match results](benchmarks/)
+- [Training and testing utilities](tools/)
+- [Network provenance](nets/README.md)
+- [Third-party notices](THIRD_PARTY_NOTICES.md)
+
+## معرفی فارسی
+
+**فرزین** یک موتور مستقل شطرنج به زبان **Rust** است. نام آن از «فرزین»، نام تاریخی مهره‌ای که امروزه وزیر نامیده می‌شود، گرفته شده است. این پروژه با الهام از هویت ایرانی و با تمرکز بر قدرت جست‌وجو، ارزیابی عصبی اختصاصی و آزمون‌های قابل‌بازتولید توسعه پیدا می‌کند.
+
+نسخه رقابتی **OwnNet** از معماری عصبی **FZN2** و وزن‌هایی که توسط ابزارهای خود فرزین آموزش دیده‌اند استفاده می‌کند. برچسب‌های آموزشی این شبکه با کمک یک شبکه منتشرشده تحت مجوز CC0 تولید شده‌اند؛ اما وزن‌های آماده آن در فایل اجرایی رقابتی وجود ندارند.
+
+**[دریافت آخرین نسخه](https://github.com/ar-karkon/farzin/releases/latest)** · **[گزارش فنی](docs/v8-research-report.md)** · **[آموزش اجرا](#quick-start)**
+
+## License & attribution
+
+Farzin's original source and FZN2 network are distributed under **[GPL-3.0-only](LICENSE)**. Third-party materials retain their own licenses; research-network weights released by the Stockfish project are CC0, and applicable Caissa material is MIT. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for details.
+
+<div align="center">
+
+---
+
+**FARZIN** — *Iranian heritage. Modern computation.*
+
+[Repository](https://github.com/ar-karkon/farzin) · [Releases](https://github.com/ar-karkon/farzin/releases) · [Issues](https://github.com/ar-karkon/farzin/issues) · [License](LICENSE)
+
+</div>
