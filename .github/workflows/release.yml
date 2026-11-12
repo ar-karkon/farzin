@@ -4,7 +4,7 @@ name: Release candidate
 # creates a DRAFT GitHub release. Nothing is published automatically.
 #
 # Alternatively, run it manually on main ("Run workflow", workflow_dispatch)
-# with the tag to create (e.g. v0.5.1). The tag is created on the commit that
+# with the tag to create (e.g. v0.5.2). The tag is created on the commit that
 # was built; the release is a draft unless "publish" is ticked. A manual run
 # also requires the built SHA256SUMS to match the committed
 # benchmarks/release-<version>/SHA256SUMS, so only the documented, tested
@@ -15,7 +15,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag to create, e.g. v0.5.1 (must match Cargo.toml)"
+        description: "Tag to create, e.g. v0.5.2 (must match Cargo.toml)"
         required: true
       publish:
         description: "Publish the release (otherwise a draft is created)"
@@ -48,7 +48,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: diff dist/SHA256SUMS "benchmarks/release-${TAG#v}/SHA256SUMS"
       - run: pip install chess==1.10.0
-      - run: python3 tools/release_check.py --expect-sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0 dist/farzin-*-linux-x64-avx2-bmi2
+      - run: python3 tools/release_check.py --expect-name "Farzin 0.5.2" --expect-sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0 dist/farzin-*-linux-x64-avx2-bmi2
       - run: |
           cp docs/RELEASE-0.5.md dist/README.md
           cp nets/README.md dist/NETWORK-PROVENANCE.md
@@ -74,7 +74,7 @@ jobs:
           python-version: "3.12"
       - run: pip install chess==1.10.0
       - shell: bash
-        run: python tools/release_check.py --expect-sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0 $(ls dist/farzin-*-windows-x64-avx2-bmi2.exe)
+        run: python tools/release_check.py --expect-name "Farzin 0.5.2" --expect-sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0 $(ls dist/farzin-*-windows-x64-avx2-bmi2.exe)
   draft-release:
     needs: [build, windows-check]
     runs-on: ubuntu-latest
@@ -95,4 +95,5 @@ jobs:
           files: |
             dist/*.zip
             dist/*.exe
+            dist/*-linux-x64-avx2-bmi2
             dist/SHA256SUMS

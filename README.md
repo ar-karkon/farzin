@@ -1,16 +1,17 @@
 # فرزین | Farzin
 
 **English summary.** Farzin is a UCI chess engine written in Rust. The
-competition release **Farzin 0.5.1 (OwnNet)** embeds only Farzin's own FZN2
+competition release **Farzin 0.5.2 (OwnNet)** embeds only Farzin's own FZN2
 network `nets/fzn2-b1.nnue`. Release notes, hardware requirements, network
 provenance and reproducible build steps are in
 [docs/RELEASE-0.5.md](docs/RELEASE-0.5.md). The release test report is in
-[docs/release-0.5.1-report.md](docs/release-0.5.1-report.md) (0.5.0:
+[docs/release-0.5.2-report.md](docs/release-0.5.2-report.md) (0.5.1:
+[docs/release-0.5.1-report.md](docs/release-0.5.1-report.md); 0.5.0:
 [docs/v8-report.md](docs/v8-report.md)).
 
 ```bash
 tools/build_release.sh dist        # Windows/Linux x86-64-v3 release binaries + SHA256SUMS
-python3 tools/release_check.py -- dist/farzin-0.5.1-linux-x64-avx2-bmi2
+python3 tools/release_check.py -- dist/farzin-0.5.2-linux-x64-avx2-bmi2
 ```
 
 A plain `cargo build --release` gives a portable build of the **Research

@@ -1,25 +1,31 @@
-# Farzin 0.5.1 — OwnNet competition edition (release candidate)
+# Farzin 0.5.2 — OwnNet competition edition
 
-Farzin is a UCI chess engine written in Rust. **Farzin 0.5.1** is the edition
+Farzin is a UCI chess engine written in Rust. **Farzin 0.5.2** is the edition
 for rating lists such as CCRL. It embeds only Farzin's own network,
 `fzn2-b1.nnue`. It contains no Stockfish network weights and no Stockfish
 source code.
 
-0.5.1 differs from the 0.5.0 candidate (`fzn2-a1.nnue`) only in the
-embedded network and a start-up CPU check; the search is identical. In
-self-play against the 0.5.0 binary it scored +38.4 Elo at 10+0.1, +49.6 at
-40/20 (Windows exes) and +52.5 at 60+0.6, with no forfeits or crashes in
-668 games; see `docs/release-0.5.1-report.md` for all release tests.
-Self-play overstates gains; these are not CCRL numbers.
+0.5.2 updates the version and release packaging to include the full GPL v3
+license and third-party notices. Search, evaluation, time management, and
+FZN2-b1 weights are unchanged from 0.5.1. The UCI identity is `Farzin 0.5.2`.
+See `docs/release-0.5.2-report.md` for verification results; historical
+strength measurements remain in `docs/release-0.5.1-report.md`.
+
+## License and source
+
+Farzin is licensed under **GPL-3.0-only**. The archive includes the complete
+`LICENSE` and `THIRD_PARTY_NOTICES.md`. Corresponding source, including the
+network and build scripts, is available at:
+https://github.com/ar-karkon/farzin/tree/v0.5.2
 
 ## Hardware requirements (files)
 
 | file | target CPU | use |
 |---|---|---|
-| `farzin-0.5.1-windows-x64-avx2-bmi2.exe` | x86-64-v3: AVX2, BMI1, **BMI2 (PEXT)**, FMA, LZCNT, POPCNT | **Main build.** Intel Haswell (2013) or newer, AMD Zen 3 or newer |
-| `farzin-0.5.1-windows-x64-avx2.exe` | x86-64-v3 without BMI2 (magic bitboards) | AMD Zen 1/Zen 2, where PEXT is microcoded and slow |
-| `farzin-0.5.1-windows-x64-popcnt.exe` | x86-64-v2: SSE4.2, POPCNT | older CPUs without AVX2 (slower network code) |
-| `farzin-0.5.1-linux-x64-avx2-bmi2` | as the main build | Linux |
+| `farzin-0.5.2-windows-x64-avx2-bmi2.exe` | x86-64-v3: AVX2, BMI1, **BMI2 (PEXT)**, FMA, LZCNT, MOVBE, POPCNT | **Main build.** Intel Haswell (2013) or newer, AMD Zen 3 or newer |
+| `farzin-0.5.2-windows-x64-avx2.exe` | x86-64-v3 without BMI2 (magic bitboards) | AMD Zen 1/Zen 2, where PEXT is microcoded and slow |
+| `farzin-0.5.2-windows-x64-popcnt.exe` | x86-64-v2: SSE4.2, POPCNT | older CPUs without AVX2 (slower network code) |
+| `farzin-0.5.2-linux-x64-avx2-bmi2` | as the main build | Linux |
 | `SHA256SUMS` | | checksums |
 
 All builds play identical moves at a fixed depth (same `bench` node count,
@@ -50,15 +56,15 @@ Shredder, and others). Options:
 Command-line checks:
 
 ```
-farzin-0.5.1-windows-x64-avx2-bmi2.exe --version
-farzin-0.5.1-windows-x64-avx2-bmi2.exe bench
+farzin-0.5.2-windows-x64-avx2-bmi2.exe --version
+farzin-0.5.2-windows-x64-avx2-bmi2.exe bench
 ```
 
 `--version` prints the edition, the compiled CPU features, the slider method
 and the embedded network's name, architecture and SHA-256. For example:
 
 ```
-Farzin 0.5.1 edition OwnNet target x86_64 features [popcnt,avx2,bmi2] sliders pext net fzn2-b1.nnue FZN2 4x768x768 buckets 8 mirrored sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0
+Farzin 0.5.2 edition OwnNet target x86_64 features [popcnt,avx2,bmi2] sliders pext net fzn2-b1.nnue FZN2 4x768x768 buckets 8 mirrored sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0
 ```
 
 ## Network provenance
@@ -96,7 +102,7 @@ Farzin 0.5.1 edition OwnNet target x86_64 features [popcnt,avx2,bmi2] sliders pe
 
 The stronger **Research edition** (`cargo build --release` without
 `--features ownnet`) embeds the CC0 Stockfish network `nets/default.nnue`.
-It reports itself as "Farzin 0.5.1 Research". It is kept for research and is
+It reports itself as "Farzin 0.5.2 Research". It is kept for research and is
 **not** the submission.
 
 ## Reproducible build
@@ -108,8 +114,8 @@ mingw-w64 (Ubuntu 24.04 packages):
 rustup toolchain install 1.97.0 --target x86_64-pc-windows-gnu
 sudo apt-get install mingw-w64
 git checkout <release commit>
-cargo +1.97.0 build --version   # sanity check
-tools/build_release.sh dist
+cargo +1.97.0 --version   # sanity check
+RUSTUP_TOOLCHAIN=1.97.0 tools/build_release.sh dist
 cat dist/SHA256SUMS
 ```
 
@@ -120,9 +126,9 @@ builds from different directories produced bit-identical files. The CI job
 
 SHA256SUMS for this candidate: see the `SHA256SUMS` file attached to the
 release. The values at the time of writing are in
-`docs/release-0.5.1-report.md`.
+`docs/release-0.5.2-report.md`.
 
 ## Testing summary
 
-See `docs/release-0.5.1-report.md` (this release, raw data in
-`benchmarks/release-0.5.1/`) and `docs/v8-report.md` (0.5.0).
+See `docs/release-0.5.2-report.md` (this release, raw data in
+`benchmarks/release-0.5.2/`) and `docs/v8-report.md` (0.5.0).
