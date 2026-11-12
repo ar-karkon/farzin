@@ -1,0 +1,24 @@
+{
+  "games": 12,
+  "pairs": 6,
+  "unique_openings": 4,
+  "wdl": {
+    "wins": 0,
+    "draws": 5,
+    "losses": 7
+  },
+  "points": 2.5,
+  "score": 0.20833333333333334,
+  "terminations": {
+    "checkmate": 7,
+    "threefold_repetition": 3,
+    "insufficient_material": 1,
+    "fifty_moves": 1
+  },
+  "elapsed_batch_seconds": [
+    1439.5,
+    975.6
+  ],
+  "pooled_rating": null,
+  "reason": "Adaptive second-opponent selection and repeated opening blocks; report separate exploratory estimates, not a confirmatory pooled rating"
+}

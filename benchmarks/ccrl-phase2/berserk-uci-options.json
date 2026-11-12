@@ -1,0 +1,74 @@
+{
+  "id": {
+    "name": "Berserk 9",
+    "author": "Jay Honnold"
+  },
+  "options": {
+    "Hash": {
+      "type": "spin",
+      "default": 32,
+      "min": 4,
+      "max": 65536
+    },
+    "Threads": {
+      "type": "spin",
+      "default": 1,
+      "min": 1,
+      "max": 256
+    },
+    "NoobBookLimit": {
+      "type": "spin",
+      "default": 8,
+      "min": 0,
+      "max": 32
+    },
+    "NoobBook": {
+      "type": "check",
+      "default": false,
+      "min": null,
+      "max": null
+    },
+    "SyzygyPath": {
+      "type": "string",
+      "default": "<empty>",
+      "min": null,
+      "max": null
+    },
+    "MultiPV": {
+      "type": "spin",
+      "default": 1,
+      "min": 1,
+      "max": 256
+    },
+    "Ponder": {
+      "type": "check",
+      "default": false,
+      "min": null,
+      "max": null
+    },
+    "UCI_Chess960": {
+      "type": "check",
+      "default": false,
+      "min": null,
+      "max": null
+    },
+    "MoveOverhead": {
+      "type": "spin",
+      "default": 300,
+      "min": 100,
+      "max": 10000
+    },
+    "Contempt": {
+      "type": "spin",
+      "default": 12,
+      "min": -100,
+      "max": 100
+    },
+    "EvalFile": {
+      "type": "string",
+      "default": "<empty>",
+      "min": null,
+      "max": null
+    }
+  }
+}

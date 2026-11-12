@@ -36,6 +36,11 @@ def audit(results, manifest):
             assert game is not None and not game.errors
             white, black, result, reason = row
             assert [game.headers[k] for k in ('White', 'Black', 'Result', 'Termination')] == row
+            expected = chess.Board(d['game_details'][index]['fen'])
+            actual = game.board()
+            assert actual.board_fen() == expected.board_fen()
+            assert actual.turn == expected.turn and actual.castling_rights == expected.castling_rights
+            assert actual.ep_square == expected.ep_square
             board = game.end().board()
             if reason in {'checkmate', 'stalemate', 'threefold_repetition', 'fifty_moves', 'insufficient_material', 'fivefold_repetition', 'seventyfive_moves'}:
                 assert board.outcome(claim_draw=True).result() == result

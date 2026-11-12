@@ -2,9 +2,11 @@
 
 ## 1. Executive Summary
 
-This Phase 2 feasibility study tests the published Farzin 0.5.2 OwnNet executable at the nominal CCRL Blitz time control, **120 seconds plus one second per move**, against an independently rated reference engine. It is an anchored local experiment, not an official CCRL rating or a hardware-normalized CCRL submission. The primary pilot and separate adaptive diagnostic are substantially below the requested 300 games. Numerical results below must be interpreted as pilot evidence.
+This Phase 2 feasibility study tests the published Farzin 0.5.2 OwnNet executable at the nominal CCRL Blitz time control, **120 seconds plus one second per move**, against independently rated reference engines. It is an anchored local experiment, not an official CCRL rating or a hardware-normalized CCRL submission. The primary pilot and separate adaptive diagnostic are substantially below the requested 300 games. Numerical results below must be interpreted as pilot evidence.
 
-The fixed primary batch completed **eight games against Stockfish 16: 0 wins, 2 draws, 6 losses (12.5%)**. Its anchored local score estimate is **3422 Elo**. Four independent openings are too few for a stable rating: the descriptive paired bootstrap is −∞–3570, while a conservative fixed-anchor bounded-pair check is −∞–4005. These bounds do not include hardware/configuration uncertainty. The earlier 3648 estimate is not corroborated by this pilot, but it is not precisely disproved.
+The study completed **12 games in total**: a fixed eight-game primary batch and a separate four-game adaptive diagnostic. The fixed primary batch completed **eight games against Stockfish 16: 0 wins, 2 draws, 6 losses (12.5%)**. Its anchored local score estimate is **3422 Elo**. Four independent openings are too few for a stable rating: the descriptive paired bootstrap is −∞–3570, while a conservative fixed-anchor bounded-pair check is −∞–4005. These bounds do not include hardware/configuration uncertainty. The earlier 3648 estimate is not corroborated by this pilot, but it is not precisely disproved.
+
+The Berserk 9 diagnostic scored 37.5% (0/3/1), with an exploratory anchored score estimate of 3542. Its two-pair bootstrap (3432–3640) is also unstable; a conservative bounded-pair calculation provides no finite rating bounds. These experiments do **not** establish an official or reliably normalized CCRL rating. No 40/15 games were completed.
 
 The released Farzin executable is unchanged. No search, evaluation, network, time-management, or strength settings were altered. The earlier 3648 estimate was a 10+0.1 screening result; neither that number nor the informal 3300–3400 expectation was used as an experimental observation in Phase 2.
 
@@ -23,7 +25,7 @@ Both hashes were calculated locally. Network verification hashes 4,744,824 bytes
 
 The environment is a Linux KVM virtual machine; exact CPU identification, OS and quota are recorded in `environment.json`. The cgroup permits 200,000 microseconds per 100,000-microsecond period: two CPU equivalents. Two concurrent games use one search thread per engine. Pondering is off; only the side to move searches. Engine processes are reused within each worker. There is no dedicated physical-core isolation or guarantee against host contention. Quota and throttling observations do not prove dedicated hardware.
 
-Equal 128 MB hash is requested for each engine. The published Farzin defaults otherwise remain unchanged. Neither engine uses tablebases or an internal opening book. Python-chess 1.999 (chess 1.11.2) runs the games. Wall-clock elapsed search time is charged to clocks with zero additional tournament margin; release-internal time-management defaults remain active. Scheduling noise is therefore a possible contributor to forfeits, which are retained.
+Equal 128 MB hash is requested for each engine. The published Farzin defaults otherwise remain unchanged. All tested engines use no tablebases or internal opening books. Python-chess 1.999 (chess 1.11.2) runs the games. Wall-clock elapsed search time is charged to clocks with zero additional tournament margin; release-internal time-management defaults remain active. Scheduling noise is therefore a possible contributor to forfeits, which are retained.
 
 ## 4. CCRL Rating Anchors
 
@@ -39,7 +41,7 @@ The [CCRL Blitz complete list](https://computerchess.org.uk/ccrl/404/rating_list
 
 All entries above are single-CPU rows, not the separately listed 8CPU entries. Stockfish 16 is the official `sf_16` Ubuntu x86-64 AVX2 release, with its embedded release network, GPLv3 license, full strength and default search settings except equal hash and one thread. Its checksum and asset URL are recorded in the manifest. This verifies the release version and local configuration, but does not establish byte identity with CCRL testers' executables or reconstruct their individual games' tablebase and hardware configurations.
 
-The fixed primary pilot has one engine family. After its first four games were all checkmate losses, a separate two-pair diagnostic against the independently developed Berserk 9 was frozen. This is adaptive selection, explicitly recorded before Berserk outcomes in `diagnostic-decision.json`, and is not pooled as confirmatory calibration evidence. Berserk was built from the exact release tag source, commit `d6c81447c0bddfdf56a30628f4f1ca36ec04a117`, with its release network, using GCC and AVX2/BMI2/PEXT. The full compiler command, log, binary and network checksums are preserved. It was compiled and played only after the primary batch ended. Weakened Stockfish is not used.
+The fixed primary pilot has one engine family. After its first four games were all checkmate losses, a separate two-pair diagnostic against the independently developed Berserk 9 was frozen. This is adaptive selection, explicitly recorded before Berserk outcomes in `diagnostic-decision.json`, and is not pooled as confirmatory calibration evidence. Berserk was built from the exact release tag source, commit `d6c81447c0bddfdf56a30628f4f1ca36ec04a117`, with its release network, using GCC and AVX2/BMI2/PEXT. The full compiler command, log, binary and network checksums are preserved. Its default NoobBook is false, pondering is false, SyzygyPath is empty, MoveOverhead is 300 ms and Contempt is 12; these release defaults were retained, with Hash=128 and Threads=1. CCRL tester-specific overrides are unverified. It was compiled and played only after the primary batch ended. Weakened Stockfish is not used.
 
 ## 5. Testing Methodology
 
@@ -47,7 +49,7 @@ The fixed primary pilot has one engine family. After its first four games were a
 
 The opening suite was frozen before outcomes. It contains 150 unique four-move-per-side positions from the CC0 Lichess opening database at the source commit in `opening-provenance.json`. The reproduction script parses all five ECO TSV files, takes the first eight plies of eligible lines, deduplicates FEN positions, sorts them and samples 150 with seed 20261112. It uses no engine evaluation, result, or Farzin-specific selection. The source labels allow external inspection of the range of open, semi-open, closed and flank structures. No claim of uniform structure sampling is made: this is a generic opening catalogue, not a balanced stratified experimental design. Different branches may share substantial ancestry, even with distinct final positions.
 
-The pilot uses four randomly scheduled positions, each twice with colors reversed, for eight planned games. Its size and stopping rule were fixed in the committed manifest before results. There is no score-based stopping within the primary batch. The separate Berserk diagnostic is adaptive and uses two of the same opening positions; these must not be counted as two additional independent openings. Four observed positions cannot demonstrate coverage of the full 150-position suite. The suite must not be retrospectively filtered. Book plies count toward move numbers and recurring-control boundaries; eight plies is within CCRL's maximum 12 moves per side.
+The pilot uses four randomly scheduled positions, each twice with colors reversed, for eight planned games. Its size and stopping rule were fixed in the committed manifest before results. There is no score-based stopping within the primary batch. The separate Berserk diagnostic is adaptive and uses two of the same opening positions; these must not be counted as two additional independent openings. The observed primary positions are English (A25 and A30), St. George Defense (B00), and Queen’s Gambit Declined Exchange (D35). Four observed positions cannot demonstrate coverage of the full 150-position suite. The suite must not be retrospectively filtered. Book plies count toward move numbers and recurring-control boundaries; eight plies is within CCRL's maximum 12 moves per side.
 
 ### Adjudication and game integrity
 
@@ -75,13 +77,38 @@ Dropping one opening pair at a time gives estimates of 3343 or 3480. This shows 
 
 ### Adaptive independent-family diagnostic
 
-DIAGNOSTIC_PENDING
+| Opponent | Games / pairs | Farzin W/D/L | Points | Score | Exploratory anchored score estimate |
+|---|---:|---:|---:|---:|---:|
+| Berserk 9 (3631 ±13) | 4 / 2 | 0 / 3 / 1 | 1.5 / 4 | 37.5% | 3542 |
+
+All four PGNs replay legally. Terminations were one checkmate, two repetitions and one fifty-move claim. Farzin scored 1/2 with White and 0.5/2 with Black. The descriptive two-pair bootstrap is 3432–3640; it cannot be interpreted as reliable 95% coverage. The conservative bounded-pair calculation spans the entire score range [0,1], giving no finite rating bounds. Removing one pair leaves an estimate of 3440 or 3631. This is insufficient evidence for a stable performance rating.
+
+The difference from the primary point estimate is approximately 120 Elo. Opponent family, opening composition, adaptive selection and sampling are confounded. No pooled rating is reported. The diagnostic reached a more informative score but supplies only two pairs, both on openings already represented in the primary batch.
+
+### Overall completed evidence
+
+There are **12 completed games, six opponent-opening pairs and four unique opening positions**, with overall **0 wins, 5 draws, 7 losses (2.5/12, 20.83%)**. This overall percentage mixes different opponents and is not a performance rating. Both schedulers completed their full fixed batches with zero cancelled, failed or skipped pairs.
+
+| Termination | Count | Proportion |
+|---|---:|---:|
+| Checkmate | 7 | 58.33% |
+| Threefold repetition | 3 | 25.00% |
+| Fifty-move claim | 1 | 8.33% |
+| Insufficient material | 1 | 8.33% |
+| Stalemate | 0 | 0% |
+| Resignation adjudication | 0 | 0% |
+| Draw adjudication | 0 | 0% |
+| Maximum-ply guard | 0 | 0% |
+| Time forfeits | 0 | 0% |
+| Crashes / illegal moves | 0 | 0% |
+
+Every game reached a rule termination. No unfavorable game was excluded. The 0/12 adjudication rate contrasts with Phase 1’s 88/120, but the design does not isolate the causal effect of adjudication.
 
 ## 7. Rating Estimation and Confidence Intervals
 
 The existing estimator solves the anchored logistic expected-score equation, with draws worth half a point. This is a Bradley–Terry-style score fit, not a fully specified likelihood for three-outcome chess data. Calling it a maximum-likelihood rating requires an explicit outcome likelihood and assumptions that are not justified here. Consequently this report labels the number an anchored score estimate.
 
-Resampling keeps both colors of each opening together. The estimator includes independent Gaussian anchor perturbations, interpreting the published error as a 95% half-width. That interpretation is a modeling assumption; reference errors can be correlated through the common rating pool. The script rejects repeated positions within an opponent's sample rather than counting them independently. Identical opening coverage across opponents is block-resampled together. An extended design with partially overlapping repeated openings needs a global FEN-cluster bootstrap before pooling; the existing estimator is not sufficient for that design.
+Resampling keeps both colors of each opening together. CCRL explicitly labels its published +/− margins as 95% confidence intervals. The estimator approximates them with independent Gaussian anchor perturbations, using half-width/1.96 as standard deviation. Gaussian shape and independence are modeling assumptions; reference errors can be correlated through the common rating pool. The script rejects repeated positions within an opponent's sample rather than counting them independently. Identical opening coverage across opponents is block-resampled together. An extended design with partially overlapping repeated openings needs a global FEN-cluster bootstrap before pooling; the existing estimator is not sufficient for that design.
 
 Four pairs are too few for reliable bootstrap tail coverage. Any percentile interval is a descriptive conditional calculation, not evidence of 95% real-world coverage. Degenerate pair-score samples cannot produce an informative empirical interval. A Davidson draw-aware fit would introduce a draw parameter, and opponent-specific draw tendencies would add more; this sample cannot establish meaningful improvement or identify a robust draw model. More data are required for defensible maximum likelihood, profile intervals, color effects and draw-model comparison. A distribution-free bounded-pair sensitivity bound is also reported; it is much wider than the empirical bootstrap and still conditional on independent pair sampling and a fixed anchor. No narrow rating claim is warranted.
 
@@ -108,9 +135,11 @@ No 40/15 games were completed in this study. Its rating is **not estimable**. Th
 
 ## 9. Reproducibility and Raw Evidence
 
+The [diagnostic PGN](../benchmarks/ccrl-phase2/raw/berserk.pgn), [diagnostic JSON](../benchmarks/ccrl-phase2/raw/berserk.json), [diagnostic analysis](../benchmarks/ccrl-phase2/diagnostic-analysis.json), and [diagnostic manifest](../benchmarks/ccrl-phase2/berserk-manifest.json) preserve the separate adaptive experiment.
+
 The [primary PGN](../benchmarks/ccrl-phase2/raw/blitz.pgn), [primary JSON](../benchmarks/ccrl-phase2/raw/blitz.json), [audited analysis](../benchmarks/ccrl-phase2/primary-analysis.json), and [manifest](../benchmarks/ccrl-phase2/manifest.json) are available for inspection.
 
-All new evidence is in `benchmarks/ccrl-phase2/`; the earlier archive remains unchanged. Inputs include release and executable checksums, opening commit and labels, frozen manifest, UCI options, hardware observations and source rating-list HTML. `raw/blitz.command.json` records the exact command; `raw/blitz.pgn`, `raw/blitz.json` and the log retain the completed match. `SHA256SUMS` covers evidence files. External engine executables and large temporary downloads are excluded from Git.
+All new evidence is in `benchmarks/ccrl-phase2/`; the earlier archive remains unchanged. Inputs include release and executable checksums, opening commit and labels, frozen manifest, UCI options, hardware observations and source rating-list HTML. `raw/blitz.command.json` records the exact command; `raw/blitz.pgn`, `raw/blitz.json` and the log retain the completed match. `SHA256SUMS` covers evidence files. External engine executables and large temporary downloads are excluded from Git. `diagnostic-original-launch.py.txt` records the original one-off sequencing code and process ID; it is historical evidence, not a portable launcher. Reproduce the diagnostic with `run_phase2.py --manifest benchmarks/ccrl-phase2/berserk-manifest.json --out NEW_PREFIX`, after rebuilding from the recorded command in the pinned source checkout with its pinned network submodule.
 
 Recreate the environment with the pinned packages in the calibration README, obtain the release assets, verify manifest hashes and adapt executable paths to the new machine. Run the recorded command with a fresh output prefix. To reproduce the opening suite and audit results:
 
@@ -118,10 +147,13 @@ Recreate the environment with the pinned packages in the calibration README, obt
 .venv/bin/python tools/ccrl/make_phase2_book.py /path/to/pinned/chess-openings > /tmp/openings.epd
 cmp /tmp/openings.epd benchmarks/ccrl-phase2/openings.epd
 .venv/bin/python tools/ccrl/audit_phase2.py benchmarks/ccrl-phase2/raw/blitz.json benchmarks/ccrl-phase2/manifest.json
+.venv/bin/python tools/ccrl/audit_phase2.py benchmarks/ccrl-phase2/raw/berserk.json benchmarks/ccrl-phase2/berserk-manifest.json
 (cd benchmarks/ccrl-phase2 && sha256sum -c SHA256SUMS)
 ```
 
 Reproducibility means inspectable inputs and legal game replay; time-controlled searches on virtual hardware are not expected to reproduce identical moves or results.
+
+The primary eight-game batch took 1439.5 seconds (about 24 minutes), with all four pairs completed and zero cancelled, failed or skipped pairs. At this observed throughput, a 300-game campaign would require approximately 15 hours of wall time on this quota, before additional configuration checks or long-control tests. That campaign remains unexecuted; no claim is made that the available machine is incapable of running it.
 
 ## 10. Conclusions and Interpretation
 
@@ -129,4 +161,4 @@ The experiment contributes actual nominal-120+1, evaluation-adjudication-free ga
 
 ## 11. Short Summary for CCRL Testers
 
-Farzin 0.5.2 OwnNet was tested as the exact published Linux executable, with verified binary and embedded-network hashes, at nominal 120+1, one thread, 128 MB hash and pondering off. The pilot uses reversed-color opening pairs and no evaluation adjudication. Full PGNs and configuration evidence are supplied. These are local virtual-machine results without validated CCRL hardware normalization or tablebases. Please treat them as preliminary evidence and a reproducible starting point for independent CCRL testing; no official rating is claimed.
+Farzin 0.5.2 OwnNet was tested as the exact published Linux executable, with verified binary and embedded-network hashes, at nominal 120+1, one thread, 128 MB hash and pondering off. The pilot uses reversed-color opening pairs and no evaluation adjudication. Twelve games were completed: 0/2/6 against Stockfish 16 and 0/3/1 against Berserk 9 (W/D/L). The corresponding local anchored score estimates are 3422 and 3542; only four unique openings were tested, and reliable rating precision has not been established. Full PGNs and configuration evidence are supplied. These are local virtual-machine results without validated CCRL hardware normalization or tablebases. Please treat them as preliminary evidence and a reproducible starting point for independent CCRL testing; no official rating is claimed.
