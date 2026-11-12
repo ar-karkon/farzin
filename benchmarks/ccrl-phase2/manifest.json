@@ -5,7 +5,8 @@
     "path": "/workspace/inputs/farzin",
     "sha256": "324b236a5a097350d7bf3047f994ef1e3d69907f913aec753e1cb61d69158d1c",
     "network_sha256": "3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0",
-    "identity": "Farzin 0.5.2 edition OwnNet target x86_64 features [popcnt,avx2,bmi2] sliders pext net fzn2-b1.nnue FZN2 4x768x768 buckets 8 mirrored sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0"
+    "identity": "Farzin 0.5.2 edition OwnNet target x86_64 features [popcnt,avx2,bmi2] sliders pext net fzn2-b1.nnue FZN2 4x768x768 buckets 8 mirrored sha256 3ec5aa7e6c16b1ea6bd366ad873f4b649da310c91204915000bfd5f1e90ebfc0",
+    "url": "https://github.com/ar-karkon/farzin/releases/download/v0.5.2/farzin-0.5.2-linux-x64-avx2-bmi2"
   },
   "opponents": {
     "Stockfish-16": {
@@ -53,5 +54,10 @@
     "pairs": 4,
     "concurrency": 2,
     "stopping": "Fixed four pairs, selected before outcomes; feasibility pilot, not precision study"
+  },
+  "network_verification": {
+    "offset_in_release": 994387,
+    "network_bytes": 4744824,
+    "method": "SHA-256 of extracted embedded byte range, cross-checked against reported version identity"
   }
 }

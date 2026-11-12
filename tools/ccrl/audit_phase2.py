@@ -4,6 +4,7 @@ import argparse
 import collections
 import hashlib
 import json
+import math
 import pathlib
 import chess
 import chess.pgn
@@ -45,6 +46,14 @@ def audit(results, manifest):
             summary[opponent][{1: 'wins', .5: 'draws', 0: 'losses'}[points]] += 1
             colors['white' if white == target else 'black'].append(points)
         assert chess.pgn.read_game(stream) is None
+    bounds = {}
+    for name, values in groups.items():
+        score = sum(values)/(2*len(values))
+        epsilon = math.sqrt(math.log(40)/(2*len(values)))
+        low, high = max(0,score-epsilon), min(1,score+epsilon)
+        def elo(s):
+            return '-infinity' if s == 0 else '+infinity' if s == 1 else anchors[name]+400*math.log10(s/(1-s))
+        bounds[name] = dict(score95=[low,high], anchored95=[elo(low),elo(high)], method='Two-sided Hoeffding bound on independent opening-pair score fractions; fixed anchor, no hardware or anchor uncertainty')
     output = dict(games=len(d['games']), pairs=sum(map(len, groups.values())),
                   unique_openings=len({x['fen'] for x in d['game_details']}),
                   wdl=dict(summary), terminations=d['terminations'],
@@ -53,6 +62,7 @@ def audit(results, manifest):
                   per_opponent={n: encode(fit({n:v}, anchors)) for n,v in groups.items()},
                   leave_one_pair_out={n: [encode(fit({n:v[:i]+v[i+1:]}, anchors)) for i in range(len(v))] for n,v in groups.items() if len(v)>1},
                   warning='Feasibility pilot: percentile bootstrap with very few pairs is unstable; model interval excludes hardware/configuration/time-control systematics.',
+                  conservative_pair_bounds=bounds,
                   pgn_replayed=True,
                   dataset_sha256=hashlib.sha256(path.read_bytes()).hexdigest())
     return output

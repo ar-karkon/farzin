@@ -1,0 +1,5 @@
+beautifulsoup4==4.15.0
+chess==1.11.2
+python-chess==1.999
+soupsieve==4.1
+typing_extensions==4.16.0

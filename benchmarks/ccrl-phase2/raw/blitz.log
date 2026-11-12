@@ -1,0 +1,34 @@
+[    803s] Farzin-0.5.2 vs Stockfish-16: 2p -2400.0 [-2400.0,-110.2]
+[   1439s] Farzin-0.5.2 vs Stockfish-16: 4p -338.0 [-1040.4,-193.2]
+{
+ "summary": {
+  "Farzin-0.5.2 vs Stockfish-16": {
+   "pairs": 4,
+   "pentanomial": [
+    2,
+    2,
+    0,
+    0,
+    0
+   ],
+   "score": 0.125,
+   "elo": -338.0392160057027,
+   "elo_95": [
+    -1040.3891582746992,
+    -193.17252039851738
+   ],
+   "los": 9.865876449133282e-10,
+   "nelo": -737.0221756456505,
+   "nelo_95": [
+    -977.7827530232296,
+    -496.26159826807134
+   ]
+  }
+ },
+ "sprt": null,
+ "terminations": {
+  "checkmate": 6,
+  "threefold_repetition": 1,
+  "insufficient_material": 1
+ }
+}

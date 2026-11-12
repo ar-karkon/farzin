@@ -1,0 +1,69 @@
+{
+  "games": 8,
+  "pairs": 4,
+  "unique_openings": 4,
+  "wdl": {
+    "Stockfish-16": {
+      "losses": 6,
+      "draws": 2
+    }
+  },
+  "terminations": {
+    "checkmate": 6,
+    "threefold_repetition": 1,
+    "insufficient_material": 1
+  },
+  "color_scores": {
+    "white": {
+      "points": 0.5,
+      "games": 4,
+      "score": 0.125
+    },
+    "black": {
+      "points": 0.5,
+      "games": 4,
+      "score": 0.125
+    }
+  },
+  "estimate": {
+    "rating": 3421.9607839942973,
+    "ci95": [
+      "-infinity",
+      3569.6565988822595
+    ],
+    "ci_status": "provisional conditional bootstrap interval",
+    "bootstrap": 4000,
+    "seed": 20261112,
+    "pairs": {
+      "Stockfish-16": 4
+    },
+    "method": "shared-opening block percentile bootstrap; independent Gaussian anchor uncertainty"
+  },
+  "per_opponent": {
+    "Stockfish-16": 3421.9607839942973
+  },
+  "leave_one_pair_out": {
+    "Stockfish-16": [
+      3480.411998265592,
+      3343.44292593671,
+      3480.411998265592,
+      3343.44292593671
+    ]
+  },
+  "warning": "Feasibility pilot: percentile bootstrap with very few pairs is unstable; model interval excludes hardware/configuration/time-control systematics.",
+  "conservative_pair_bounds": {
+    "Stockfish-16": {
+      "score95": [
+        0,
+        0.8040507578703098
+      ],
+      "anchored95": [
+        "-infinity",
+        4005.255951008301
+      ],
+      "method": "Two-sided Hoeffding bound on independent opening-pair score fractions; fixed anchor, no hardware or anchor uncertainty"
+    }
+  },
+  "pgn_replayed": true,
+  "dataset_sha256": "0596b7d0c3dcf939757ca7c4b5e8ce4aa5b1beb7f4d50e1528747696e35cf08d"
+}
